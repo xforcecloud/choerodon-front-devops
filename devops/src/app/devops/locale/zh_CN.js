@@ -1,7 +1,6 @@
-
 // zh_CN.js
 // 文档地址前缀
-const docServer = 'http://v0-9.choerodon.io/zh/docs';
+const docServer = 'http://v0-10.choerodon.io/zh/docs';
 // 界面标题描述统一管理
 const pageDetail = {
 
@@ -117,7 +116,7 @@ const pageDetail = {
 
   // instance
   'ist.title': '项目"{name}"的实例',
-  'ist.description': '实例是一次应用部署生成的应用实体。您可在此用四种视图查看该项目的实例情况及相关应用、环境信息。',
+  'ist.description': '实例是一次应用部署生成的应用实体。您可在此用三种视图查看该项目的实例情况及相关应用、环境信息。',
   'ist.edit.title': '对"{name}"进行修改',
   'ist.edit.description': '对实例配置信息进行修改后重新部署。',
   'ist.upgrade.title': '对"{name}"进行修改',
@@ -128,7 +127,13 @@ const pageDetail = {
   'ist.detail.link': `${docServer}/user-guide/deployment-pipeline/instance/`,
   'ist.edit.link': `${docServer}/user-guide/deployment-pipeline/instance/`,
 
+  // 部署总览
+  'dpOverview.title': '项目"{name}"的部署总览',
+  'dpOverview.description': '部署总览页面包含了所有应用在各个环境中的部署情况。您可以通过该界面查看各个应用在各个环境中的部署情况，并能直接在此界面进行应用最新版本的快速部署。',
+  'dpOverview.link': `${docServer}/user-guide/deployment-pipeline/deployment-overview/`,
+
   // appstore
+  'appstore.description.label': '描述',
   'appstore.description': '应用市场是应用的集市。您可在此查看已发布至您项目的应用及其详细信息，并选择需要的应用版本进行部署。',
   'appstore.import.title': '应用导入',
   'appstore.export.title': '应用导出',
@@ -194,12 +199,24 @@ const pageDetail = {
   'ctf.create.link': `${docServer}/user-guide/deployment-pipeline/certificate`,
 
   // 报表
-  'report.description': '选择报表查看详情',
-  'report.title': '所有报表',
-  'report.link': `${docServer}/user-guide/application-management/report`,
-  'report.submission.description': '代码提交情况图能从项目、应用的维度帮助我们查看某个项目或是该项目下某个应用的代码提交情况。',
+  'report.title': '项目"{name}"的DevOps报表',
   'report.submission.title': '项目"{name}"的代码提交情况',
-  'report.submission.link': `${docServer}/user-guide/application-management/report`,
+  'report.deploy-duration.title': '项目"{name}"的部署时长',
+  'report.deploy-times.title': '项目"{name}"的部署次数',
+  'report.build-number.title': '项目"{name}"的构建次数',
+  'report.build-duration.title': '项目"{name}"的构建时长',
+  'report.description': 'DevOps报表将从多个维度直观清晰地展示您当前项目中的代码提交、代码质量、应用构建和应用部署等情况。点击相应报表便能查看对应的内容。',
+  'report.submission.description': '代码提交情况图能从项目、应用的维度帮助我们查看某个项目或是该项目下某个应用的代码提交情况。',
+  'report.deploy-duration.description': '部署时长图能展示该项目下某一环境中各个应用部署时长等部署相关的信息，这有助于您了解项目中各个应用的部署情况。',
+  'report.deploy-times.description': '部署次数图能展示出该项目下各个环境中各个应用的部署频率，这将帮助您了解团队的部署频次与整体的效率。',
+  'report.build-number.description': '构建次数图将从应用的维度为您展示任意时间段某个应用的构建次数，构建成功次数以及构建成功率。这将帮助您快速地定位构建出现的问题，同时直观地了解到项目中某个应用的构建情况。',
+  'report.build-duration.description': '构建时长图将从应用的维度为您展示所选时间段某个应用每一次构建的时长，这将帮助您更为直观地了解应用构建的效率。',
+  'report.submission.link': `${docServer}/user-guide/report/devops-report/code-commits`,
+  'report.build-number.link': `${docServer}/user-guide/report/devops-report/build-frequency`,
+  'report.deploy-duration.link': `${docServer}/user-guide/report/devops-report/deploy-duration`,
+  'report.deploy-times.link': `${docServer}/user-guide/report/devops-report/deploy-frequency`,
+  'report.build-duration.link': `${docServer}/user-guide/report/devops-report/build-duration`,
+  'report.link': `${docServer}/user-guide/report/devops-report/`,
 };
 
 const zhCN = {
@@ -225,7 +242,7 @@ const zhCN = {
   deleting: '删除中',
   pending: '部署中',
   stopped: '已停止',
-  failed: '已失败',
+  failed: '失败',
   deleted: '已删除',
   install_failed: '创建失败',
   upgrade_failed: '更新失败',
@@ -263,6 +280,12 @@ const zhCN = {
   expired: '已过期',
   timeFrom: '自',
   timeUntil: '至',
+  success: '成功',
+  minutes: '分',
+  seconds: '秒',
+  minTime: '时长（分）',
+  nodata: '暂无数据',
+  skipped: '跳过',
 
   'chart.change': '切换报表',
   'confirm.delete': '确认删除吗？',
@@ -375,7 +398,7 @@ const zhCN = {
   'network.config.addtarget': '添加标签',
   'network.config.keyword': '关键字',
   'network.config.value': '值',
-  'network.failed': '已失败',
+  'network.failed': '失败',
   'network.node.port': '节点端口/端口/目标端口',
 
   // deploymentApp
@@ -445,7 +468,7 @@ const zhCN = {
   'envPl.status.stop': '暂无停用环境',
   'envPl.status.restart': '重启环境',
   'envPl.status.stopped': '已停用',
-  'envPl.description': '描述:',
+  'envPl.description': '描述: ',
   'envPl.add.description': '请添加一个环境，并填写相应的环境描述信息。',
   'envPl.token': '指令',
   'envPl.status.update': '版本过低，请更新',
@@ -466,6 +489,7 @@ const zhCN = {
   'app.detail': '详情',
   'app.stop': '停用',
   'app.run': '启用',
+  'app.failed': '失败',
   'app.creating': '创建中',
   'app.synch': '应用同步中',
   'app.start': '请先启用应用',
@@ -848,11 +872,57 @@ const zhCN = {
 
   // 报表
   'report.head': '报告',
-  'report.submission.head': '代码提交情况',
-  'report.submission.des': '代码提交情况图能从项目、应用的维度帮助我们查看某个项目或是该项目下某个应用的代码提交情况。',
+  'report.submission.head': '代码提交图',
+  'report.core-quality.head': '代码质量报表',
+  'report.deploy-duration.head': '部署时长图',
+  'report.build-number.head': '构建次数图',
+  'report.build-duration.head': '构建时长图',
+  'report.deploy-times.head': '部署次数图',
+  'report.submission.des': '跟踪项目下团队与个人的代码提交情况。这有助于了解团队的整体效率与个人效率。',
+  'report.core-quality.des': '展示项目下所有应用的代码质量详情。这有助于您了解到每个应用的质量情况。',
+  'report.deploy-duration.des': '展示该项目下某一环境中各个应用部署时长等部署相关的信息。这将帮助您了解各个应用的部署情况。',
+  'report.deploy-times.des': '展示了项目下各个环境中各个应用的部署频率。这将帮助您了解团队的部署频次与整体的效率。',
+  'report.build-number.des': '从应用的维度展示某个应用的构建次数，构建成功次数以及构建成功率。这将帮助您快速地了解到该应用的构建情况。',
+  'report.build-duration.des': '从应用的维度展示所选时间段某个应用每一次构建的时长。这将帮助您更直观地了解应用构建的效率。',
   'report.data.today': '今天',
   'report.data.seven': '近7天',
   'report.data.thirty': '近30天',
+  'report.deploy-duration.time': '部署时间',
+  'report.deploy-duration.long': '部署时长',
+  'report.deploy-duration.user': '执行人',
+  'report.date': '日期',
+  'report.all-app': '全部应用',
+  'report.build-number.build': '构建',
+  'report.build-number.success': '成功次数',
+  'report.build-number.fail': '失败次数',
+  'report.build-number.total': '总次数',
+  'report.build-number.success.rate': '成功率',
+  'report.build-number.yAxis': '次数',
+  'report.build-duration.version': '版本',
+  'report.build-duration.time': '时间',
+  'report.build-duration.duration': '构建时长',
+  'report.build-duration.noversion': '未生成版本',
+  'report.build-duration.yAxis': '时长（分）',
+  'report.deploy-duration.apps': '每次最多可同时选择5个应用！',
+  'report.no-app': '当前项目下无应用',
+  'report.no-env': '当前项目下无可用环境',
+  'report.no-app-des': '请使用项目所有者角色登录去创建一个应用',
+  'report.no-env-des': '请使用部署管理员角色登录去创建一个可用环境',
+  'report.commit.history': '提交历史',
+  'report.commit.by': '提交于 ',
+  'report.commit.date': '日期：',
+  'report.commit.count': '提交次数：',
+  'report.commit.num': '次数      ',
+  'report.commit.none': '无提交记录',
+  'report.app.noselect': '请选择应用',
+  'report.date.more': '报表暂支持最多查看30天，已自动截取开始日期后30天。',
+  'report.commits.unknown': '非平台用户提交汇总',
+  'report.unknown.user': '非平台用户',
+
+  // 部署总览
+  'dpOverview.head': '部署总览',
+  'dpOverview.update': '可升级',
+  'dpOverview.deploy': '快速部署',
 
   ...pageDetail,
 };

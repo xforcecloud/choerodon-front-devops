@@ -77,7 +77,6 @@ class AppHome extends Component {
   }
 
   componentDidMount() {
-    const { projectId } = this.state;
     this.loadAllData(this.state.page);
   }
 
@@ -129,9 +128,7 @@ class AppHome extends Component {
         value: -1,
       }],
       filteredValue: filters.active || [],
-      render: (text, record) => (record.synchro
-        ? <span>{text ? formatMessage({ id: 'app.run' }) : formatMessage({ id: 'app.stop' })}</span>
-        : <FormattedMessage id="app.creating" />),
+      render: this.getAppStatus,
     }, {
       align: 'right',
       width: 104,
@@ -175,10 +172,57 @@ class AppHome extends Component {
                 </Fragment> }
             </Tooltip>
           </Permission>
+          {record.failed ? <Permission type={type} projectId={projectId} organizationId={orgId} service={['devops-service.application.deleteByAppId']}>
+            <Tooltip
+              placement="bottom"
+              title={<FormattedMessage id="delete" />}
+            >
+              <Button
+                icon="delete_forever"
+                shape="circle"
+                size="small"
+                onClick={this.deleteApp.bind(this, record.id)}
+              />
+            </Tooltip>
+          </Permission> : null}
         </Fragment>
       ),
     }];
-  } ;
+  };
+
+  /**
+   * 获取状态
+   * @param text
+   * @param record 表格中一个项目的记录
+   * @returns {*}
+   */
+  getAppStatus = (text, record) => {
+    const style = {
+      fontSize: 18,
+      marginRight: 6,
+    };
+    let icon = '';
+    let msg = '';
+    let color = '';
+    if (record.failed) {
+      icon = 'cancel';
+      msg = 'failed';
+      color = '#f44336';
+    } else if (record.synchro && text) {
+      icon = 'check_circle';
+      msg = 'run';
+      color = '#00bf96';
+    } else if (text) {
+      icon = 'timelapse';
+      msg = 'creating';
+      color = '#4d90fe';
+    } else {
+      icon = 'remove_circle';
+      msg = 'stop';
+      color = '#d3d3d3';
+    }
+    return (<span><Icon style={{ color, ...style }} type={icon} /><FormattedMessage id={`app.${msg}`} /></span>);
+  };
 
   /**
    * 打开分支
@@ -195,7 +239,7 @@ class AppHome extends Component {
    * @param id 应用id
    * @param status 状态
    */
-  changeAppStatus =(id, status) => {
+  changeAppStatus = (id, status) => {
     const { AppStore } = this.props;
     const { projectId } = this.state;
     AppStore.changeAppStatus(projectId, id, !status)
@@ -203,6 +247,19 @@ class AppHome extends Component {
         if (data) {
           this.loadAllData(this.state.page);
         }
+      });
+  };
+
+  /**
+   * 删除应用
+   * @param id
+   */
+  deleteApp = (id) => {
+    const { AppStore } = this.props;
+    const { projectId } = this.state;
+    AppStore.deleteApps(projectId, id)
+      .then(() => {
+        this.loadAllData(this.state.page);
       });
   };
 

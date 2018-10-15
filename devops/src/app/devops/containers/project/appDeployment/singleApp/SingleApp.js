@@ -421,7 +421,7 @@ class SingleApp extends Component {
             type,
             organizationId,
             projectId,
-            service: ['devops-service.devops-pod.getLogs', 'devops-service.application-instance.listResources'],
+            service: ['devops-service.application-instance.listResources'],
             text: intl.formatMessage({ id: 'ist.detail' }),
             action: this.linkDeployDetail.bind(this, record.id, record.status),
           }]}
@@ -433,7 +433,7 @@ class SingleApp extends Component {
             type,
             organizationId,
             projectId,
-            service: ['devops-service.devops-pod.getLogs', 'devops-service.application-instance.listResources'],
+            service: ['devops-service.application-instance.listResources'],
             text: intl.formatMessage({ id: 'ist.detail' }),
             action: this.linkDeployDetail.bind(this, record.id, record.status),
           }, {
@@ -461,7 +461,7 @@ class SingleApp extends Component {
             type,
             organizationId,
             projectId,
-            service: ['devops-service.devops-pod.getLogs', 'devops-service.application-instance.listResources'],
+            service: ['devops-service.application-instance.listResources'],
             text: intl.formatMessage({ id: 'ist.detail' }),
             action: this.linkDeployDetail.bind(this, record.id, record.status),
           }, {
@@ -720,9 +720,9 @@ class SingleApp extends Component {
           if (appID && envID) {
             return (<div className="c7n-deploy-wrap_gray">
               <div className="c7n-deploy-single-wrap">
-                <h2 className="c7n-space-first">
-                  <FormattedMessage id="ist.title" />
-                </h2>
+                <div className="c7n-deploy-singleApp-ist">
+                  <FormattedMessage id="ist.head" />
+                </div>
                 <Table
                   filterBarPlaceholder={intl.formatMessage({ id: 'filter' })}
                   onChange={this.tableChange}
@@ -730,6 +730,7 @@ class SingleApp extends Component {
                   pagination={store.pageInfo}
                   columns={columnApp}
                   filters={param || []}
+                  filterBar={false}
                   dataSource={ist}
                   rowKey={record => record.id}
                 />

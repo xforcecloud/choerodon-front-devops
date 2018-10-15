@@ -14,6 +14,7 @@ import { hterm, lib } from 'hterm-umdjs';
 import TimePopover from '../../../../components/timePopover';
 import LoadingBar from '../../../../components/loadingBar';
 import MouserOverWrapper from '../../../../components/MouseOverWrapper';
+import StatusTags from '../../../../components/StatusTags';
 import '../../../main.scss';
 import './ContainerHome.scss';
 import './Term.scss';
@@ -59,11 +60,16 @@ class ContainerHome extends Component {
   }
 
   componentWillUnmount() {
+    const { ContainerStore } = this.props;
     if (this.state.ws) {
       this.closeSidebar();
     } else if (this.conn) {
       this.closeTerm();
     }
+    ContainerStore.setEnvCard([]);
+    ContainerStore.setAllData([]);
+    ContainerStore.setAppId();
+    ContainerStore.setEnvId();
   }
 
   /**
@@ -73,6 +79,9 @@ class ContainerHome extends Component {
     const { ContainerStore } = this.props;
     const { filters, sort, paras } = ContainerStore.getInfo;
     const pagination = ContainerStore.getPageInfo;
+    const projectId = parseInt(AppState.currentMenuType.id, 10);
+    ContainerStore.loadActiveEnv(projectId);
+    ContainerStore.loadAppData(projectId);
     this.tableChange(pagination, filters, sort, paras);
   };
 
@@ -105,15 +114,15 @@ class ContainerHome extends Component {
       searchParam,
       param: paras.toString(),
     };
-    const envId = ContainerStore.getenvId;
+    const envId = ContainerStore.getEnvId;
     const appId = ContainerStore.getappId;
     ContainerStore.loadData(false, id, envId, appId, page, pagination.pageSize, sort, postData);
   };
 
   /**
-  * 切换container日志
-  * @param value
-  */
+   * 切换container日志
+   * @param value
+   */
   containerChange = (value) => {
     const { ws, logId } = this.state;
     if (logId !== value.split('+')[0]) {
@@ -123,9 +132,10 @@ class ContainerHome extends Component {
       this.setState({
         containerName: value.split('+')[1],
         logId: value.split('+')[0],
-      }, () => {
-        this.loadLog();
       });
+      setTimeout(() => {
+        this.loadLog();
+      }, 1000);
     }
   };
 
@@ -142,9 +152,10 @@ class ContainerHome extends Component {
       this.setState({
         containerName: value.split('+')[1],
         logId: value.split('+')[0],
-      }, () => {
-        this.onTerminalReady();
       });
+      setTimeout(() => {
+        this.onTerminalReady();
+      }, 1000);
     }
   };
 
@@ -153,6 +164,7 @@ class ContainerHome extends Component {
    */
   @action
   onTerminalReady() {
+    this.term.installKeyboard();
     this.io = this.term.io.push();
     this.onTerminalResponseReceived();
     this.io.showOverlay(`${this.term.screenSize.width}x${this.term.screenSize.height}`);
@@ -165,10 +177,14 @@ class ContainerHome extends Component {
   onTerminalResponseReceived() {
     const { namespace, envId, logId, podName, containerName } = this.state;
     const authToken = document.cookie.split('=')[1];
-    this.conn = new WebSocket(`POD_WEBSOCKET_URL/ws/exec?key=env:${namespace}.envId:${envId}.exec:${logId}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`);
-    this.conn.onopen = this.onConnectionOpen.bind(this);
-    this.conn.onmessage = this.onConnectionMessage.bind(this);
-    this.conn.onclose = this.onConnectionClose.bind(this);
+    try {
+      this.conn = new WebSocket(`POD_WEBSOCKET_URL/ws/exec?key=env:${namespace}.envId:${envId}.exec:${logId}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`);
+      this.conn.onopen = this.onConnectionOpen.bind(this);
+      this.conn.onmessage = this.onConnectionMessage.bind(this);
+      this.conn.onclose = this.onConnectionClose.bind(this);
+    } catch (e) {
+      // e
+    }
   }
 
   /**
@@ -235,7 +251,6 @@ class ContainerHome extends Component {
     } else {
       this.onTerminalReady();
     }
-    this.term.installKeyboard();
   }
 
   /**
@@ -266,45 +281,7 @@ class ContainerHome extends Component {
       key: 'status',
       width: 110,
       sorter: true,
-      render: (text, record) => {
-        let dom = null;
-        switch (record.status) {
-          case 'Completed':
-            dom = (<div>
-              <MouserOverWrapper text={record.status} width={0.073}>
-                <i className="icon icon-check_circle c7n-icon-success c7n-container-i" />
-                <span className="c7n-container-title">{record.status}</span>
-              </MouserOverWrapper>
-            </div>);
-            break;
-          case 'Running':
-            dom = (<div>
-              <i className="icon icon-check_circle c7n-icon-running c7n-container-i" />
-              <span className="c7n-container-title">{record.status}</span>
-            </div>);
-            break;
-          case 'Error':
-            dom = (<div>
-              <i className="icon icon-cancel c7n-icon-failed c7n-container-i" />
-              <span className="c7n-container-title">{record.status}</span>
-            </div>);
-            break;
-          case 'Pending':
-            dom = (<div>
-              <i className="icon icon-timelapse c7n-icon-pending c7n-container-i" />
-              <span className="c7n-container-title">{record.status}</span>
-            </div>);
-            break;
-          default:
-            dom = (<div>
-              <MouserOverWrapper text={record.status} width={0.073}>
-                <i className="icon icon-help c7n-icon-help c7n-container-i" />
-                <span className="c7n-container-title">{record.status}</span>
-              </MouserOverWrapper>
-            </div>);
-        }
-        return dom;
-      },
+      render: this.getActive,
     }, {
       title: <FormattedMessage id="container.name" />,
       key: 'name',
@@ -355,7 +332,7 @@ class ContainerHome extends Component {
       filterMultiple: false,
       filteredValue: filters.ip || [],
     }, {
-      width: 58,
+      width: 68,
       title: <FormattedMessage id="container.usable" />,
       dataIndex: 'ready',
       key: 'ready',
@@ -372,7 +349,7 @@ class ContainerHome extends Component {
         {record.ready ? <i className="icon icon-done" /> : <i className="icon icon-close" />}
       </div>),
     }, {
-      width: 93,
+      width: 103,
       title: <FormattedMessage id="container.createTime" />,
       dataIndex: 'creationDate',
       key: 'creationDate',
@@ -422,48 +399,130 @@ class ContainerHome extends Component {
   };
 
   /**
+   * 获取状态
+   * @param text
+   * @param record
+   * @returns {*}
+   */
+  getActive = (text, record) => {
+    const { status } = record;
+    let dom = null;
+    let el = null;
+    switch (status) {
+      case 'Completed':
+        dom = {
+          wrap: true,
+          color: '#00bf96',
+        };
+        break;
+      case 'Running':
+        dom = {
+          wrap: false,
+          color: '#00bf96',
+        };
+        break;
+      case 'Error':
+        dom = {
+          wrap: false,
+          color: '#f44336',
+        };
+        break;
+      case 'Pending':
+        dom = {
+          wrap: false,
+          color: '#ff9915',
+        };
+        break;
+      default:
+        dom = {
+          wrap: true,
+          color: 'rgba(0, 0, 0, 0.36)',
+        };
+    }
+    if (dom && dom.wrap) {
+      el = (<MouserOverWrapper text={status} width={0.073}>
+        <StatusTags color={dom.color} name={status} />
+      </MouserOverWrapper>);
+    } else {
+      el = (<StatusTags color={dom.color} name={status} />);
+    }
+    return el;
+  };
+
+  /**
    * 加载日志
    */
   @action
   loadLog = (followingOK) => {
+    const { namespace, envId, logId, podName, containerName, following } = this.state;
     const authToken = document.cookie.split('=')[1];
     const logs = [];
     let oldLogs = [];
-    const { namespace, envId, logId, podName, containerName } = this.state;
-    const ws = new WebSocket(`POD_WEBSOCKET_URL/ws/log?key=env:${namespace}.envId:${envId}.log:${logId}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`);
-    const editor = this.editorLog.getCodeMirror();
-    this.setState({ ws, following: true });
-    if (!followingOK) {
-      editor.setValue('Loading...');
-    }
-    ws.onmessage = (e) => {
-      if (e.data.size) {
-        const reader = new FileReader();
-        reader.readAsText(e.data, 'utf-8');
-        reader.onload = () => {
-          if (reader.result !== '') {
-            logs.push(reader.result);
+    let editor = null;
+    if (this.editorLog) {
+      editor = this.editorLog.getCodeMirror();
+      try {
+        const ws = new WebSocket(`POD_WEBSOCKET_URL/ws/log?key=env:${namespace}.envId:${envId}.log:${logId}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`);
+        this.setState({ ws, following: true });
+        if (!followingOK) {
+          editor.setValue('Loading...');
+        }
+        ws.onopen = () => {
+          editor.setValue('Loading...');
+        };
+        ws.onerror = (e) => {
+          if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+          }
+          logs.push('连接出错，请重新打开');
+          editor.setValue(_.join(logs, ''));
+          editor.execCommand('goDocEnd');
+        };
+        ws.onclose = (e) => {
+          if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+          }
+          if (following) {
+            logs.push('连接已断开');
+            editor.setValue(_.join(logs, ''));
+          }
+          editor.execCommand('goDocEnd');
+        };
+        ws.onmessage = (e) => {
+          if (e.data.size) {
+            const reader = new FileReader();
+            reader.readAsText(e.data, 'utf-8');
+            reader.onload = () => {
+              if (reader.result !== '') {
+                logs.push(reader.result);
+              }
+            };
+          }
+          if (!logs.length) {
+            const logString = _.join(logs, '');
+            editor.setValue(logString);
           }
         };
+
+        this.timer = setInterval(() => {
+          if (logs.length > 0) {
+            if (!_.isEqual(logs, oldLogs)) {
+              const logString = _.join(logs, '');
+              editor.setValue(logString);
+              editor.execCommand('goDocEnd');
+              // 如果没有返回数据，则不进行重新赋值给编辑器
+              oldLogs = _.cloneDeep(logs);
+            }
+          } else if (!followingOK) {
+            editor.setValue('Loading...');
+          }
+        });
+      } catch (e) {
+        editor.setValue('连接失败');
       }
-    };
-    if (logs.length > 0) {
-      const logString = _.join(logs, '');
-      editor.setValue(logString);
     }
-    this.timer = setInterval(() => {
-      if (logs.length > 0) {
-        if (!_.isEqual(logs, oldLogs)) {
-          const logString = _.join(logs, '');
-          editor.setValue(logString);
-          editor.execCommand('goDocEnd');
-          // 如果没有返回数据，则不进行重新赋值给编辑器
-          oldLogs = _.cloneDeep(logs);
-        }
-      } else if (!followingOK) {
-        editor.setValue('Loading...');
-      }
-    }, 1000);
   };
 
   /**
@@ -483,7 +542,7 @@ class ContainerHome extends Component {
     const projectId = AppState.currentMenuType.id;
     ContainerStore.loadPodParam(projectId, record.id)
       .then((data) => {
-        if (data.length) {
+        if (data && data.length) {
           this.setState({
             envId: record.envId,
             namespace: record.namespace,
@@ -502,13 +561,13 @@ class ContainerHome extends Component {
    * 关闭日志
    */
   closeSidebar = () => {
+    const editor = this.editorLog.getCodeMirror();
+    const { ws } = this.state;
     clearInterval(this.timer);
     this.timer = null;
-    const { ws } = this.state;
     if (ws) {
       ws.close();
     }
-    const editor = this.editorLog.getCodeMirror();
     this.setState({
       showSide: false,
       containerArr: [],
@@ -524,6 +583,10 @@ class ContainerHome extends Component {
     const { ws } = this.state;
     if (ws) {
       ws.close();
+    }
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
     }
     this.setState({
       following: false,
@@ -558,7 +621,7 @@ class ContainerHome extends Component {
    */
   handleEnvSelect = (value) => {
     const { ContainerStore } = this.props;
-    ContainerStore.setenvId(value);
+    ContainerStore.setEnvId(value);
     ContainerStore.setInfo({ filters: {}, sort: { columnKey: 'id', order: 'descend' }, paras: [] });
     const appId = ContainerStore.getappId;
     const projectId = parseInt(AppState.currentMenuType.id, 10);
@@ -570,7 +633,7 @@ class ContainerHome extends Component {
         .then((data) => {
           const appData = ContainerStore.getAppData;
           if (!_.find(appData, app => app.id === appId)) {
-            ContainerStore.setappId(null);
+            ContainerStore.setAppId(null);
             ContainerStore.loadData(false, projectId, value, null);
           } else {
             ContainerStore.loadData(false, projectId, value, appId);
@@ -585,9 +648,9 @@ class ContainerHome extends Component {
    */
   handleAppSelect = (value) => {
     const { ContainerStore } = this.props;
-    ContainerStore.setappId(value);
+    ContainerStore.setAppId(value);
     ContainerStore.setInfo({ filters: {}, sort: { columnKey: 'id', order: 'descend' }, paras: [] });
-    const envId = ContainerStore.getenvId;
+    const envId = ContainerStore.getEnvId;
     const projectId = parseInt(AppState.currentMenuType.id, 10);
     ContainerStore.loadData(false, projectId, envId, value);
   };
@@ -730,7 +793,7 @@ class ContainerHome extends Component {
     this.setState({ fullscreen: true });
     document.documentElement.style.overflow = 'hidden';
     cm.refresh();
-    window.addEventListener('keypress', (e) => {
+    window.addEventListener('keydown', (e) => {
       this.setNormal(e.which);
     });
   };
@@ -748,7 +811,7 @@ class ContainerHome extends Component {
     wrap.style.width = info.width; wrap.style.height = info.height;
     window.scrollTo(info.scrollLeft, info.scrollTop);
     cm.refresh();
-    window.removeEventListener('keypress', (e) => {
+    window.removeEventListener('keydown', (e) => {
       this.setNormal(e.which);
     });
   };
@@ -756,12 +819,12 @@ class ContainerHome extends Component {
   render() {
     const { ContainerStore, intl } = this.props;
     const { showSide, following, fullscreen, containerName, podName, containerArr, showDebug, selectProPage, selectPubPage, appProDom, appPubDom, appProLength, appPubLength } = this.state;
-    const envNames = ContainerStore.getEnvcard;
+    const envNames = ContainerStore.getEnvCard;
     const appId = ContainerStore.getappId;
     const { paras } = ContainerStore.getInfo;
     const proPageSize = (10 * selectProPage) + 3;
     const pubPageSize = (10 * selectPubPage) + 3;
-    const serviceData = ContainerStore.getAllData.slice();
+    const serviceData = ContainerStore.getAllData && ContainerStore.getAllData.slice();
     const projectName = AppState.currentMenuType.name;
     const contentDom = ContainerStore.isRefresh ? <LoadingBar display /> : (<React.Fragment>
       <Header title={<FormattedMessage id="container.header.title" />}>
@@ -824,7 +887,7 @@ class ContainerHome extends Component {
           dataSource={serviceData}
           rowKey={record => record.id}
           onChange={this.tableChange}
-          filters={paras}
+          filters={paras.slice()}
         />
       </Content>
     </React.Fragment>);

@@ -1,27 +1,55 @@
 import React, { Component, Fragment } from 'react';
-import { Avatar, Pagination } from 'choerodon-ui';
+import { FormattedMessage } from 'react-intl';
+import { Avatar, Pagination, Spin, Tooltip } from 'choerodon-ui';
 import TimePopover from '../../../../components/timePopover';
 import './Submission.scss';
 
 export default function CommitHistory(props) {
-  const { dataSource } = props;
-  const list = dataSource.map((item) => {
-    const { commitUrl, commitContent, commitDate, commitUserName, commitsId, commitUserUrl } = item;
-    return (
-      <div className="c7n-report-history-item" key={commitsId}>
-        <Avatar size="small" src={commitUserUrl} />
-        <div className="c7n-report-history-info">
-          <div className="c7n-report-history-content">
-            <a href={commitUrl} rel="nofollow me noopener noreferrer" target="_blank">{commitContent}</a>
+  const { dataSource: { content, totalElements, number }, onPageChange, loading } = props;
+  let list = [];
+  if (content && content.length) {
+    list = content.map((item) => {
+      const { userName, url, commitContent, commitDate, imgUrl, appName, commitSHA } = item;
+      return (
+        <div className="c7n-report-history-item" key={commitSHA}>
+          {imgUrl
+            ? <Avatar size="small" src={imgUrl} />
+            : <Avatar size="small">{userName ? userName.toString().slice(0, 1).toUpperCase() : '?'}</Avatar>}
+          <div className="c7n-report-history-info">
+            <div className="c7n-report-history-content">
+              <a
+                className="c7n-report-history-link"
+                href={url}
+                rel="nofollow me noopener noreferrer"
+                target="_blank"
+              >{commitContent}</a>
+            </div>
+            <div className="c7n-report-history-date">
+              <span className="c7n-report-history-name">{userName || (<Tooltip placement="top" title={<FormattedMessage id="report.unknown.user" />}>Unknown</Tooltip>)}</span><span>（{appName}）</span>
+              <FormattedMessage id="report.commit.by" /> <TimePopover style={{ display: 'inline-block' }} content={commitDate} />
+            </div>
           </div>
-          <div className="c7n-report-history-date">{commitUserName}<TimePopover style={{ display: 'inline-block' }} content={commitDate} /></div>
         </div>
-      </div>
-    );
-  });
+      );
+    });
+  } else {
+    list = [<span className="c7n-report-history-list-none"><FormattedMessage key="no.commits" id="report.commit.none" /></span>];
+  }
   return (<Fragment>
-    <h3 className="c7n-report-history-title">提交历史</h3>
-    <div className="c7n-report-history-list">{list}</div>
-    <Pagination total={50} showSizeChanger={false} />
+    <h3 className="c7n-report-history-title"><FormattedMessage id="report.commit.history" /></h3>
+    <Spin spinning={loading}>
+      <div className="c7n-report-history-list">{list}</div>
+    </Spin>
+    <div className="c7n-report-history-page">
+      {totalElements ? (<Pagination
+        tiny
+        size="small"
+        total={totalElements || 0}
+        current={number + 1 || 1}
+        pageSize={5}
+        showSizeChanger={false}
+        onChange={onPageChange}
+      />) : null}
+    </div>
   </Fragment>);
 }

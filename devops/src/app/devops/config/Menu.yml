@@ -46,12 +46,6 @@
           - 'devops-service.application-market.importApps'
           - 'devops-service.application-market.deleteZip'
           - 'devops-service.application-market.queryAppVersionReadme'
-    - "reports":
-        icon: application_model
-        Routes: /devops/reports
-        sort: 6
-        permission:
-        - 'devops-service.application.pageByOptions'
 "development-pipeline":
   icon: wrench
   sort: 2
@@ -77,7 +71,6 @@
         Routes: /devops/tag
         sort: 3
         permission:
-          - 'devops-service.application.listByActive'
           - 'devops-service.devops-git.getTagByPage'
           - 'devops-service.devops-git.listByAppId'
           - 'devops-service.devops-git.createTag'
@@ -88,7 +81,6 @@
         Routes: /devops/merge-request
         sort: 4
         permission:
-          - 'devops-service.application.listByActive'
           - 'devops-service.devops-git.getMergeRequestList'
           - 'devops-service.devops-git.getUr'
     - "continuous-integration":
@@ -97,7 +89,6 @@
         sort: 5
         permission:
           - 'devops-service.project-pipeline.list'
-          - 'devops-service.application.listByActive'
           - 'devops-service.gitlab-commit.list'
           - 'devops-service.project-pipeline.cancel'
           - 'devops-service.project-pipeline.retry'
@@ -175,16 +166,23 @@
           - 'devops-service.devops-env-group.update'
           - 'devops-service.devops-env-group.checkName'
           - 'devops-service.devops-env-group.delete'
+    - "deployment-overview":
+        icon: Operation-monitoring
+        Routes: /devops/deploy-overview
+        sort: 3
+        permission:
+          - 'devops-service.application.listAll'
+          - 'devops-service.application-instance.deploy'
     - "application-deployment":
         icon: jsfiddle
         Routes: /devops/deployment-app
-        sort: 3
+        sort: 4
         permission:
           - 'devops-service.application-instance.deploy'
     - "instance":
         icon: instance_outline
         Routes: /devops/instance
-        sort: 4
+        sort: 5
         permission:
           - 'devops-service.application-instance.listByAppId'
           - 'devops-service.application-instance.listByAppInstanceId'
@@ -204,7 +202,7 @@
     - "service":
         icon: router
         Routes: /devops/service
-        sort: 5
+        sort: 6
         permission:
           - 'devops-service.devops-service.create'
           - 'devops-service.devops-service.checkName'
@@ -215,7 +213,7 @@
     - "ingress":
         icon: language
         Routes: /devops/ingress
-        sort: 6
+        sort: 7
         permission:
           - 'devops-service.devops-ingress.pageByOptions'
           - 'devops-service.devops-ingress.queryDomainId'
@@ -224,7 +222,7 @@
     - "container":
         icon: kubernetes
         Routes: /devops/container
-        sort: 7
+        sort: 8
         permission:
           - 'devops-service.devops-env-pod-container.queryLogByPod'
           - 'devops-service.devops-env-pod-container.handleShellByPod'
@@ -232,13 +230,35 @@
     - "certificate":
         icon: class
         Routes: /devops/certificate
-        sort: 8
+        sort: 9
         permission:
           - 'devops-service.devops-environment.listByProjectIdAndActive'
           - 'devops-service.certification.listByOptions'
           - 'devops-service.certification.create'
           - 'devops-service.certification.delete'
+"platform_reports":
+  icon: bar_chart
+  sort: 99
+  project:
+    - "reports":
+        icon: devops_chart
+        Routes: /devops/reports
+        sort: 2
+        permission:
+          - 'devops-service.application.listByActive'
+          - 'devops-service.devops-gitlab-commit.getCommits'
+          - 'devops-service.devops-gitlab-commit.getRecordCommits'
+          - 'devops-service.application-instance.listDeployTime'
+          - 'devops-service.application-instance.pageDeployTimeDetail'
+          - 'devops-service.devops-environment.listByProjectIdAndActive'
+          - 'devops-service.devops-gitlab-pipeline.listPipelineTime'
+          - 'devops-service.devops-gitlab-pipeline.pagePipeline'
+          - 'devops-service.application-instance.listDeployFrequency'
+          - 'devops-service.application-instance.pageDeployFrequencyDetail'
+          - 'devops-service.devops-gitlab-pipeline.listPipelineFrequency'
+          - 'devops-service.devops-gitlab-pipeline.pagePipeline'
 
+# 要删除的菜单
 "application-market":
   icon: apps
   sort: 30

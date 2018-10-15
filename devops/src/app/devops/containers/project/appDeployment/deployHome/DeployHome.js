@@ -8,7 +8,6 @@ import _ from 'lodash';
 import SingleApp from '../singleApp';
 import SingleEnv from '../singleEnv';
 import AppInstance from '../appInstance';
-import MutiDeployment from '../mutiDeployment';
 import './DeployHome.scss';
 import '../AppDeploy.scss';
 import '../../../main.scss';
@@ -36,6 +35,17 @@ class DeployHome extends Component {
     } else {
       this.loadIstAlls();
     }
+  }
+
+  componentWillUnmount() {
+    const { AppDeploymentStore } = this.props;
+    AppDeploymentStore.setTabActive('instance');
+    AppDeploymentStore.setAppNameByEnv([]);
+    AppDeploymentStore.setAppNameByEnv([]);
+    AppDeploymentStore.setEnvId();
+    AppDeploymentStore.setAppId();
+    AppDeploymentStore.setVerId([]);
+    AppDeploymentStore.setAppVer([]);
   }
 
   /**
@@ -82,15 +92,6 @@ class DeployHome extends Component {
     const { AppDeploymentStore } = this.props;
     const projectId = AppState.currentMenuType.id;
     AppDeploymentStore.loadAppNames(projectId);
-  };
-
-  /**
-   * 查询多应用部署数据
-   */
-  loadMuti = () => {
-    const { AppDeploymentStore } = this.props;
-    const projectId = AppState.currentMenuType.id;
-    AppDeploymentStore.loadMutiData(projectId);
   };
 
   /**
@@ -162,9 +163,6 @@ class DeployHome extends Component {
       if (appNames.length) {
         this.loadAppVer(appNames[0].id, Info);
       }
-    } else if (tabName === 'multiApp') {
-      this.loadEnvCards();
-      this.loadMuti();
     } else if (tabName === 'instance') {
       this.loadIstAlls(0, Info);
     } else if (tabName === 'singleEnv') {
@@ -172,7 +170,7 @@ class DeployHome extends Component {
       AppDeploymentStore.setAppId(false);
       AppDeploymentStore.setVerId(false);
       if (envNames.length) {
-        this.loadSingleEnv(AppDeploymentStore.envId || envNames[0].id, Info);
+        this.loadSingleEnv(AppDeploymentStore.getEnvId || envNames[0].id, Info);
       }
     }
   };
@@ -196,7 +194,6 @@ class DeployHome extends Component {
         className="c7n-region"
         service={[
           'devops-service.application-instance.pageByOptions',
-          'devops-service.application.listAll',
           'devops-service.application.pageByEnvIdAndStatus',
           'devops-service.devops-environment.listByProjectIdAndActive',
           'devops-service.application-version.queryByAppId',
@@ -243,16 +240,8 @@ class DeployHome extends Component {
               >
                 <FormattedMessage id="ist.singleApp" />
               </Button>
-              <Button
-                funcType="flat"
-                className={tabActive === 'multiApp' ? 'c7n-tab-active' : ''}
-                onClick={this.changeTabs.bind(this, 'multiApp', {})}
-              >
-                <FormattedMessage id="ist.multiApp" />
-              </Button>
             </ButtonGroup>
           </div>
-          {tabActive === 'multiApp' && <MutiDeployment key="multiApp" store={AppDeploymentStore} />}
           {tabActive === 'singleApp' && <SingleApp key="singleApp" store={AppDeploymentStore} />}
           {tabActive === 'singleEnv' && <SingleEnv key="singleEnv" store={AppDeploymentStore} />}
           {tabActive === 'instance' && <AppInstance key="instance" store={AppDeploymentStore} />}
