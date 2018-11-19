@@ -692,8 +692,8 @@ class ContainerHome extends Component {
     const appProDom = [];
     let pubLength = 0;
     let proLength = 0;
-    const proPageSize = (10 * pageArr[0]) + 3;
-    const pubPageSize = (10 * pageArr[1]) + 3;
+    const proPageSize = (30 * pageArr[0]) + 3;
+    const pubPageSize = (30 * pageArr[1]) + 3;
     if (filterValue) {
       allItems = allItems.filter(item => item.name.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0);
     }
@@ -822,8 +822,8 @@ class ContainerHome extends Component {
     const envNames = ContainerStore.getEnvCard;
     const appId = ContainerStore.getappId;
     const { paras } = ContainerStore.getInfo;
-    const proPageSize = (10 * selectProPage) + 3;
-    const pubPageSize = (10 * selectPubPage) + 3;
+    const proPageSize = (30 * selectProPage) + 3;
+    const pubPageSize = (30 * selectPubPage) + 3;
     const serviceData = ContainerStore.getAllData && ContainerStore.getAllData.slice();
     const projectName = AppState.currentMenuType.name;
     const contentDom = ContainerStore.isRefresh ? <LoadingBar display /> : (<React.Fragment>

@@ -26,7 +26,7 @@ class SingleApp extends Component {
     this.state = {
       visibleUp: false,
       page: 0,
-      pageSize: height <= 900 ? 10 : 15,
+      pageSize: height <= 900 ? 30 : 30,
       openRemove: false,
       loading: false,
       selectPubPage: 0,
@@ -528,8 +528,8 @@ class SingleApp extends Component {
     const appProDom = [];
     let pubLength = 0;
     let proLength = 0;
-    const proPageSize = (10 * pageArr[0]) + 3;
-    const pubPageSize = (10 * pageArr[1]) + 3;
+    const proPageSize = (30 * pageArr[0]) + 3;
+    const pubPageSize = (30 * pageArr[1]) + 3;
     if (filterValue) {
       allItems = allItems.filter(item => item.name.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0);
     }
@@ -743,8 +743,8 @@ class SingleApp extends Component {
       </div>
     );
 
-    const proPageSize = (10 * this.state.selectProPage) + 3;
-    const pubPageSize = (10 * this.state.selectPubPage) + 3;
+    const proPageSize = (30 * this.state.selectProPage) + 3;
+    const pubPageSize = (30 * this.state.selectPubPage) + 3;
 
     return (
       <div className="c7n-region">

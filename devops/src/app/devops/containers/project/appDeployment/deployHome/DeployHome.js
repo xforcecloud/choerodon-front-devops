@@ -103,7 +103,7 @@ class DeployHome extends Component {
     const { AppDeploymentStore } = this.props;
     const menu = JSON.parse(sessionStorage.selectData);
     const projectId = menu.id;
-    const appPageSize = Math.floor((window.innerWidth - 350) / 200) * 3;
+    const appPageSize = 30;
     Info.envId = envId;
     AppDeploymentStore.setAppPageSize(appPageSize);
     AppDeploymentStore.loadInstanceAll(projectId, Info);

@@ -8,7 +8,7 @@ const { expect } = chai;
 chai.use(chaiHttp);
 
 class AppMarket {
-  getMarketList({ project, page = 0, size = 10, type = 'id', sort = 'asc', data = { searchParam: {}, param: '' } }) {
+  getMarketList({ project, page = 0, size = 30, type = 'id', sort = 'asc', data = { searchParam: {}, param: '' } }) {
     return chai.request(oauth.gateway)
       .post(`/devops/v1/projects/${project}/apps_market/list_all?page=${page}&size=${size}&sort=${type},${sort}`)
       .set('Authorization', global.user_token.token)

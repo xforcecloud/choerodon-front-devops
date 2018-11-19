@@ -249,7 +249,7 @@ class EnvPipelineStore {
   //   }
   // });
 
-  loadInstance = (projectId, page, size = 10, sorter = { id: 'asc' }, envId, datas = {
+  loadInstance = (projectId, page, size = 30, sorter = { id: 'asc' }, envId, datas = {
     searchParam: {},
     param: '',
   }) => axios.post(`devops/v1/projects/${projectId}/app_instances/list_by_options?envId=${envId}&page=${page}&size=${size}`, JSON.stringify(datas)).then((data) => {

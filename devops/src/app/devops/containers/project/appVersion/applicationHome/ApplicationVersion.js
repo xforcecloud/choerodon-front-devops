@@ -20,7 +20,7 @@ class ApplicationVersion extends Component {
     const menu = AppState.currentMenuType;
     this.state = {
       page: 0,
-      pageSize: HEIGHT <= 900 ? 10 : 15,
+      pageSize: HEIGHT <= 900 ? 30 : 30,
       param: [],
       filters: {},
       postData: { searchParam: {}, param: '' },

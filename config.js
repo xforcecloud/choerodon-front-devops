@@ -32,10 +32,10 @@ const config = {
   // server: 'http://api.alpha.saas.hand-china.com',
   clientid: 'localhost',
   fileServer: 'http://minio.staging.saas.hand-china.com',
-  titlename: 'Choerodon', // html title
+  titlename: 'XforceCloud', // html title
   favicon: 'favicon.ico', // page favicon
   theme: { // less/sass modify vars
-    'primary-color': '#3F51B5',
+    'primary-color': '#00896C',
     'icon-font-size-base': '16px',
   },
   dashboard: {

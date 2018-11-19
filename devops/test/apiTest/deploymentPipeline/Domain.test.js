@@ -7,7 +7,7 @@ const projectId = utils.oauth.project;
 const envId = utils.oauth.env;
 const name = `ym-${uuidv1().substring(0, 5)}`;
 const path = `/${uuidv1().substring(0, 3)}`;
-const pageInfo = { page: 0, size: 15, sort: { field: 'id', order: 'desc' } };
+const pageInfo = { page: 0, size: 30, sort: { field: 'id', order: 'desc' } };
 const query = { searchParam: {}, param: '' };
 const data = { domain: `${uuidv1().substring(0, 5)}.hand-china.com`, name, envId, pathList: [{ path, serviceId: 185 }] };
 

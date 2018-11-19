@@ -15,7 +15,7 @@ class AppDeploymentStore {
 
   @observable envcard = [];
 
-  @observable size = 10;
+  @observable size = 30;
 
   @observable show = false;
 
@@ -32,7 +32,7 @@ class AppDeploymentStore {
   @observable value = null;
 
   @observable pageInfo = {
-    current: 1, total: 0, pageSize: height <= 900 ? 10 : 15,
+    current: 1, total: 0, pageSize: height <= 900 ? 30 : 30,
   };
 
   @observable appPageInfo = {};

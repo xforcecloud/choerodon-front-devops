@@ -1,6 +1,10 @@
 /* stylelint-disable no-descending-specificity */
 $WIDTH512: 512px;
 
+.c7n-external-link-display {
+  display: none;
+}
+
 .clearfix {
   &::after {
     visibility: hidden;

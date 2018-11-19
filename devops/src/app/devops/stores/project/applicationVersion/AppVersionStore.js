@@ -22,7 +22,7 @@ class AppVersionStore {
   @observable pageInfo = {
     current: 0,
     total: 0,
-    pageSize: 10,
+    pageSize: 30,
   };
 
   @action setAppDate(data) {

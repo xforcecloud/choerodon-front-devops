@@ -5,7 +5,7 @@ const utils = require('../../Utils');
 
 
 const organizationId = utils.oauth.organization;
-const pageInfo = { page: 0, size: 15, sort: { field: 'id', order: 'desc' } };
+const pageInfo = { page: 0, size: 30, sort: { field: 'id', order: 'desc' } };
 const query = { searchParam: {}, param: '' };
 const code = `mk-test-code-${uuidv1().substring(0, 5)}`;
 const name = `mk-test-name-${uuidv1().substring(0, 5)}`;

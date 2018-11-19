@@ -516,7 +516,7 @@ class DeploymentAppHome extends Component {
               filter
             >
               {instances.map(v => (<Option value={v.id} key={v.id} disabled={this.state.changeYaml ? false : v.appVersion === this.state.versionDto.version}>
-                {v.code}
+                {v.code}-{v.appVersion}
               </Option>))}
             </Select>}
           </div>

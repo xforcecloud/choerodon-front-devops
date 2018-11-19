@@ -9,7 +9,7 @@ const { expect } = chai;
 chai.use(chaiHttp);
 
 class AppPublish {
-  getUnPublishList({ project, page = 0, size = 10, type = 'id', sort = 'asc', data = { searchParam: {}, param: '' } }) {
+  getUnPublishList({ project, page = 0, size = 30, type = 'id', sort = 'asc', data = { searchParam: {}, param: '' } }) {
     return chai.request(oauth.gateway)
       .post(`/devops/v1/projects/${project}/apps/list_unpublish?page=${page}&size=${size}&sort=${type},${sort}`)
       .set('Authorization', global.user_token.token)
@@ -47,7 +47,7 @@ class AppPublish {
       });
   }
 
-  getApplicationVersions({ project, page = 0, size = 10, isPublish = true, sort = 'asc', id = 87, data = { searchParam: {}, param: '' } }) {
+  getApplicationVersions({ project, page = 0, size = 30, isPublish = true, sort = 'asc', id = 87, data = { searchParam: {}, param: '' } }) {
     return chai.request(oauth.gateway)
       .post(`/devops/v1/projects/${project}/apps_market/${id}/versions?is_publish=${isPublish}&page=${page}&size=${size}&sort=updatedDate,${sort}`)
       .set('Authorization', global.user_token.token)

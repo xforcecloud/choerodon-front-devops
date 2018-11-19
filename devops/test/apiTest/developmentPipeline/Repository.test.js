@@ -4,7 +4,7 @@ const utils = require('../../Utils');
 
 
 const projectId = utils.oauth.project;
-const pageInfo = { page: 0, size: 15, sort: { field: 'id', order: 'desc' } };
+const pageInfo = { page: 0, size: 30, sort: { field: 'id', order: 'desc' } };
 const query = { searchParam: {}, param: '' };
 
 describe('Repository Api', function () {

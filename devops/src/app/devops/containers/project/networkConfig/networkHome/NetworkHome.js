@@ -238,6 +238,7 @@ class NetworkHome extends Component {
     const columns = [{
       title: <FormattedMessage id="network.column.name" />,
       key: 'name',
+      width: '25%',
       sorter: true,
       sortOrder: columnKey === 'name' && order,
       filters: [],

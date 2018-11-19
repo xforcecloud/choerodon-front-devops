@@ -18,7 +18,7 @@ class AppTagStore {
   @observable pageInfo = {
     current: 0,
     total: 0,
-    pageSize: 10,
+    pageSize: 30,
   };
 
   @observable branchData = [];
@@ -79,7 +79,7 @@ class AppTagStore {
     return this.branchData;
   }
 
-  queryTagData = (projectId, page = 0, sizes = 10, postData = { searchParam: {}, param: '' }) => {
+  queryTagData = (projectId, page = 0, sizes = 30, postData = { searchParam: {}, param: '' }) => {
     if (this.selectedApp) {
       this.setLoading(true);
       axios.post(`/devops/v1/projects/${projectId}/apps/${this.selectedApp}/git/tags_list_options?page=${page}&size=${sizes}`, JSON.stringify(postData))

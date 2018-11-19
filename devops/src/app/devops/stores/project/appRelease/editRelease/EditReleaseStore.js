@@ -23,11 +23,11 @@ class EditReleaseStore {
   @observable show = false;
 
   @observable pageInfo = {
-    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15,
+    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 30 : 30,
   };
 
   @observable versionPage = {
-    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15,
+    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 30 : 30,
   };
 
   @observable versionData = [];
@@ -35,7 +35,7 @@ class EditReleaseStore {
   @observable type = [];
 
   @observable selectPageInfo = {
-    current: 1, pageSize: 10, total: 0,
+    current: 1, pageSize: 30, total: 0,
   }
 
   @action setSelectPageInfo(data) {
@@ -73,7 +73,7 @@ class EditReleaseStore {
 
   @action setSelectData(data) {
     this.selectData = data;
-    this.setSelectPageInfo({ pageSize: 10, total: data.length, current: 0 });
+    this.setSelectPageInfo({ pageSize: 30, total: data.length, current: 0 });
   }
 
   @computed get getSelectData() {

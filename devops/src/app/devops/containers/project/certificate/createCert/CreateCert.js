@@ -114,7 +114,7 @@ class CreateCert extends Component {
       if (res && res.failed) {
         Choerodon.prompt(res.message);
       } else {
-        const initSize = HEIGHT <= 900 ? 10 : 15;
+        const initSize = HEIGHT <= 900 ? 30 : 30;
         const filter = {
           page: 0,
           pageSize: initSize,

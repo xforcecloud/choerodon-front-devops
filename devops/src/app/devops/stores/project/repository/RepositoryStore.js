@@ -16,7 +16,7 @@ class RepositoryStore {
 
   @observable pageInfo = {
     current: 1,
-    pageSize: HEIGHT <= 900 ? 10 : 15,
+    pageSize: HEIGHT <= 900 ? 30 : 30,
     total: 0,
   };
 

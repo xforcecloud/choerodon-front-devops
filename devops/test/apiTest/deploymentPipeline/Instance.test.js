@@ -4,7 +4,7 @@ const uuidv1 = require('uuid/v1');
 const utils = require('../../Utils');
 
 const { project, env } = utils.oauth;
-const pageInfo = { page: 0, size: 15, sort: { field: 'id', order: 'desc' } };
+const pageInfo = { page: 0, size: 30, sort: { field: 'id', order: 'desc' } };
 const query = { searchParam: {}, param: '' };
 const delAppInstanceId = 175;
 const appInstanceId = 176;
