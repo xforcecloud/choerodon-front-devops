@@ -116,7 +116,7 @@ class AppTagStore {
             // 没有应用时不请求tag
             this.setSelectApp(result[0].id);
             this.setDefaultAppName(result[0].name);
-            this.queryTagData(projectId, 0, 10);
+            this.queryTagData(projectId, 0, 30);
           }
         }
       }).catch(err => Choerodon.handleResponseError(err));
