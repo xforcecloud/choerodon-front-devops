@@ -50,7 +50,7 @@ class NetworkOverview extends Component {
   handleDelete = () => {
     const { store, envId } = this.props;
     const { id: projectId } = AppState.currentMenuType;
-    const lastDatas = store.getPageInfo.total % 10;
+    const lastDatas = store.getPageInfo.total % 30;
     const page = store.getPageInfo.current;
     const totalPage = Math.ceil(store.getPageInfo.total / store.getPageInfo.pageSize);
     this.submitting = true;

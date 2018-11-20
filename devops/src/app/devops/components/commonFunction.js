@@ -33,7 +33,7 @@ export const commonComponent =(storeName) => {
       store.setInfo({ filters: {}, sort: { columnKey: 'id', order: 'descend' }, paras: [] });
       const { id } = this.state;
       const { id: projectId } = AppState.currentMenuType;
-      const lastDatas = store.getPageInfo.total % 10;
+      const lastDatas = store.getPageInfo.total % 30;
       const page = store.getPageInfo.current;
       const totalPage = Math.ceil(store.getPageInfo.total / store.getPageInfo.pageSize);
       this.setState({ submitting: true });
