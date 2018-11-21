@@ -355,7 +355,9 @@ class AddAppRelease extends Component {
           <div className="section-text-margin">
             <RadioGroup onChange={this.handleChangeMode} value={this.state.mode} label={<span className="deploy-text">{this.props.intl.formatMessage({ id: 'release.add.step.three.title' })}</span>}>
               <Radio style={radioStyle} value="organization">{this.props.intl.formatMessage({ id: 'organization' })}</Radio>
+              <Permission service={['devops-service.application-market.public']} >
               <Radio style={radioStyle} value="public">{this.props.intl.formatMessage({ id: 'public' })}</Radio>
+              </Permission>
             </RadioGroup>
           </div>
           <p style={{ marginLeft: 30, marginTop: 24 }}>
