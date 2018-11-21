@@ -8,7 +8,7 @@ import { Button, Tooltip, Icon } from 'choerodon-ui';
 import { Permission } from 'choerodon-front-boot';
 import './EnvPipeLineHome.scss';
 import EnvPipelineStore from '../../../../stores/project/envPipeline';
-
+import { Tag } from 'choerodon-ui';
 const ItemTypes = {
   ENVCARD: 'envCard',
 };
@@ -67,13 +67,23 @@ class EnvCard extends Component {
       'c7n-env-state': cardData.connect,
       'c7n-env-state-pending': !cardData.connect,
     });
+    const aa = function(envCode){
+      let rs = 'N01';
+      if (/([npf]\d{2})(\d+)-(.+)/gi.test(envCode)) {
+        rs = RegExp.$1.toLocaleUpperCase();
+      }
+      return rs;
+    };
     return connectDragSource(
       <div className={envCardStyle}>
         <Tooltip placement="bottom" title={cardData.update ? <FormattedMessage id="envPl.status.update" /> : null}>
           <div className="c7n-env-card-header">
             {cardData
               ? (<React.Fragment>
-                <span>{cardData.name}</span>
+                <div>
+                  <span><Tag>{aa(cardData.code)}</Tag></span><span>{cardData.name}</span>
+                </div>
+
                 <div className="c7n-env-card-action">
                   {cardData.connect ? null : <Permission
                     service={['devops-service.devops-environment.queryShell']}

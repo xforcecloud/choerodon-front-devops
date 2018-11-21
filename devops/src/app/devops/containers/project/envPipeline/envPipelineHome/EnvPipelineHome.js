@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Button, Input, Form, Tooltip, Modal, Popover, Select } from 'choerodon-ui';
+import { Button, Input, Form, Tooltip, Modal, Popover, Select, Tag } from 'choerodon-ui';
 import { Content, Header, Page, Permission, stores } from 'choerodon-front-boot';
 import _ from 'lodash';
 import classNames from 'classnames';
@@ -22,7 +22,7 @@ let scrollLeft = 0;
 const FormItem = Form.Item;
 const { TextArea } = Input;
 const { Sidebar } = Modal;
-const { Option } = Select;
+const { Option, OptGroup } = Select;
 const { AppState } = stores;
 
 const formItemLayout = {
@@ -318,7 +318,7 @@ class EnvPipelineHome extends Component {
     } else if (type === 'editGroup') {
       return intl.formatMessage({ id: 'envPl.group.edit' });
     } else {
-      return intl.formatMessage({ id: 'envPl.token.copy.tooltip' });
+      return intl.formatMessage({ id: 'envPl.token.application.status' });
     }
   };
 
@@ -330,7 +330,7 @@ class EnvPipelineHome extends Component {
   okText = (type) => {
     const { intl } = this.props;
     if (type === 'create' || type === 'createGroup') {
-      return intl.formatMessage({ id: 'create' });
+      return intl.formatMessage({ id: 'submitApplications' });
     } else if (type === 'edit' || type === 'editGroup') {
       return intl.formatMessage({ id: 'save' });
     } else {
@@ -394,6 +394,14 @@ class EnvPipelineHome extends Component {
     } = EnvPipelineStore;
 
     const showBtns = (sideType === 'create' || sideType === 'edit');
+    const bb = function(envCode){
+      let rs = 'N01';
+      if (/([npf]\d{2})(\d+)-(.+)/gi.test(envCode)) {
+        rs = RegExp.$1.toLocaleUpperCase();
+      }
+      return rs;
+    };
+
 
     let DisEnvDom = (<span className="c7n-none-des">{intl.formatMessage({ id: 'envPl.status.stop' })}</span>);
 
@@ -406,7 +414,7 @@ class EnvPipelineHome extends Component {
       });
       DisEnvDom = _.map(disData[0], env => (<div className="c7n-env-card c7n-env-card-ban" key={env.id}>
         <div className="c7n-env-card-header">
-          {env.name}
+          <span><Tag>{bb(env.code)}</Tag></span><span>{env.name}</span>
           <div className="c7n-env-card-action">
             <Permission
               service={['devops-service.devops-environment.queryByEnvIdAndActive']}
@@ -512,6 +520,32 @@ class EnvPipelineHome extends Component {
               />,
             )}
           </FormItem>
+
+          <FormItem
+            {...formItemLayout}
+            label={<FormattedMessage id={'envPl.form.partition'} />}
+          >
+            {getFieldDecorator('partition', {
+              initialValue: envData ? envData.partition : '',
+            })(
+              <Select label={<FormattedMessage id={'envPl.form.partition'} />}
+              >
+                <OptGroup label="n-partition" key={1}>
+                  <Option value="N01">N01</Option>
+                  <Option value="N02" disabled={true}>N02(建设中)</Option>
+                </OptGroup>
+                <OptGroup label="p-partition" key={2}>
+                  <Option value="P01">P01</Option>
+                  <Option value="P02" disabled={true}>P02(建设中)</Option>
+                </OptGroup>
+                <OptGroup label="f-partition" key={3}>
+                  <Option value="F01" disabled={true}>F01(建设中)</Option>
+                  <Option value="F02" disabled={true}>F02(建设中)</Option>
+                </OptGroup>
+              </Select>
+            )}
+          </FormItem>
+
           <FormItem
             {...formItemLayout}
           >
