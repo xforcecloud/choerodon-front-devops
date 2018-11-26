@@ -594,7 +594,6 @@ class EnvPipelineHome extends Component {
         break;
       case 'edit':
         formContent = (<div className="c7n-sidebar-form">
-          <h2 className="c7n-space-first"><FormattedMessage id={'env.edit.title'} values={{ name: envData ? envData.code : '' }} /></h2>
           <Form>
             <FormItem
               {...formItemLayout}

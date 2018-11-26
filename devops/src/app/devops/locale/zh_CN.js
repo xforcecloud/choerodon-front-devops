@@ -23,7 +23,7 @@ const pageDetail = {
   'env.create.title': '项目"{name}"的环境申请',
   'env.create.description': '请在下面输入环境编码、名称、描述，申请新环境。新环境默认新增在环境流水线的最后一个节点。',
   'env.create.link': `${docServer}/user-guide/deployment-pipeline/environment-pipeline/`,
-  'env.edit.title': '对"{name}"环境修改',
+  'env.edit.title': '对"{code}"环境修改',
   'env.edit.description': '您可在此修改环境名称及描述。',
   'env.edit.link': `${docServer}/user-guide/deployment-pipeline/environment-pipeline/`,
   'env.token.title': '环境"{name}"的申请状态',
