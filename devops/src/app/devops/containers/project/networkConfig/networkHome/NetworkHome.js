@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Table, Button, Form, Tooltip, Modal, Popover, Icon } from 'choerodon-ui';
+import { Table, Button, Form, Tooltip, Modal, Popover, Icon, Select } from 'choerodon-ui';
 import { Permission, Content, Header, Page, stores } from 'choerodon-front-boot';
 import _ from 'lodash';
 import './NetworkHome.scss';
@@ -13,8 +13,11 @@ import EditNetwork from '../editNetwork';
 import { commonComponent } from '../../../../components/commonFunction';
 import MouserOverWrapper from '../../../../components/MouseOverWrapper';
 import StatusIcon from '../../../../components/StatusIcon';
+import EnvOverviewStore from '../../../../stores/project/envOverview';
+import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
 
 const { AppState } = stores;
+const { Option } = Select;
 
 // commonComponent装饰器
 @commonComponent('NetworkConfigStore')
@@ -30,8 +33,17 @@ class NetworkHome extends Component {
   }
 
   componentDidMount() {
-    // 这个方法定义在 commonComponent装饰器中
-    this.loadAllData();
+    const { id: projectId } = AppState.currentMenuType;
+    EnvOverviewStore.loadActiveEnv(projectId)
+      .then((env) => {
+        if (env.length) {
+          const envId = EnvOverviewStore.getTpEnvId;
+          if (envId) {
+            // 这个方法定义在 commonComponent装饰器中
+            this.loadAllData(envId);
+          }
+        }
+      })
   }
 
   /**
@@ -42,7 +54,8 @@ class NetworkHome extends Component {
     this.setState({ show: false, showEdit: false });
     if (isload) {
       NetworkConfigStore.setInfo({ filters: {}, sort: { columnKey: 'id', order: 'descend' }, paras: [] });
-      this.loadAllData();
+      const envId = EnvOverviewStore.getTpEnvId;
+      this.loadAllData(envId);
     }
   };
 
@@ -131,15 +144,18 @@ class NetworkHome extends Component {
         const { id, code, instanceStatus } = item;
         const statusStyle = (instanceStatus !== 'operating' && instanceStatus !== 'running')
           ? 'c7n-network-status-failed' : '';
-        node.push(<div
-          className={`network-column-instance ${statusStyle}`}
-          key={id}
-        >
-          <Tooltip
-            title={instanceStatus ? <FormattedMessage id={instanceStatus} /> : ''}
-            placement="top"
-          >{code}</Tooltip>
-        </div>);
+        // const status = instanceStatus ? code : <FormattedMessage id="deleted" />;
+        if (code) {
+          node.push(<div
+            className={`network-column-instance ${statusStyle}`}
+            key={id}
+          >
+            <Tooltip
+              title={instanceStatus ? <FormattedMessage id={instanceStatus} /> : <FormattedMessage id="network.ist.deleted" />}
+              placement="top"
+            >{code}</Tooltip>
+          </div>);
+        }
       });
     }
     if (!_.isEmpty(labels)) {
@@ -173,19 +189,19 @@ class NetworkHome extends Component {
    * @returns {*}
    */
   opColumn = (record, type, projectId, orgId) => {
-    const { status, envStatus, id } = record;
+    const { status, envStatus, id, name } = record;
     const { intl } = this.props;
     let editDom = null;
     let deleteDom = null;
     if (envStatus) {
-      if (status === 'running') {
+      if (status !== 'operating') {
         editDom = (<Tooltip trigger="hover" placement="bottom" title={<FormattedMessage id="edit" />}>
           <Button shape="circle" size="small" funcType="flat" onClick={this.editNetwork.bind(this, id)}>
             <i className="icon icon-mode_edit" />
           </Button>
         </Tooltip>);
         deleteDom = (<Tooltip trigger="hover" placement="bottom" title={<FormattedMessage id="delete" />}>
-          <Button shape="circle" size="small" funcType="flat" onClick={this.openRemove.bind(this, id)}>
+          <Button shape="circle" size="small" funcType="flat" onClick={this.openRemove.bind(this, id, name)}>
             <i className="icon icon-delete_forever" />
           </Button>
         </Tooltip>);
@@ -225,9 +241,18 @@ class NetworkHome extends Component {
     </Fragment>);
   };
 
+  /**
+   * 环境选择
+   * @param value
+   */
+  handleEnvSelect = (value) => {
+    EnvOverviewStore.setTpEnvId(value);
+    this.loadAllData(value);
+  };
+
   render() {
-    const { NetworkConfigStore, intl } = this.props;
-    const { show, showEdit, id, openRemove, submitting } = this.state;
+    const { NetworkConfigStore, intl: { formatMessage } } = this.props;
+    const { show, showEdit, id, openRemove, submitting, name } = this.state;
     const { filters, sort: { columnKey, order } } = NetworkConfigStore.getInfo;
     const {
       type,
@@ -235,6 +260,10 @@ class NetworkHome extends Component {
       organizationId: orgId,
       name: projectName } = AppState.currentMenuType;
     const data = NetworkConfigStore.getAllData;
+    const envData = EnvOverviewStore.getEnvcard;
+    const envId = EnvOverviewStore.getTpEnvId;
+    const envState = envData.length
+      ? envData.filter(d => d.id === Number(envId))[0] : { connect: false };
     const columns = [{
       title: <FormattedMessage id="network.column.name" />,
       key: 'name',
@@ -266,15 +295,11 @@ class NetworkHome extends Component {
     }, {
       title: <FormattedMessage id="network.target" />,
       key: 'target',
-      filters: [],
-      filteredValue: filters.target || [],
       render: record => this.targetColumn(record),
     }, {
       width: 108,
       title: <FormattedMessage id="network.config.column" />,
       key: 'type',
-      filters: [],
-      filteredValue: filters.type || [],
       render: record => this.configColumn(record),
     }, {
       width: 82,
@@ -298,21 +323,42 @@ class NetworkHome extends Component {
         ]}
         className="c7n-region c7n-network-wrapper"
       >
-        {NetworkConfigStore.isRefresh ? <LoadingBar display /> : <Fragment>
+        {NetworkConfigStore.isRefresh ? <LoadingBar display /> : (envData && envData.length && envId  ? <Fragment>
           <Header title={<FormattedMessage id="network.header.title" />}>
+            <Select
+              className={`${envId? 'c7n-header-select' : 'c7n-header-select c7n-select_min100'}`}
+              dropdownClassName="c7n-header-env_drop"
+              placeholder={formatMessage({ id: 'envoverview.noEnv' })}
+              value={envData && envData.length ? envId : undefined}
+              disabled={envData && envData.length === 0}
+              onChange={this.handleEnvSelect}
+            >
+              {_.map(envData,  e => (
+                <Option key={e.id} value={e.id} disabled={!e.permission} title={e.name}>
+                  <Tooltip placement="right" title={e.name}>
+                    <span className="c7n-ib-width_100">
+                      {e.connect ? <span className="c7n-ist-status_on" /> : <span className="c7n-ist-status_off" />}
+                      {e.name}
+                    </span>
+                  </Tooltip>
+                </Option>))}
+            </Select>
             <Permission
               service={['devops-service.devops-service.create']}
               type={type}
               projectId={projectId}
               organizationId={orgId}
             >
-              <Button
-                funcType="flat"
-                onClick={this.showSideBar}
-              >
-                <i className="icon-playlist_add icon" />
-                <span><FormattedMessage id="network.header.create" /></span>
-              </Button>
+              <Tooltip title={envState && !envState.connect ? <FormattedMessage id="envoverview.envinfo" /> : null}>
+                <Button
+                  disabled={envState && !envState.connect}
+                  funcType="flat"
+                  onClick={this.showSideBar}
+                >
+                  <i className="icon-playlist_add icon" />
+                  <span><FormattedMessage id="network.header.create" /></span>
+                </Button>
+              </Tooltip>
             </Permission>
             <Permission
               service={['devops-service.devops-service.pageByOptions']}
@@ -331,7 +377,7 @@ class NetworkHome extends Component {
           </Header>
           <Content code="network" values={{ name: projectName }}>
             <Table
-              filterBarPlaceholder={intl.formatMessage({ id: 'filter' })}
+              filterBarPlaceholder={formatMessage({ id: 'filter' })}
               loading={NetworkConfigStore.getLoading}
               pagination={NetworkConfigStore.getPageInfo}
               columns={columns}
@@ -340,10 +386,11 @@ class NetworkHome extends Component {
               rowKey={record => record.id}
             />
           </Content>
-        </Fragment>
+        </Fragment> : <DepPipelineEmpty title={<FormattedMessage id="network.header.title" />} type="env" />)
         }
 
         {show && <CreateNetwork
+          envId={envId}
           visible={show}
           store={NetworkConfigStore}
           onClose={this.handleCancelFun}
@@ -357,16 +404,16 @@ class NetworkHome extends Component {
         <Modal
           confirmLoading={submitting}
           visible={openRemove}
-          title={<FormattedMessage id="network.delete" />}
+          title={`${formatMessage({ id: 'network.delete' })}“${name}”`}
           closable={false}
           footer={[
-            <Button key="back" onClick={this.closeRemove}><FormattedMessage id="cancel" /></Button>,
+            <Button key="back" onClick={this.closeRemove} disabled={this.state.submitting}><FormattedMessage id="cancel" /></Button>,
             <Button key="submit" loading={this.state.submitting} type="danger" onClick={this.handleDelete}>
               <FormattedMessage id="delete" />
             </Button>,
           ]}
         >
-          <p><FormattedMessage id="network.delete.tooltip" />？</p>
+          <p><FormattedMessage id="network.delete.tooltip" /></p>
         </Modal>
       </Page>
     );

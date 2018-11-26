@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { Button, Form, Select, Input, Modal, Tooltip, Icon, Radio } from 'choerodon-ui';
+import { Button, Form, Select, Input, Modal, Tooltip, Icon, Radio, Popover } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { stores, Content } from 'choerodon-front-boot';
-import classnames from 'classnames';
 import _ from 'lodash';
 import '../../../main.scss';
 import './CreateDomain.scss';
+import EnvOverviewStore from '../../../../stores/project/envOverview';
+import { getTableTitle } from '../../../../utils';
 
 const { Option } = Select;
 const { Item: FormItem } = Form;
@@ -63,7 +64,6 @@ class CreateDomain extends Component {
     this.state = {
       projectId: menu.id,
       deletedService: {},
-      env: { loading: false, dataSource: [] },
       portInNetwork: {},
       protocol: 'normal',
       selectEnv: null,
@@ -118,10 +118,7 @@ class CreateDomain extends Component {
     if (envId) {
       this.handleSelectEnv(envId);
     }
-    store.loadEnv(projectId)
-      .then((data) => {
-        this.setState({ env: { loading: false, dataSource: data } });
-      });
+    EnvOverviewStore.loadActiveEnv(projectId);
   }
 
   /**
@@ -134,23 +131,10 @@ class CreateDomain extends Component {
     }
   }
 
-  /**
-   * 加载环境
-   */
-  loadEnv = () => {
-    const { store } = this.props;
-    this.setState({ env: { loading: true, dataSource: [] } });
-    store.loadEnv(this.state.projectId)
-      .then((data) => {
-        this.setState({ env: { loading: false, dataSource: data } });
-      });
-  };
-
   handleSubmit =(e) => {
     e.preventDefault();
     const { store, id, type, form: { validateFieldsAndScroll } } = this.props;
     const { projectId } = this.state;
-    const service = store.getNetwork;
     validateFieldsAndScroll((err, data) => {
       if (!err) {
         this.setState({ submitting: true });
@@ -227,20 +211,23 @@ class CreateDomain extends Component {
    */
   handleSelectEnv = (value) => {
     const { store, form } = this.props;
-    store.loadNetwork(this.state.projectId, value);
-    store.setCertificates([]);
-    form.resetFields();
-    this.setState({
-      deletedService: {},
-      singleData: {},
-      selectEnv: value,
-    });
+    const { selectEnv } = this.state;
+    if (value !== selectEnv) {
+      store.loadNetwork(this.state.projectId, value);
+      store.setCertificates([]);
+      form.resetFields();
+      this.setState({
+        deletedService: {},
+        singleData: {},
+        selectEnv: value,
+      });
+    }
   };
 
   /**
    * 关闭弹框
    */
-  handleClose =(isload = true) => {
+  handleClose = (isload = true) => {
     const { store, onClose } = this.props;
     store.setEnv([]);
     store.setNetwork([]);
@@ -256,9 +243,9 @@ class CreateDomain extends Component {
    */
   checkPath = (rule, value, callback) => {
     const { form: { getFieldValue, getFieldError }, intl, store, type, id } = this.props;
-    const { projectId } = this.state;
+    const { projectId, selectEnv } = this.state;
     if (value) {
-      const p = /^\/([a-zA-Z0-9]+(\/[a-zA-Z0-9]+)*)*$/;
+      const p = /^\/(\S)*$/;
       const count = _.countBy(getFieldValue('path'));
       const domain = getFieldValue('domain');
       const domainError = getFieldError('domain');
@@ -269,9 +256,9 @@ class CreateDomain extends Component {
           if (!domainError) {
             let checkPromise = null;
             if (type === 'edit') {
-              checkPromise = store.checkPath(projectId, domain, value, id);
+              checkPromise = store.checkPath(projectId, domain, selectEnv, encodeURIComponent(value), id);
             } else {
-              checkPromise = store.checkPath(projectId, domain, value);
+              checkPromise = store.checkPath(projectId, domain, selectEnv, encodeURIComponent(value));
             }
             this.handleCheckResponse(checkPromise, callback);
           } else {
@@ -313,7 +300,7 @@ class CreateDomain extends Component {
    * 检查域名是否符合规则
    * @type {Function}
    */
-  checkDomain = (rule, value, callback) => {
+  checkDomain = _.debounce((rule, value, callback) => {
     const { intl, form: { getFieldValue }, store } = this.props;
     const pattern = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)+)$/;
     if (pattern.test(value)) {
@@ -325,7 +312,7 @@ class CreateDomain extends Component {
     } else {
       callback(intl.formatMessage({ id: 'domain.domain.check.failed' }));
     }
-  };
+  }, 1000);
 
   /**
    * 触发路径检查
@@ -337,7 +324,7 @@ class CreateDomain extends Component {
     _.forEach(paths, item => fields.push(`path[${item}]`));
     validateFields(fields, { force: true });
     this.setState({ pathCountChange: false });
-  }
+  };
 
   /**
    * 校验网络是否可用
@@ -410,20 +397,19 @@ class CreateDomain extends Component {
   };
 
   render() {
-    const { store, form, intl: { formatMessage }, type, visible, envId: propsEnv } = this.props;
+    const { store, form, intl: { formatMessage }, type, visible, envId } = this.props;
+    const env = EnvOverviewStore.getEnvcard;
     const { getFieldDecorator, getFieldValue, getFieldsError } = form;
     const { name: menuName } = AppState.currentMenuType;
     const {
       singleData,
-      env,
       portInNetwork,
       protocol,
       deletedService,
       submitting,
     } = this.state;
     const network = store.getNetwork;
-    const { pathList, envId, name, domain } = singleData;
-    const initEnvId = propsEnv ? Number(propsEnv) : undefined;
+    const { pathList, name, domain } = singleData;
     let initPaths = [0];
     if (pathList && pathList.length) {
       initPaths.pop();
@@ -469,9 +455,18 @@ class CreateDomain extends Component {
       // 生成端口选项
       const portOption = (type === 'edit' && !portInNetwork[k] && hasServerInit)
         ? portWithNetwork[pathList[k].serviceId] : portInNetwork[k];
+      // 生成网络选项
+      const networkOption = network.map(item => (<Option value={item.id} key={`${item.id}-network`}>
+        <div className="c7n-domain-create-status c7n-domain-create-status_running">
+          <div>{formatMessage({ id: 'running' })}</div>
+        </div>
+        <Tooltip title={item.name}>
+          {item.name}
+        </Tooltip>
+      </Option>));
       return (<div className="domain-network-wrap" key={`paths-${k}`}>
         <FormItem
-          className="domain-network-item c7n-select_160"
+          className="domain-network-item c7ncd-domain-path"
           {...formItemLayout}
         >
           {getFieldDecorator(`path[${k}]`, {
@@ -483,7 +478,7 @@ class CreateDomain extends Component {
             <Input
               onChange={() => this.setState({ pathCountChange: true })}
               disabled={!(getFieldValue('domain'))}
-              maxLength={10}
+              maxLength={30}
               label={formatMessage({ id: 'domain.column.path' })}
               size="default"
             />,
@@ -500,7 +495,7 @@ class CreateDomain extends Component {
             }, {
               validator: this.checkService,
             }],
-            initialValue: initNetwork,
+            initialValue: networkOption.length ? initNetwork : undefined,
           })(
             <Select
               getPopupContainer={triggerNode => triggerNode.parentNode}
@@ -514,21 +509,17 @@ class CreateDomain extends Component {
               optionFilterProp="children"
               optionLabelProp="children"
               filterOption={
-                (input, option) => option.props.children[1]
+                (input, option) => option.props.children[1].props.children
                   .toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
             >
               {delNetOption}
-              {network.map(item => (<Option value={item.id} key={`${item.id}-network`}>
-                <div className="c7n-domain-create-status c7n-domain-create-status_running">
-                  <div>{formatMessage({ id: 'running' })}</div>
-                </div>
-                {item.name}</Option>))}
+              {networkOption}
             </Select>,
           )}
         </FormItem>
         <FormItem
-          className="domain-network-item c7n-select_160"
+          className="domain-network-item c7ncd-domain-port"
           {...formItemLayout}
         >
           {getFieldDecorator(`port[${k}]`, {
@@ -543,15 +534,11 @@ class CreateDomain extends Component {
           })(<Select
             getPopupContainer={triggerNode => triggerNode.parentNode}
             disabled={!getFieldValue(`network[${k}]`)}
-            filter
             label={formatMessage({ id: 'domain.column.port' })}
             showSearch
             dropdownMatchSelectWidth
             size="default"
-            optionFilterProp="children"
             optionLabelProp="children"
-            filterOption={(input, option) => option.props.children.toString()
-              .toLowerCase().indexOf(input.toString().toLowerCase()) >= 0}
           >
             {_.map(portOption, item => (<Option key={item} value={item}>{item}</Option>))}
           </Select>)}
@@ -587,30 +574,30 @@ class CreateDomain extends Component {
                   required: true,
                   message: formatMessage({ id: 'required' }),
                 }],
-                initialValue: envId || initEnvId,
-              })(
-                <Select
-                  dropdownClassName="c7n-domain-env"
-                  onFocus={this.loadEnv}
-                  loading={env.loading}
-                  filter
-                  getPopupContainer={triggerNode => triggerNode.parentNode}
-                  onSelect={this.handleSelectEnv}
-                  showSearch
-                  label={formatMessage({ id: 'domain.column.env' })}
-                  optionFilterProp="children"
-                  filterOption={(input, option) => option.props.children[2]
-                    .toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                >
-                  {env.dataSource.map(v => (
-                    <Option value={v.id} key={`${v.id}-env`} disabled={!v.connect}>
-                      {!v.connect && <span className="env-status-error" />}
-                      {v.connect && <span className="env-status-success" />}
-                      {v.name}
-                    </Option>
-                  ))}
-                </Select>,
-              )}
+                initialValue: env.length ? envId : undefined,
+              })(<Select
+                ref={this.envSelectRef}
+                className="c7n-select_512"
+                dropdownClassName="c7n-network-env"
+                label={<FormattedMessage id="network.env" />}
+                placeholder={formatMessage({ id: 'network.env.placeholder' })}
+                optionFilterProp="children"
+                onSelect={this.handleSelectEnv}
+                disabled={type === 'edit'}
+                getPopupContainer={triggerNode => triggerNode.parentNode}
+                filterOption={(input, option) => option.props.children[1]
+                  .toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                filter
+                showSearch
+              >
+                {_.map(env, (item) => {
+                  const { id, connect, name, permission } = item;
+                  return (<Option key={id} value={id} disabled={!connect || !permission}>
+                    {connect ? <span className="env-status-success" /> : <span className="env-status-error" />}
+                    {name}
+                  </Option>);
+                })}
+              </Select>)}
             </FormItem>
             <FormItem
               className="c7n-domain-formItem c7n-select_512"
@@ -637,6 +624,13 @@ class CreateDomain extends Component {
             <div className="c7n-creation-title">
               <Icon type="language" />
               <FormattedMessage id="domain.protocol" />
+              <Popover
+                content={formatMessage({ id: 'domain.protocol.tip' })}
+                overlayClassName="c7n-tips-popover"
+                arrowPointAtCenter
+              >
+                <Icon type="help c7n-tooltip-icon" />
+              </Popover>
             </div>
             <div className="c7n-creation-radio">
               <div className="creation-radio-label">

@@ -1,5 +1,7 @@
 .c7n-tag-wrapper {
   .c7n-tag-table {
+    font-weight: 500;
+    font-size: 16px;
     padding-bottom: 8px;
     max-width: 100%;
     margin-top: 20px;
@@ -9,7 +11,7 @@
   .c7n-tag-panel {
     display: inline-flex;
     width: calc(100% - 24px);
-    padding-left: 18px;
+    padding-left: 16px;
     flex-wrap: nowrap;
     justify-content: space-between;
     .c7n-tag-panel-info {
@@ -37,6 +39,11 @@
         }
         .c7n-tag-msg {
           word-break: break-all;
+          max-width: 570px;
+          display: inline-block;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
         .c7n-tag-panel-person {
           vertical-align: top;
@@ -83,7 +90,8 @@
     }
   }
   .c7n-tag-release {
-    padding-left: 40px;
+    padding-left: 60px;
+    color: rgba(0, 0, 0, 0.65);
   }
   .c7n-tag-pagin {
     display: flex;
@@ -105,5 +113,9 @@
       color: #a9a9a9;
       font-size: 20px;
     }
+  }
+  .ant-collapse-content-box {
+    padding-top: 0 !important;
+    padding-bottom: 12px;
   }
 }

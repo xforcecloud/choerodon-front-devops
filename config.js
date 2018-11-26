@@ -23,11 +23,6 @@ const config = {
   webpackConfig(configs) {
     const webpack = require('./devops/node_modules/webpack');
     configs.plugins.push(new webpack.DefinePlugin(env));
-    if (configs.node) {
-      configs.node.push({ fs: 'empty' });
-    } else {
-      configs.node = { fs: 'empty' };
-    }
     return configs;
   },
   entryName: 'index',
@@ -44,7 +39,10 @@ const config = {
     'icon-font-size-base': '16px',
   },
   dashboard: {
-    devops: 'src/app/devops/dashboard/*',
+    devops: {
+      components: 'src/app/devops/dashboard/*',
+      locale: 'src/app/devops/locale/dashboard/*',
+    },
   },
 };
 

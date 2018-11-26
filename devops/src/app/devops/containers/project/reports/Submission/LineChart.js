@@ -1,64 +1,131 @@
-import React, { PureComponent } from 'react';
-import ReactEchartsCore from 'echarts-for-react/lib/core';
-import echarts from 'echarts/lib/echarts';
+import React, { PureComponent, Fragment } from "react";
+import ReactEchartsCore from "echarts-for-react/lib/core";
+import PropTypes from "prop-types";
+import { Spin, Avatar, Tooltip } from "choerodon-ui";
+import echarts from "echarts/lib/echarts";
+import { injectIntl } from "react-intl";
+import { getNear7Day, dateSplitAndPad, pickEntries } from "../../../../utils";
 
-import 'echarts/lib/chart/line';
-import 'echarts/lib/component/tooltip';
-import 'echarts/lib/component/title';
-// import 'echarts/lib/component/legend';
-import 'echarts/lib/component/grid';
-import './Submission.scss';
+import "echarts/lib/chart/line";
+import "echarts/lib/component/tooltip";
+import "echarts/lib/component/title";
+import "echarts/lib/component/grid";
+import "echarts/lib/component/legend";
+import "./Submission.scss";
 
 class LineChart extends PureComponent {
+  static propTypes = {
+    color: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    loading: PropTypes.bool.isRequired,
+    hasAvatar: PropTypes.bool.isRequired,
+    languageType: PropTypes.string,
+    tooltip: PropTypes.bool,
+    legend: PropTypes.bool,
+    /* eslint-disable-next-line */
+    grid: PropTypes.array,
+  };
+
+  static defaultProps = {
+    grid: [42, 14, 20, 0],
+    tooltip: true,
+    legend: false,
+    languageType: "report",
+  };
+
   getOption = () => {
-    const { color, data: { keys, value } } = this.props;
+    const {
+      languageType,
+      color,
+      data: { items, count },
+      intl: { formatMessage },
+      start,
+      end,
+      grid,
+      legend,
+    } = this.props;
+    const { keys, values } = pickEntries(dateSplitAndPad(start, end, items));
+    const xAxis = keys && keys.length ? keys.reverse() : getNear7Day();
+    const yAxis = values && values.length ? values.reverse() : [];
     return {
       title: {
         show: false,
       },
       tooltip: {
-        trigger: 'item',
-        backgroundColor: '#fff',
+        trigger: "item",
+        backgroundColor: "#fff",
         textStyle: {
-          color: '#000',
+          color: "#000",
         },
-        formatter: '日期：{b}<br/>提交次数：{c}',
+        formatter(obj) {
+          return `${formatMessage({ id: `${languageType}.commit.date` })}${
+            obj.name
+          }<br/>${formatMessage({ id: `${languageType}.commit.count` })}${
+            obj.value
+          }`;
+        },
+      },
+      legend: {
+        show: legend,
+        left: "right",
+        itemWidth: 14,
+        itemGap: 20,
+        formatter(name) {
+          // 在series中必须有对应的name，否则不显示
+          return `${name}：${count || 0}`;
+        },
+        selectedMode: false,
       },
       grid: {
-        top: 42,
-        left: 0,
-        right: 15,
-        bottom: '0',
+        top: grid[0],
+        left: grid[1],
+        right: grid[2],
+        bottom: grid[3],
         // 防止标签溢出
         containLabel: true,
       },
       xAxis: {
-        type: 'category',
         boundaryGap: false,
         axisTick: {
           show: false,
         },
         axisLine: {
-          show: false,
+          show: true,
+          lineStyle: {
+            color: "#eee",
+          },
+          onZero: true,
         },
         splitLine: {
           show: true,
           lineStyle: {
-            color: ['#eee'],
+            color: ["#eee"],
           },
         },
-        // axisLabel: {
-        //   formatter(value, idx) {
-        //     const date = new Date(value);
-        //     return idx === 0 ? value : [date.getMonth() + 1, date.getDate()].join('/');
-        //   },
-        // },
-        data: keys,
+        axisLabel: {
+          color: "rgba(0,0,0,0.65)",
+          formatter(item, idx) {
+            return item
+              .split("-")
+              .slice(1)
+              .join("/");
+          },
+        },
+        data: xAxis,
       },
       yAxis: {
-        name: '次数        ',
+        name: formatMessage({ id: `${languageType}.commit.num` }),
+        min: Math.max(...yAxis) > 3 ? null : 0,
+        max: Math.max(...yAxis) > 3 ? null : 4,
+        minInterval: 1,
+        nameTextStyle: {
+          color: "#000",
+        },
         axisLine: {
-          show: false,
+          show: true,
+          lineStyle: {
+            color: "#eee",
+          },
         },
         axisTick: {
           show: false,
@@ -66,42 +133,89 @@ class LineChart extends PureComponent {
         splitLine: {
           show: true,
           lineStyle: {
-            color: ['#eee'],
+            color: ["#eee"],
           },
         },
-        type: 'value',
+        axisLabel: {
+          color: "rgba(0,0,0,0.65)",
+        },
+        type: "value",
       },
-      series: [{
-        data: value,
-        type: 'line',
-        smooth: true,
-        smoothMonotone: 'x',
-        symbol: 'circle',
-        itemStyle: {
-          normal: {
+      series: [
+        {
+          data: yAxis,
+          type: "line",
+          smooth: true,
+          smoothMonotone: "x",
+          symbol: "circle",
+          itemStyle: {
+            normal: {
+              color,
+            },
+          },
+          areaStyle: {
+            color,
+            opacity: "0.5",
+          },
+          lineStyle: {
             color,
           },
         },
-        areaStyle: {
-          color,
-          opacity: '0.5',
+        {
+          name: `${formatMessage({ id: `${languageType}.devops.total` })}`,
+          type: "line",
+          color: "#fff",
         },
-        lineStyle: {
-          color,
-        },
-      }],
+      ],
     };
   };
 
   render() {
-    const { style, data: { avatar, commits }, name } = this.props;
+    const {
+      style,
+      data: { avatar, count, id, name: userName },
+      name,
+      loading,
+      hasAvatar,
+      intl: { formatMessage },
+      tooltip,
+      languageType,
+    } = this.props;
     return (
-      <div>
-        <div className="c7n-report-commits-title">
-          {avatar ? <img className="c7n-report-commits-avatar" src={avatar} alt="avatar" /> : null}
-          {name}
-          {commits ? <span className="c7n-report-commits-text">{commits} commits</span> : null}
-        </div>
+      <Spin spinning={loading}>
+        {tooltip ? (
+          <div className="c7n-report-commits-title">
+            {hasAvatar ? (
+              <span className="c7n-report-commits-avatar">
+                {avatar ? (
+                  <Avatar size="small" src={avatar} />
+                ) : (
+                  <Avatar size="small">
+                    {name && userName
+                      ? name
+                          .toString()
+                          .slice(0, 1)
+                          .toUpperCase()
+                      : "?"}
+                  </Avatar>
+                )}
+              </span>
+            ) : null}
+            {id === 0 ? (
+              <Tooltip
+                placement="top"
+                title={formatMessage({ id: `${languageType}.commits.unknown` })}
+              >
+                {name}
+              </Tooltip>
+            ) : (
+              name
+            )}
+            {count ? (
+              <span className="c7n-report-commits-text">{count} commits</span>
+            ) : null}
+          </div>
+        ) : null}
         <ReactEchartsCore
           echarts={echarts}
           option={this.getOption()}
@@ -109,9 +223,9 @@ class LineChart extends PureComponent {
           notMerge
           lazyUpdate
         />
-      </div>
+      </Spin>
     );
   }
 }
 
-export default LineChart;
+export default injectIntl(LineChart);

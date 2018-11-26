@@ -1,6 +1,7 @@
 .c7n-branch {
   .c7n-header-table {
-    font-size: 18px;
+    font-size: 16px;
+    font-weight: 500;
     color: #000;
     line-height: 28px;
     margin: 12px 0 16px 0;
@@ -66,12 +67,10 @@
 }
 
 .branch-icon-help {
-  //vertical-align: middle;
-  //background: rgba(0, 0, 0, 0.36);
-  font-size: 13px;
+  font-size: 16px;
   color: rgba(0, 0, 0, 0.36);
   padding-left: 5px;
-  padding-bottom: 6px;
+  height: 20px;
 }
 
 .branch-popover {
@@ -106,7 +105,7 @@
   }
 
   .span-release {
-    background: #1bc123;
+    background: #00bf96;
   }
 
   .span-hotfix {

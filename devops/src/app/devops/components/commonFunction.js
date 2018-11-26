@@ -1,5 +1,6 @@
 import React from 'react';
 import { stores } from 'choerodon-front-boot';
+import EnvOverviewStore from "../stores/project/envOverview";
 
 const { AppState } = stores;
 
@@ -13,17 +14,17 @@ export const commonComponent =(storeName) => {
     /***
      * 加载table数据
      */
-    loadAllData = (isRefresh = false) => {
+    loadAllData = (envId, isRefresh = false) => {
       const store = this.props[storeName];
       const { id } = AppState.currentMenuType;
-      store.loadData(isRefresh, id);
+      store.loadData(isRefresh, id, envId);
     };
 
     /**
      * 打开删除数据模态框
      * @param id
      */
-    openRemove =(id) => this.setState({ openRemove: true, id });
+    openRemove =(id, name) => this.setState({ openRemove: true, id, name });
 
     /***
      * 删除数据
@@ -37,13 +38,14 @@ export const commonComponent =(storeName) => {
       const page = store.getPageInfo.current;
       const totalPage = Math.ceil(store.getPageInfo.total / store.getPageInfo.pageSize);
       this.setState({ submitting: true });
+      const envId = EnvOverviewStore.getTpEnvId;
       store.deleteData(projectId, id).then((data) => {
         this.setState({ submitting: false });
         if (data) {
           if (lastDatas === 1 && page === totalPage) {
-            this.loadAllData(false, store.getPageInfo.current - 2);
+            this.loadAllData(envId, false, store.getPageInfo.current - 2);
           } else {
-            this.loadAllData(false, store.getPageInfo.current - 1);
+            this.loadAllData(envId, false, store.getPageInfo.current - 1);
           }
         }
         this.closeRemove();
@@ -89,6 +91,7 @@ export const commonComponent =(storeName) => {
     tableChange =(pagination, filters, sorter, paras) => {
       const store = this.props[storeName];
       const { id } = AppState.currentMenuType;
+      const envId = EnvOverviewStore.getTpEnvId;
       store.setInfo({ filters, sort: sorter, paras });
       let sort = { field: '', order: 'desc' };
       if (sorter.column) {
@@ -109,7 +112,7 @@ export const commonComponent =(storeName) => {
         param: paras.toString(),
       };
       store
-        .loadData(false, id, page, pagination.pageSize, sort, postData);
+        .loadData(false, id, envId, page, pagination.pageSize, sort, postData);
     };
 
     /**

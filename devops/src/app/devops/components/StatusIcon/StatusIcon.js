@@ -9,7 +9,7 @@ function StatusIcon(props) {
   let statusDom = null;
   switch (status) {
     case 'failed':
-      statusDom = (<Tooltip title={`${status}: ${error}`}>
+      statusDom = (<Tooltip title={`${status} ${error ? `:${error}` : ''}`}>
         <Icon type="error" className="c7n-status-failed" />
       </Tooltip>);
       break;
@@ -22,7 +22,7 @@ function StatusIcon(props) {
       statusDom = null;
   }
   return (<React.Fragment>
-    {name}
+    <span className="c7n-status-text">{name}</span>
     {statusDom}
   </React.Fragment>);
 }

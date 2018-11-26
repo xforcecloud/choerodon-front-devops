@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { Table, Tootip, Button, Input, Form, Modal, Tooltip, Select, Icon } from 'choerodon-ui';
+import { Table, Button, Input, Form, Modal, Tooltip, Select, Icon, Popover } from 'choerodon-ui';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Content, Header, Page, Permission, stores } from 'choerodon-front-boot';
@@ -10,6 +10,10 @@ import LoadingBar from '../../../../components/loadingBar';
 import './AppHome.scss';
 import '../../../main.scss';
 import MouserOverWrapper from '../../../../components/MouseOverWrapper';
+import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
+import DeploymentPipelineStore from '../../../../stores/project/deploymentPipeline';
+import AppVersionStore from  '../../../../stores/project/applicationVersion';
+import { getSelectTip } from '../../../../utils';
 
 const { AppState } = stores;
 const { Sidebar } = Modal;
@@ -66,18 +70,21 @@ class AppHome extends Component {
 
   constructor(props) {
     const menu = AppState.currentMenuType;
+    const { location: { state } } = props.history;
     super(props);
     this.state = {
       page: 0,
       id: '',
       projectId: menu.id,
-      show: false,
+      show: state && state.show,
+      type: state && state.modeType,
       submitting: false,
     };
   }
 
   componentDidMount() {
-    const { projectId } = this.state;
+    const { projectId } = AppState.currentMenuType;
+    AppVersionStore.queryAppData(projectId);
     this.loadAllData(this.state.page);
   }
 
@@ -125,13 +132,14 @@ class AppHome extends Component {
         text: formatMessage({ id: 'app.run' }),
         value: 1,
       }, {
-        text: formatMessage({ id: 'app.creating' }),
+        text: formatMessage({ id: 'app.failed' }),
         value: -1,
+      }, {
+        text: formatMessage({ id: 'app.creating' }),
+        value: 2,
       }],
       filteredValue: filters.active || [],
-      render: (text, record) => (record.synchro
-        ? <span>{text ? formatMessage({ id: 'app.run' }) : formatMessage({ id: 'app.stop' })}</span>
-        : <FormattedMessage id="app.creating" />),
+      render: this.getAppStatus,
     }, {
       align: 'right',
       width: 104,
@@ -140,10 +148,10 @@ class AppHome extends Component {
         <Fragment>
           {record.sonarUrl ? <Tooltip title={<FormattedMessage id="app.quality" />} placement="bottom">
             <a href={record.sonarUrl} rel="nofollow me noopener noreferrer" target="_blank">
-              <Button icon="qualit" shape="circle" size="small" />
+              <Button icon="quality" shape="circle" size="small" />
             </a>
           </Tooltip> : null }
-          <Permission type={type} projectId={projectId} organizationId={orgId} service={['devops-service.application.update']}>
+          {!record.fail ? <Fragment><Permission type={type} projectId={projectId} organizationId={orgId} service={['devops-service.application.update']}>
             <Tooltip placement="bottom" title={<div>{!record.synchro ? <FormattedMessage id="app.synch" /> : <Fragment>{record.active ? <FormattedMessage id="edit" /> : <FormattedMessage id="app.start" />}</Fragment>}</div>}>
               {record.active && record.synchro
                 ? <Button
@@ -174,11 +182,58 @@ class AppHome extends Component {
                     : <Icon type="finished" className="c7n-app-icon-disabled" />}
                 </Fragment> }
             </Tooltip>
-          </Permission>
+          </Permission></Fragment>
+          : <Permission type={type} projectId={projectId} organizationId={orgId} service={['devops-service.application.deleteByAppId']}>
+            <Tooltip
+              placement="bottom"
+              title={<FormattedMessage id="delete" />}
+            >
+              <Button
+                icon="delete_forever"
+                shape="circle"
+                size="small"
+                onClick={this.openRemove.bind(this, record.id, record.name)}
+              />
+            </Tooltip>
+          </Permission>}
         </Fragment>
       ),
     }];
-  } ;
+  };
+
+  /**
+   * 获取状态
+   * @param text
+   * @param record 表格中一个项目的记录
+   * @returns {*}
+   */
+  getAppStatus = (text, record) => {
+    const style = {
+      fontSize: 18,
+      marginRight: 6,
+    };
+    let icon = '';
+    let msg = '';
+    let color = '';
+    if (record.fail) {
+      icon = 'cancel';
+      msg = 'failed';
+      color = '#f44336';
+    } else if (record.synchro && text) {
+      icon = 'check_circle';
+      msg = 'run';
+      color = '#00bf96';
+    } else if (text) {
+      icon = 'timelapse';
+      msg = 'creating';
+      color = '#4d90fe';
+    } else {
+      icon = 'remove_circle';
+      msg = 'stop';
+      color = '#d3d3d3';
+    }
+    return (<span><Icon style={{ color, ...style }} type={icon} /><FormattedMessage id={`app.${msg}`} /></span>);
+  };
 
   /**
    * 打开分支
@@ -195,7 +250,7 @@ class AppHome extends Component {
    * @param id 应用id
    * @param status 状态
    */
-  changeAppStatus =(id, status) => {
+  changeAppStatus = (id, status) => {
     const { AppStore } = this.props;
     const { projectId } = this.state;
     AppStore.changeAppStatus(projectId, id, !status)
@@ -203,6 +258,24 @@ class AppHome extends Component {
         if (data) {
           this.loadAllData(this.state.page);
         }
+      });
+  };
+
+  /**
+   * 删除应用
+   * @param id
+   */
+  deleteApp = (id) => {
+    const { AppStore } = this.props;
+    const { projectId } = this.state;
+    this.setState({ submitting: true });
+    AppStore.deleteApps(projectId, id)
+      .then(() => {
+        this.loadAllData(this.state.page);
+        this.setState({
+          submitting: false,
+          openRemove: false,
+        });
       });
   };
 
@@ -290,6 +363,8 @@ class AppHome extends Component {
    * 关闭操作框
    */
   hideSidebar = () => {
+    const { AppStore } = this.props;
+    AppStore.setSingleData(null);
     this.setState({ show: false });
     this.props.form.resetFields();
   };
@@ -332,7 +407,9 @@ class AppHome extends Component {
       intl: { formatMessage },
       form: { getFieldDecorator },
     } = this.props;
-    const { type: modeType, show, submitting, openRemove } = this.state;
+    const { type: modeType, show, submitting, openRemove, name: appName, id } = this.state;
+    const { app } = DeploymentPipelineStore.getProRole;
+    const appData = AppVersionStore.getAppData;
     const formContent = (<Form layout="vertical" className="c7n-sidebar-form">
       {modeType === 'create' && <FormItem
         {...formItemLayout}
@@ -352,6 +429,7 @@ class AppHome extends Component {
             maxLength={30}
             label={<FormattedMessage id="app.code" />}
             size="default"
+            suffix={getSelectTip('app.code.tooltip')}
           />,
         )}
       </FormItem> }
@@ -375,51 +453,53 @@ class AppHome extends Component {
           />,
         )}
       </FormItem>
-      {modeType === 'create' && <FormItem
-        {...formItemLayout}
-      >
-        {getFieldDecorator('applictionTemplateId', {
-          rules: [{
-            message: formatMessage({ id: 'required' }),
-            transform: (value) => {
-              if (value) {
-                return value.toString();
+      {modeType === 'create' && <div className="c7ncd-sidebar-select">
+        <FormItem
+          {...formItemLayout}
+        >
+          {getFieldDecorator('applictionTemplateId', {
+            rules: [{
+              message: formatMessage({ id: 'required' }),
+              transform: (value) => {
+                if (value) {
+                  return value.toString();
+                }
+                return value;
+              },
+            }],
+          })(<Select
+              key="service"
+              allowClear
+              label={<FormattedMessage id="app.chooseTem" />}
+              filter
+              dropdownMatchSelectWidth
+              onSelect={this.selectTemplate}
+              size="default"
+              optionFilterProp="children"
+              filterOption={
+                (input, option) => option.props.children.props.children.props.children
+                  .toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
-              return value;
-            },
-          }],
-        })(
-          <Select
-            key="service"
-            allowClear
-            label={<FormattedMessage id="app.chooseTem" />}
-            filter
-            dropdownMatchSelectWidth
-            onSelect={this.selectTemplate}
-            size="default"
-            optionFilterProp="children"
-            filterOption={
-              (input, option) => option.props.children.props.children.props.children
-                .toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-          >
-            {selectData && selectData.length > 0 && selectData.map(s => (
-              <Option
-                value={s.id}
-                key={s.id}
-              >
-                <Tooltip
-                  placement="right"
-                  trigger="hover"
-                  title={<p>{s.description}</p>}
+            >
+              {selectData && selectData.length > 0 && selectData.map(s => (
+                <Option
+                  value={s.id}
+                  key={s.id}
                 >
-                  <span style={{ display: 'inline-block', width: '100%' }}>{s.name}</span>
-                </Tooltip>
-              </Option>
-            ))}
-          </Select>,
-        )}
-      </FormItem>}
+                  <Tooltip
+                    placement="right"
+                    trigger="hover"
+                    title={<p>{s.description}</p>}
+                  >
+                    <span style={{ display: 'inline-block', width: '100%' }}>{s.name}</span>
+                  </Tooltip>
+                </Option>
+              ))}
+            </Select>
+          )}
+        </FormItem>
+        {getSelectTip('app.chooseTem.tip')}
+      </div>}
     </Form>);
 
     return (
@@ -436,7 +516,7 @@ class AppHome extends Component {
           'devops-service.application.queryByAppId',
         ]}
       >
-        { isRefresh ? <LoadingBar display /> : <Fragment>
+        { isRefresh ? <LoadingBar display /> : ((appData && appData.length) || app === 'owner' ? <Fragment>
           <Header title={<FormattedMessage id="app.head" />}>
             <Permission
               service={['devops-service.application.create']}
@@ -458,7 +538,7 @@ class AppHome extends Component {
               <FormattedMessage id="refresh" />
             </Button>
           </Header>
-          <Content code="app" value={{ name }}>
+          <Content code="app" values={{ name }}>
             {show && <Sidebar
               title={<FormattedMessage id={modeType === 'create' ? 'app.create' : 'app.edit'} />}
               visible={show}
@@ -467,6 +547,7 @@ class AppHome extends Component {
               cancelText={<FormattedMessage id="cancel" />}
               confirmLoading={submitting}
               onCancel={this.hideSidebar}
+              className="c7n-create-sidebar-tooltip"
             >
               <Content code={`app.${modeType}`} values={{ name }} className="sidebar-content">
                 {formContent}
@@ -476,14 +557,28 @@ class AppHome extends Component {
               filterBarPlaceholder={formatMessage({ id: 'filter' })}
               pagination={getPageInfo}
               loading={loading}
+              onChange={this.tableChange}
               columns={this.getColumn()}
               dataSource={serviceData}
               rowKey={record => record.id}
-              onChange={this.tableChange}
               filters={paras.slice()}
             />
           </Content>
-        </Fragment>}
+        </Fragment> : <DepPipelineEmpty title={<FormattedMessage id="app.head" />} type="app" />)}
+        <Modal
+          confirmLoading={submitting}
+          visible={openRemove}
+          title={`${formatMessage({ id: 'app.delete' })}“${appName}”`}
+          closable={false}
+          footer={[
+            <Button key="back" onClick={this.closeRemove} disabled={submitting}>{<FormattedMessage id="cancel" />}</Button>,
+            <Button key="submit" type="danger" onClick={this.deleteApp.bind(this, id)} loading={submitting}>
+              {formatMessage({ id: 'delete' })}
+            </Button>,
+          ]}
+        >
+          <p>{formatMessage({ id: 'app.delete.tooltip' })}</p>
+        </Modal>
       </Page>
     );
   }

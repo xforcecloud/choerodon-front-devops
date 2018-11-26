@@ -10,6 +10,22 @@ import classnames from 'classnames';
 import _ from 'lodash';
 import '../../../main.scss';
 import './CreateNetwork.scss';
+import EnvOverviewStore from '../../../../stores/project/envOverview';
+
+/**
+ * 生成网络名
+ * @param opt
+ * @returns {string}
+ */
+function createNetworkName(opt) {
+  let initName = opt.key;
+  if (initName.length > 23) {
+    // 初始网络名长度限制
+    initName = initName.slice(0, 23);
+  }
+  initName = `${initName}-${uuidv1().slice(0, 6)}`;
+  return initName;
+}
 
 const { AppState } = stores;
 const { Sidebar } = Modal;
@@ -50,8 +66,9 @@ class CreateNetwork extends Component {
   }
 
   componentDidMount() {
-    const { store, envId, appId, appCode } = this.props;
+    const { envId, appId, appCode, form } = this.props;
     const { id } = AppState.currentMenuType;
+    form.resetFields();
     if (envId) {
       const options = { key: appCode };
       this.handleEnvSelect(envId);
@@ -60,7 +77,7 @@ class CreateNetwork extends Component {
         this.loadIstById();
       }
     }
-    store.loadEnv(id);
+    EnvOverviewStore.loadActiveEnv(id);
   }
 
   setIpInSelect = (value) => {
@@ -176,8 +193,7 @@ class CreateNetwork extends Component {
   };
 
   handleClose = (isload = true) => {
-    const { onClose, form } = this.props;
-    form.resetFields();
+    const { onClose } = this.props;
     onClose(isload);
   };
 
@@ -187,12 +203,18 @@ class CreateNetwork extends Component {
    * @param value
    */
   handleEnvSelect = (value) => {
+    const envId = EnvOverviewStore.getTpEnvId;
     if (!value) {
       return;
     }
+    EnvOverviewStore.setTpEnvId(value);
     const { store } = this.props;
     const { id } = AppState.currentMenuType;
     store.loadApp(id, Number(value));
+    if (envId !== value) {
+      const { resetFields } = this.props.form;
+      resetFields(['appId', 'appInstance']);
+    }
   };
 
   /**
@@ -236,16 +258,14 @@ class CreateNetwork extends Component {
    * @param options
    */
   handleAppSelect = (value, options) => {
-    const { store, form } = this.props;
+    const { store, form: { getFieldValue, setFieldsValue } } = this.props;
     const { id } = AppState.currentMenuType;
-    const envId = form.getFieldValue('envId');
-    let initName = options.key;
-    if (initName.length > 25) {
-      // 初始网络名长度限制
-      initName = initName.slice(0, 25);
-    }
-    initName = `${initName}-${uuidv1().slice(0, 4)}`;
+    const envId = getFieldValue('envId');
+    const initName = createNetworkName(options);
     this.setState({ initName });
+    setFieldsValue({
+      appInstance: [],
+    });
     store.loadInstance(id, envId, Number(value)).then((data) => {
       if (data) {
         const initIst = [];
@@ -273,7 +293,7 @@ class CreateNetwork extends Component {
    * @param type
    */
   removeGroup = (k, type) => {
-    const { getFieldValue, setFieldsValue } = this.props.form;
+    const { form: { getFieldValue, setFieldsValue } } = this.props;
     const keys = getFieldValue(type);
     if (keys.length === 1) {
       return;
@@ -331,7 +351,7 @@ class CreateNetwork extends Component {
    * @param value
    * @param callback
    */
-  checkName = (rule, value, callback) => {
+  checkName = _.debounce((rule, value, callback) => {
     const { intl, store, form } = this.props;
     const { id } = AppState.currentMenuType;
     const pattern = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
@@ -350,7 +370,7 @@ class CreateNetwork extends Component {
     } else {
       callback();
     }
-  };
+  }, 1000);
 
   /**
    * 验证ip
@@ -517,7 +537,7 @@ class CreateNetwork extends Component {
       initName } = this.state;
     const { name: menuName, id: projectId } = AppState.currentMenuType;
     const { getFieldDecorator, getFieldValue } = form;
-    const env = store.getEnv;
+    const env = EnvOverviewStore.getEnvcard;
     const localApp = _.filter(store.getApp, item => item.projectId === Number(projectId));
     const storeApp = _.filter(store.getApp, item => item.projectId !== Number(projectId));
     const ist = store.getIst;
@@ -642,13 +662,13 @@ class CreateNetwork extends Component {
       this.envSelect.focus();
     }
 
-    const istOption = _.map(_.filter(ist, item => !_.includes(initIst, item.id)),
+    const istOption = ist.length ? _.map(_.filter(ist, item => (item && !_.includes(initIst, item.id))),
       (item) => {
         const { id, code } = item;
         return (<Option key={id} value={id}>
           {code}
         </Option>);
-      });
+      }) : [];
 
     return (
       <div className="c7n-region">
@@ -673,7 +693,7 @@ class CreateNetwork extends Component {
                     required: true,
                     message: intl.formatMessage({ id: 'required' }),
                   }],
-                  initialValue: this.props.envId ? Number(this.props.envId) : undefined,
+                  initialValue: env.length ? this.props.envId : undefined,
                 })(<Select
                   ref={this.envSelectRef}
                   className="c7n-select_512"
@@ -689,8 +709,8 @@ class CreateNetwork extends Component {
                   showSearch
                 >
                   {_.map(env, (item) => {
-                    const { id, connect, name } = item;
-                    return (<Option key={id} value={id} disabled={!connect}>
+                    const { id, connect, name, permission } = item;
+                    return (<Option key={id} value={id} disabled={!connect || !permission}>
                       {connect ? <span className="env-status-success" /> : <span className="env-status-error" />}
                       {name}
                     </Option>);

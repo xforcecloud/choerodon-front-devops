@@ -6,25 +6,24 @@ import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button, Form, Collapse, Icon, Input, Tooltip, Modal, Progress, Select } from 'choerodon-ui';
 import { Permission, Content, Action, stores } from 'choerodon-front-boot';
-import CodeMirror from 'react-codemirror';
 import _ from 'lodash';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/base16-dark.css';
-import ValueConfig from '../../appDeployment/valueConfig';
-import UpgradeIst from '../../appDeployment/upgrateIst';
-import DelIst from '../../appDeployment/component/delIst/DelIst';
+import ValueConfig from '../../instances/ValueConfig';
+import UpgradeIst from '../../instances/UpgradeIst';
+import DelIst from '../../instances/components/DelIst';
 import '../EnvOverview.scss';
-import '../../appDeployment/AppDeploy.scss';
+import '../../instances/Instances.scss';
 import '../../../main.scss';
-import ContainerStore from '../../../../stores/project/container';
-import AppDeploymentStore from '../../../../stores/project/appDeployment';
+import InstancesStore from '../../../../stores/project/instances/index';
 import DomainStore from '../../../../stores/project/domain';
 import CreateDomain from '../../domain/createDomain';
 import CreateNetwork from '../../networkConfig/createNetwork';
 import NetworkConfigStore from '../../../../stores/project/networkConfig';
 import LoadingBar from '../../../../components/loadingBar';
-import '../../container/containerHome/ContainerHome.scss';
-import '../../container/containerHome/Term.scss';
+import ExpandRow from '../../instances/components/ExpandRow';
+import UploadIcon from "../../instances/components/UploadIcon";
+import EnvOverviewStore from "../../../../stores/project/envOverview";
 
 const { AppState } = stores;
 const Sidebar = Modal.Sidebar;
@@ -77,14 +76,9 @@ class AppOverview extends Component {
 
   @observable domainTitle = '';
 
-  constructor(props, context) {
-    super(props, context);
-    this.state = {
-      ws: false,
-      following: true,
-      fullscreen: false,
-    };
-  }
+  @observable istName = '';
+
+  @observable isDelete = {};
 
   componentDidMount() {
     const { store } = this.props;
@@ -146,54 +140,69 @@ class AppOverview extends Component {
 
   /**
    * 查看部署详情
-   * @param id 实例ID
-   * @param status 实例状态
    */
-  linkDeployDetail = (id, status) => {
+  linkDeployDetail = (record) => {
+    const { id, status, appName } = record;
+    const { history } = this.props;
+    const {
+      id: projectId,
+      name: projectName,
+      type,
+      organizationId,
+    } = AppState.currentMenuType;
+    history.push({
+      pathname: `/devops/instance/${id}/${status}/detail`,
+      search: `?type=${type}&id=${projectId}&name=${encodeURIComponent(projectName)}&organizationId=${organizationId}&overview`,
+      state: { appName },
+    });
+  };
+
+  /**
+   * 重新部署
+   * @param id
+   */
+  reStart = (id) => {
     const projectId = parseInt(AppState.currentMenuType.id, 10);
-    const projectName = AppState.currentMenuType.name;
-    const type = AppState.currentMenuType.type;
-    const organizationId = AppState.currentMenuType.organizationId;
-    this.linkToChange(`/devops/instance/${id}/${status}/detail?type=${type}&id=${projectId}&name=${projectName}&organizationId=${organizationId}&overview`);
+    InstancesStore.reStarts(projectId, id)
+      .then((error) => {
+        if (error && error.failed) {
+          Choerodon.prompt(error.message);
+        } else {
+          this.loadIstOverview();
+        }
+      });
   };
 
   /**
    * 修改配置实例信息
-   * @param name 实例名
-   * @param id 实例ID
-   * @param envId
-   * @param verId
-   * @param appId
    */
   @action
-  updateConfig = (name, id, envId, verId, appId) => {
+  updateConfig = (record, e) => {
+    // e.stopPropagation();
+    const { code, id, envId, commandVersionId, appId } = record;
     const projectId = parseInt(AppState.currentMenuType.id, 10);
-    AppDeploymentStore.loadValue(projectId, id, verId)
+    InstancesStore.loadValue(projectId, id, commandVersionId)
       .then((res) => {
         if (res && res.failed) {
           Choerodon.prompt(res.message);
         } else {
           this.visible = true;
           this.id = id;
-          this.name = name;
-          this.idArr = [envId, verId, appId];
+          this.name = code;
+          this.idArr = [envId, commandVersionId, appId];
         }
       });
   };
 
   /**
    * 升级配置实例信息
-   * @param name 实例名
-   * @param id 实例ID
-   * @param envId
-   * @param verId
-   * @param appId
    */
   @action
-  upgradeIst = (name, id, envId, verId, appId) => {
+  upgradeIst = (record) => {
     const { intl } = this.props;
+    const { code, id, envId, appVersionId, commandVersionId, appId } = record;
     const projectId = parseInt(AppState.currentMenuType.id, 10);
-    AppDeploymentStore.loadUpVersion(projectId, verId)
+    InstancesStore.loadUpVersion(projectId, appVersionId || commandVersionId)
       .then((val) => {
         if (val && val.failed) {
           Choerodon.prompt(val.message);
@@ -201,9 +210,9 @@ class AppOverview extends Component {
           Choerodon.prompt(intl.formatMessage({ id: 'ist.noUpVer' }));
         } else {
           this.id = id;
-          this.name = name;
+          this.name = code;
           this.idArr = [envId, val[0].id, appId];
-          AppDeploymentStore.loadValue(projectId, id, val[0].id)
+          InstancesStore.loadValue(projectId, id, val[0].id)
             .then((res) => {
               if (res && res.failed) {
                 Choerodon.prompt(res.message);
@@ -222,7 +231,7 @@ class AppOverview extends Component {
    */
   activeIst = (id, status) => {
     const projectId = parseInt(AppState.currentMenuType.id, 10);
-    AppDeploymentStore.changeIstActive(projectId, id, status)
+    InstancesStore.changeIstActive(projectId, id, status)
       .then((error) => {
         if (error && error.failed) {
           Choerodon.prompt(error.message);
@@ -236,12 +245,15 @@ class AppOverview extends Component {
    * 关闭网络侧边栏
    */
   @action
-  closeNetwork = () => {
+  closeNetwork = (isLoad) => {
+    const { store } = this.props;
     this.props.form.resetFields();
     this.showNetwork = false;
-    this.loadIstOverview();
+    if (isLoad) {
+      this.loadIstOverview();
+      store.setTabKey('network');
+    }
   };
-
 
   /**
    * 关闭域名侧边栏
@@ -272,22 +284,24 @@ class AppOverview extends Component {
    * @param res 是否重新部署需要重载数据
    */
   @action
-  handleCancelUp = (res) => {
+  handleCancelUp = () => {
     this.visibleUp = false;
+  };
+
+  closeDeleteModal(id) {
     this.openRemove = false;
-    if (res) {
-      this.loadIstOverview();
-    }
+    this.isDelete[id] = false;
   };
 
   /**
    * 打开删除数据模态框
-   * @param id
    */
   @action
-  handleOpen(id) {
+  handleOpen(record) {
+    const { id, code } = record;
     this.openRemove = true;
     this.id = id;
+    this.istName = code;
   }
 
   /**
@@ -297,113 +311,24 @@ class AppOverview extends Component {
   handleDelete = (id) => {
     const projectId = parseInt(AppState.currentMenuType.id, 10);
     this.loading = true;
-    AppDeploymentStore.deleteIst(projectId, id)
+    this.isDelete[id] = true;
+    InstancesStore.deleteInstance(projectId, id)
       .then((res) => {
         if (res && res.failed) {
           Choerodon.prompt(res.message);
+          this.loading = false;
         } else {
           this.openRemove = false;
           this.loading = false;
           this.loadIstOverview();
         }
-      });
+        this.isDelete[id] = false;
+      }).catch((error) => {
+      this.loading = false;
+      this.isDelete[id] = false;
+      Choerodon.handleResponseError(error);
+    });
   };
-
-  /**
-   * 显示日志
-   * @param record 容器record
-   */
-  @action
-  showLog =(record) => {
-    const projectId = AppState.currentMenuType.id;
-    ContainerStore.loadPodParam(projectId, record.id)
-      .then((data) => {
-        this.namespace = record.namespace;
-        this.podName = data[0].podName;
-        this.containerName = data[0].containerName;
-        this.logId = data[0].logId;
-        this.showSide = true;
-        this.containerArr = data;
-        this.loadLog();
-      });
-  };
-
-  /**
-   * 切换container日志
-   * @param value
-   */
-  @action
-  containerChange = (value) => {
-    const { ws } = this.state;
-    if (this.logId !== value.split('+')[0]) {
-      if (ws) {
-        ws.close();
-      }
-      this.containerName = value.split('+')[1];
-      this.logId = value.split('+')[0];
-      this.loadLog();
-    }
-  };
-
-  /**
-   * 加载容器日志
-   */
-  loadLog = (followingOK) => {
-    const authToken = document.cookie.split('=')[1];
-    const logs = [];
-    let oldLogs = [];
-    const ws = new WebSocket(`ws://devops-service-front.staging.saas.hand-china.com/ws/log?key=env:${this.namespace}.envId:${this.props.envId}.log:${this.logId}&podName=${this.podName}&containerName=${this.containerName}&logId=${this.logId}&token=${authToken}`);
-    const editor = this.editorLog.getCodeMirror();
-    this.setState({ ws, following: true });
-    if (!followingOK) {
-      editor.setValue('Loading...');
-    }
-    ws.onmessage = (e) => {
-      if (e.data.size) {
-        const reader = new FileReader();
-        reader.readAsText(e.data, 'utf-8');
-        reader.onload = () => {
-          if (reader.result !== '') {
-            logs.push(reader.result);
-          }
-        };
-      }
-    };
-    if (logs.length > 0) {
-      const logString = _.join(logs, '');
-      editor.setValue(logString);
-    }
-    this.timer = setInterval(() => {
-      if (logs.length > 0) {
-        if (!_.isEqual(logs, oldLogs)) {
-          const logString = _.join(logs, '');
-          editor.setValue(logString);
-          editor.execCommand('goDocEnd');
-          // 如果没有返回数据，则不进行重新赋值给编辑器
-          oldLogs = _.cloneDeep(logs);
-        }
-      } else {
-        editor.setValue('Loading...');
-      }
-    }, 1000);
-  };
-
-  /**
-   * 关闭日志
-   */
-  @action
-  closeSidebar = () => {
-    clearInterval(this.timer);
-    this.timer = null;
-    const { ws } = this.state;
-    if (ws) {
-      ws.close();
-    }
-    const editor = this.editorLog.getCodeMirror();
-    this.showSide = false;
-    editor.setValue('');
-  };
-
 
   /**
    *打开域名创建弹框
@@ -464,202 +389,149 @@ class AppOverview extends Component {
             key={`${i.appName}-collapse`}
             onChange={this.onChange}
           >
-            {_.map(i.applicationInstanceDTOS, c => (
-              <Panel
+            {_.map(i.applicationInstanceDTOS, c => {
+              const { id: istId, status, code, error, appVersion, id, serviceDTOS, ingressDTOS, commandVersion, appId } = c;
+              let uploadIcon = null;
+              if (appVersion !== commandVersion) {
+                if (status !== 'failed') {
+                  uploadIcon = 'upload';
+                } else {
+                  uploadIcon = 'failed';
+                }
+              } else {
+                uploadIcon = 'text'
+              }
+              return(<Panel
                 forceRender
                 showArrow={false}
                 header={(<div className="c7n-envow-ist-header-wrap">
                   <Icon type="navigate_next" />
                   <div className="c7n-envow-ist-name">
-                    {(c.status === 'running' || c.status === 'stopped') ? <span className="c7n-deploy-istCode">{c.code}</span> : <div className="c7n-envow-ist-fail">
-                      {c.status === 'operating' ? (<div>
-                        <span className="c7n-deploy-istCode">{c.code}</span>
-                        <Tooltip title={intl.formatMessage({ id: `ist_${c.status}` })}>
-                          <Progress type="loading" width={15} />
-                        </Tooltip>
-
-                      </div>)
+                    {(status === 'running' || status === 'stopped')
+                      ? <span className="c7n-deploy-istCode">{code}</span>
+                      : <div className="c7n-envow-ist-fail">
+                      {status === 'operating' ? (<div>
+                          <span className="c7n-deploy-istCode">{code}</span>
+                          <Tooltip title={intl.formatMessage({ id: `ist_${status}` })}>
+                            <Progress type="loading" width={15} />
+                          </Tooltip>
+                        </div>)
                         : (<div>
-                          <span className="c7n-deploy-istCode">{c.code}</span>
-                          <Tooltip title={`${c.status}: ${c.error}`}>
+                          <span className="c7n-deploy-istCode">{code}</span>
+                          <Tooltip title={`${status}${error ? `：${error}` : ''}`}>
                             <i className="icon icon-error c7n-deploy-ist-operate" />
                           </Tooltip>
                         </div>)}
                     </div>}
                   </div>
                   <span className="c7n-envow-ist-version">
-                    <FormattedMessage id="app.appVersion" />:&nbsp;&nbsp;
-                    {c.appVersion}
+                    <span className="c7n-envow-version-text"><FormattedMessage id="app.appVersion" />:&nbsp;&nbsp;</span>
+                    <UploadIcon
+                      istId={istId}
+                      status={uploadIcon}
+                      text={appVersion}
+                      prevText={commandVersion}
+                      isDelete={this.isDelete}
+                    />
                   </span>
-                  <div className="c7n-deploy-status">
-                    <svg className={c.podCount === 0 ? 'c7n-deploy-circle-process-ban' : 'c7n-deploy-circle_red'}>
-                      <circle className="c7n-transition-rotate" cx="50%" cy="50%" r="40%" strokeWidth="16.5%" />
-                    </svg>
-                    <svg className={c.podCount === 0 ? 'c7n-deploy-circle-process-ban' : 'c7n-deploy-circle-process'}>
-                      <circle className="c7n-transition-rotate" cx="50%" cy="50%" r="40%" strokeWidth="16.5%" strokeDashoffset={`${251 * ((c.podCount - c.podRunningCount) / c.podCount)}%`} />
-                    </svg>
-                    <span className="c7n-deploy-status-num">{c.podCount}</span>
-                  </div>
                   <div className="c7n-envow-ist-action">
                     {this.columnAction(c)}
                   </div>
                 </div>)}
-                key={c.id}
+                key={id}
               >
                 <div>
-                  <div>
-                    <div className="c7n-envow-contaners-title c7n-envow-width_50">
-                      PODS
-                    </div>
-                    <div className="c7n-envow-contaners-wrap">
-                      <div className="c7n-envow-width_50">
-                        {c.devopsEnvPodDTOS.length ? _.map(c.devopsEnvPodDTOS, p => (<div className="c7n-envow-contaners-left" key={p.id}>
-                          <div className="c7n-envow-ls-wrap">
-                            <div className="c7n-envow-ls">
-                              <Tooltip title={<FormattedMessage id="container.name" />}>
-                                <Icon type="kubernetes" />
-                              </Tooltip>
-                              {p.name}
-                              <Permission
-                                service={['devops-service.devops-env-pod-container.queryLogByPod']}
-                                organizationId={orgId}
-                                projectId={projectId}
-                                type={type}
-                              >
-                                <Tooltip title={<FormattedMessage id="container.log" />}>
-                                  <Button
-                                    size="small"
-                                    shape="circle"
-                                    onClick={this.showLog.bind(this, p)}
-                                  >
-                                    <i className="icon icon-insert_drive_file" />
-                                  </Button>
-                                </Tooltip>
-                              </Permission>
-                            </div>
-                            {p.ip ? (<div className="c7n-envow-ls">
-                              <Tooltip title={<FormattedMessage id="container.ip" />}>
-                                <Icon type="room" />
-                              </Tooltip>
-                              {p.ip}
-                            </div>) : (<div className="c7n-envow-ls c7n-envow-hidden">
-                              <Tooltip title={<FormattedMessage id="container.ip" />}>
-                                <Icon type="room" />
-                              </Tooltip>
-                              {p.ip}
-                            </div>)}
-                          </div>
-                        </div>)) : null}
+                  <ExpandRow record={c} />
+                  <div className="c7n-envow-contaners-title">
+                    NETWORKING
+                  </div>
+                  <div className="c7n-envow-contaners-wrap">
+                    <div className="c7n-envow-contaners-left">
+                      <div className="c7n-envow-network-title">
+                        <FormattedMessage id="network.header.title" />：
                       </div>
-                      <div className="c7n-envow-contaners-right">
-                        <div className="c7n-envow-pod">
-                          <div className="c7n-deploy-status">
-                            <svg className={c.podCount === 0 ? 'c7n-deploy-circle-process-ban' : 'c7n-deploy-circle_red'}>
-                              <circle className="c7n-transition-rotate" cx="50%" cy="50%" r="45%" strokeWidth="5%" />
-                            </svg>
-                            <svg className={c.podCount === 0 ? 'c7n-deploy-circle-process-ban' : 'c7n-deploy-circle-process'}>
-                              <circle className="c7n-transition-rotate" cx="50%" cy="50%" r="45%" strokeWidth="5%" strokeDashoffset={`${283 * ((c.podCount - c.podRunningCount) / c.podCount)}%`} />
-                            </svg>
-                            <span className="c7n-deploy-status-num">{c.podCount}</span>
-                          </div>
-                          <div className="c7n-envow-pod-action">
-                            <Icon type="navigate_next" />
-                            <Icon type="navigate_next" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="c7n-envow-contaners-title">
-                      NETWORKING
-                    </div>
-                    <div className="c7n-envow-contaners-wrap">
-                      <div className="c7n-envow-contaners-left">
-                        <div className="c7n-envow-network-title">
-                          <FormattedMessage id="network.header.title" />
-                        </div>
-                        {c.serviceDTOS.length ? _.map(c.serviceDTOS, s => (<div className="c7n-envow-ls-wrap" key={s.name}>
-                          <div className="c7n-envow-ls">
-                            <Tooltip title={<FormattedMessage id="network.form.name" />}>
-                              <Icon type="router" />
-                            </Tooltip>
+                      {serviceDTOS.length ? _.map(serviceDTOS, s => (<div className="c7n-envow-ls-wrap" key={s.name}>
+                        <div className="c7n-envow-ls">
+                          <span className="c7n-envow-expanded-keys">
+                            <FormattedMessage id="network.form.name" />：
+                          </span>
+                          <span className="c7n-envow-expanded-values">
                             {s.name}
-                          </div>
-                          <div className="c7n-envow-ls">
-                            <Tooltip title={<FormattedMessage id="network.form.ip" />}>
-                              <Icon type="IP_out" />
-                            </Tooltip>
-                            {s.clusterIp}
-                          </div>
-                          <div className="c7n-envow-ls">
-                            <div className="c7n-envow-ls-arrow-wrap">
-                              <span>
-                                <Tooltip title={<FormattedMessage id="network.form.port" />}>
-                                  <Icon type="port" />
-                                </Tooltip>
-                                {s.port}
-                              </span>
-                              <span className="c7n-envow-ls-arrow">
-                                →
-                              </span>
-                              <span>
-                                <Tooltip title={<FormattedMessage id="network.form.targetPort" />}>
-                                  <Icon type="aim_port" />
-                                </Tooltip>
-                                {s.targetPort}
-                              </span>
-                            </div>
-                          </div>
-                        </div>)) : null}
-                        <Permission
-                          service={['devops-service.devops-service.create']}
-                          type={type}
-                          projectId={projectId}
-                          organizationId={orgId}
-                        >
-                          <Tooltip title={!envState ? <FormattedMessage id="envoverview.envinfo" /> : null}>
-                            <Button
-                              className="c7n-envow-create-btn"
-                              funcType="flat"
-                              disabled={!envState}
-                              onClick={this.createNetwork.bind(this, c.appId, c.id, i.appCode)}
-                            >
-                              <i className="icon-playlist_add icon" />
-                              <span><FormattedMessage id="network.header.create" /></span>
-                            </Button>
-                          </Tooltip>
-                        </Permission>
-                      </div>
-                      <div className="c7n-envow-contaners-right">
-                        <div className="c7n-envow-network-title">
-                          <FormattedMessage id="domain.header.title" />
+                          </span>
                         </div>
-                        {c.ingressDTOS.length ? _.map(c.ingressDTOS, d => (<div className="c7n-envow-ls-wrap" key={d.hosts}>
-                          <div className="c7n-envow-ls"><Icon type="language" />{d.hosts}</div>
-                        </div>)) : null}
-                        <Permission
-                          service={['devops-service.devops-ingress.create']}
-                          type={type}
-                          projectId={projectId}
-                          organizationId={orgId}
-                        >
-                          <Tooltip title={!envState ? <FormattedMessage id="envoverview.envinfo" /> : null}>
-                            <Button
-                              funcType="flat"
-                              disabled={!envState}
-                              className="c7n-envow-create-btn"
-                              onClick={this.createDomain.bind(this, 'create', '')}
-                            >
-                              <i className="icon icon-playlist_add icon" />
-                              <FormattedMessage id="domain.header.create" />
-                            </Button>
-                          </Tooltip>
-                        </Permission>
+                        <div className="c7n-envow-ls">
+                          <span className="c7n-envow-expanded-keys">
+                            <FormattedMessage id="network.form.ip" />：
+                          </span>
+                          <span className="c7n-envow-expanded-values">
+                            {s.clusterIp}
+                          </span>
+                        </div>
+                        <div className="c7n-envow-ls">
+                          <div className="c7n-envow-ls-arrow-wrap">
+                            <FormattedMessage id="network.form.port" />：
+                            <span className="c7n-envow-expanded-values">
+                              {s.port}
+                            </span>
+                            <span className="c7n-envow-ls-arrow">
+                                →
+                            </span>
+                            <FormattedMessage id="network.form.targetPort" />：
+                            <span className="c7n-envow-expanded-values">
+                              {s.targetPort}
+                            </span>
+                          </div>
+                        </div>
+                      </div>)) : null}
+                      <Permission
+                        service={['devops-service.devops-service.create']}
+                        type={type}
+                        projectId={projectId}
+                        organizationId={orgId}
+                      >
+                        <Tooltip title={!envState ? <FormattedMessage id="envoverview.envinfo" /> : null}>
+                          <Button
+                            className="c7n-envow-create-btn"
+                            funcType="flat"
+                            disabled={!envState}
+                            onClick={this.createNetwork.bind(this, appId, id, i.appCode)}
+                          >
+                            <i className="icon-playlist_add icon" />
+                            <span><FormattedMessage id="network.header.create" /></span>
+                          </Button>
+                        </Tooltip>
+                      </Permission>
+                    </div>
+                    <div className="c7n-envow-contaners-right">
+                      <div className="c7n-envow-network-title">
+                        <FormattedMessage id="domain.header.title" />
                       </div>
+                      {ingressDTOS.length ? _.map(ingressDTOS, d => (<div className="c7n-envow-ls-wrap" key={d.hosts}>
+                        <div className="c7n-envow-ls"><Icon type="language" />{d.hosts}</div>
+                      </div>)) : null}
+                      <Permission
+                        service={['devops-service.devops-ingress.create']}
+                        type={type}
+                        projectId={projectId}
+                        organizationId={orgId}
+                      >
+                        <Tooltip title={!envState ? <FormattedMessage id="envoverview.envinfo" /> : null}>
+                          <Button
+                            funcType="flat"
+                            disabled={!envState}
+                            className="c7n-envow-create-btn"
+                            onClick={this.createDomain.bind(this, 'create', '')}
+                          >
+                            <i className="icon icon-playlist_add icon" />
+                            <FormattedMessage id="domain.header.create" />
+                          </Button>
+                        </Tooltip>
+                      </Permission>
                     </div>
                   </div>
                 </div>
-              </Panel>
-            ))}
+              </Panel>);
+            })}
             {/* 处理Safari浏览器下，折叠面板渲染最后一个节点panel卡顿问题 */}
             <Panel
               className="c7n-envow-none"
@@ -690,164 +562,74 @@ class AppOverview extends Component {
    * @returns {*}
    */
   columnAction = (record) => {
-    const projectId = parseInt(AppState.currentMenuType.id, 10);
-    const organizationId = AppState.currentMenuType.organizationId;
-    const type = AppState.currentMenuType.type;
-    const { intl } = this.props;
-    if (record.status === 'operating' || !record.connect) {
-      return (<Action
-        onClick={this.handlerAction}
-        data={[
-          {
-            type,
-            organizationId,
-            projectId,
-            service: ['devops-service.devops-pod.getLogs', 'devops-service.application-instance.listResources'],
-            text: intl.formatMessage({ id: 'ist.detail' }),
-            action: this.linkDeployDetail.bind(this, record.id, record.status),
-          }]}
-      />);
-    } else if (record.status === 'failed') {
-      return (<Action
-        onClick={this.handlerAction}
-        data={[
-          {
-            type,
-            organizationId,
-            projectId,
-            service: ['devops-service.devops-pod.getLogs', 'devops-service.application-instance.listResources'],
-            text: intl.formatMessage({ id: 'ist.detail' }),
-            action: this.linkDeployDetail.bind(this, record.id, record.status),
-          }, {
-            type,
-            organizationId,
-            projectId,
-            service: ['devops-service.application-instance.queryValues'],
-            text: intl.formatMessage({ id: 'ist.values' }),
-            action: this.updateConfig.bind(this, record.code, record.id,
-              record.envId, record.appVersionId, record.appId),
-          }, {
-            type,
-            organizationId,
-            projectId,
-            service: ['devops-service.application-instance.delete'],
-            text: intl.formatMessage({ id: 'ist.del' }),
-            action: this.handleOpen.bind(this, record.id),
-          },
-        ]}
-      />);
-    } else {
-      return (<Action
-        onClick={this.handlerAction}
-        data={[
-          {
-            type,
-            organizationId,
-            projectId,
-            service: ['devops-service.devops-pod.getLogs', 'devops-service.application-instance.listResources'],
-            text: intl.formatMessage({ id: 'ist.detail' }),
-            action: this.linkDeployDetail.bind(this, record.id, record.status),
-          }, {
-            type,
-            organizationId,
-            projectId,
-            service: ['devops-service.application-instance.queryValues'],
-            text: intl.formatMessage({ id: 'ist.values' }),
-            action: this.updateConfig.bind(this, record.code, record.id,
-              record.envId, record.appVersionId, record.appId),
-          }, {
-            type,
-            organizationId,
-            projectId,
-            service: ['devops-service.application-version.getUpgradeAppVersion'],
-            text: intl.formatMessage({ id: 'ist.upgrade' }),
-            action: this.upgradeIst.bind(this, record.code, record.id,
-              record.envId, record.appVersionId, record.appId),
-          }, {
-            type,
-            organizationId,
-            projectId,
-            service: ['devops-service.application-instance.start', 'devops-service.application-instance.stop'],
-            text: record.status !== 'stopped' ? intl.formatMessage({ id: 'ist.stop' }) : intl.formatMessage({ id: 'ist.run' }),
-            action: record.status !== 'stopped' ? this.activeIst.bind(this, record.id, 'stop') : this.activeIst.bind(this, record.id, 'start'),
-          }, {
-            type,
-            organizationId,
-            projectId,
-            service: ['devops-service.application-instance.delete'],
-            text: intl.formatMessage({ id: 'ist.del' }),
-            action: this.handleOpen.bind(this, record.id),
-          },
-        ]}
-      />);
-    }
-  };
-
-  /**
-   * 日志go top
-   */
-  goTop = () => {
-    const editor = this.editorLog.getCodeMirror();
-    editor.execCommand('goDocStart');
-  };
-
-  /**
-   * top log following
-   */
-  stopFollowing = () => {
-    const { ws } = this.state;
-    if (ws) {
-      ws.close();
-    }
-    this.setState({
-      following: false,
-    });
-  };
-
-  /**
-   *  全屏查看日志
-   */
-  setFullscreen = () => {
-    const cm = this.editorLog.getCodeMirror();
-    const wrap = cm.getWrapperElement();
-    cm.state.fullScreenRestore = {
-      scrollTop: window.pageYOffset,
-      scrollLeft: window.pageXOffset,
-      width: wrap.style.width,
-      height: wrap.style.height,
+    const {
+      id: projectId,
+      type,
+      organizationId,
+    } = AppState.currentMenuType;
+    const { intl: { formatMessage } } = this.props;
+    const { id, status, connect } = record;
+    const actionType = {
+      detail: {
+        service: ['devops-service.application-instance.listResources'],
+        text: formatMessage({ id: 'ist.detail' }),
+        action: this.linkDeployDetail.bind(this, record),
+      },
+      change: {
+        service: ['devops-service.application-instance.queryValues'],
+        text: formatMessage({ id: 'ist.values' }),
+        action: this.updateConfig.bind(this, record),
+      },
+      restart: {
+        service: ['devops-service.application-instance.restart'],
+        text: formatMessage({ id: 'ist.reDeploy' }),
+        action: this.reStart.bind(this, id),
+      },
+      update: {
+        service: ['devops-service.application-version.getUpgradeAppVersion'],
+        text: formatMessage({ id: 'ist.upgrade' }),
+        action: this.upgradeIst.bind(this, record),
+      },
+      stop: {
+        service: ['devops-service.application-instance.start', 'devops-service.application-instance.stop'],
+        text: status !== 'stopped' ? formatMessage({ id: 'ist.stop' }) : formatMessage({ id: 'ist.run' }),
+        action: status !== 'stopped' ? this.activeIst.bind(this, id, 'stop') : this.activeIst.bind(this, id, 'start'),
+      },
+      delete: {
+        service: ['devops-service.application-instance.delete'],
+        text: formatMessage({ id: 'ist.del' }),
+        action: this.handleOpen.bind(this, record),
+      },
     };
-    wrap.style.width = '';
-    wrap.style.height = 'auto';
-    wrap.className += ' CodeMirror-fullscreen';
-    this.setState({ fullscreen: true });
-    document.documentElement.style.overflow = 'hidden';
-    cm.refresh();
-    window.addEventListener('keypress', (e) => {
-      this.setNormal(e.which);
-    });
-  };
-
-  /**
-   * 任意键退出全屏查看
-   */
-  setNormal = () => {
-    const cm = this.editorLog.getCodeMirror();
-    const wrap = cm.getWrapperElement();
-    wrap.className = wrap.className.replace(/\s*CodeMirror-fullscreen\b/, '');
-    this.setState({ fullscreen: false });
-    document.documentElement.style.overflow = '';
-    const info = cm.state.fullScreenRestore;
-    wrap.style.width = info.width; wrap.style.height = info.height;
-    window.scrollTo(info.scrollLeft, info.scrollTop);
-    cm.refresh();
-    window.removeEventListener('keypress', (e) => {
-      this.setNormal(e.which);
-    });
+    let actionItem = [];
+    switch (status) {
+      case 'operating' || !connect:
+        actionItem = ['detail'];
+        break;
+      case 'stopped':
+        actionItem = ['detail', 'stop', 'delete'];
+        break;
+      case 'failed':
+      case 'running':
+        actionItem = ['detail', 'change', 'restart', 'update', 'stop', 'delete'];
+        break;
+      default:
+        actionItem = ['detail'];
+    }
+    const actionData = _.map(actionItem, item => ({
+      projectId,
+      type,
+      organizationId,
+      ...actionType[item],
+    }));
+    return (<Action
+      onClick={this.handlerAction}
+      data={actionData}
+    />);
   };
 
   render() {
     const { intl, store } = this.props;
-    const { fullscreen, following } = this.state;
     const { type, id: projectId, organizationId: orgId, name } = AppState.currentMenuType;
     const val = store.getVal;
     const prefix = <Icon type="search" onClick={this.onSearch} />;
@@ -879,7 +661,7 @@ class AppOverview extends Component {
         </div>
         {this.panelDom()}
         {this.visible && <ValueConfig
-          store={AppDeploymentStore}
+          store={InstancesStore}
           visible={this.visible}
           name={this.name}
           id={this.id}
@@ -887,51 +669,19 @@ class AppOverview extends Component {
           onClose={this.handleCancel}
         /> }
         {this.visibleUp && <UpgradeIst
-          store={AppDeploymentStore}
+          store={InstancesStore}
           visible={this.visibleUp}
           name={this.name}
           appInstanceId={this.id}
           idArr={this.idArr}
           onClose={this.handleCancelUp}
         /> }
-        {this.showSide && <Sidebar
-          visible={this.showSide}
-          title={<FormattedMessage id="container.log.header.title" />}
-          onOk={this.closeSidebar}
-          className="c7n-podLog-content c7n-region"
-          okText={<FormattedMessage id="close" />}
-          okCancel={false}
-          destroyOnClose
-        >
-          <Content className="sidebar-content" code={'container.log'} values={{ name: this.podName }}>
-            <section className="c7n-podLog-section">
-              <div className="c7n-podLog-hei-wrap">
-                <div className="c7n-podShell-title">
-                  <FormattedMessage id="container.term.log" />&nbsp;
-                  <Select value={this.containerName} onChange={this.containerChange}>
-                    {containerDom}
-                  </Select>
-                  <Button type="primary" funcType="flat" shape="circle" icon="fullscreen" onClick={this.setFullscreen} />
-                </div>
-                {following ? <div className={`c7n-podLog-action log-following ${fullscreen ? 'f-top' : ''}`} onClick={this.stopFollowing}>Stop Following</div>
-                  : <div className={`c7n-podLog-action log-following ${fullscreen ? 'f-top' : ''}`} onClick={this.loadLog.bind(this, true)}>Start Following</div>}
-                <CodeMirror
-                  ref={(editor) => { this.editorLog = editor; }}
-                  value="Loading..."
-                  className="c7n-podLog-editor"
-                  onChange={code => this.props.ChangeCode(code)}
-                  options={options}
-                />
-                <div className={`c7n-podLog-action log-goTop ${fullscreen ? 'g-top' : ''}`} onClick={this.goTop}>Go Top</div>
-              </div>
-            </section>
-          </Content>
-        </Sidebar>}
         <DelIst
           open={this.openRemove}
-          handleCancel={this.handleCancelUp}
+          handleCancel={this.closeDeleteModal.bind(this, this.id)}
           handleConfirm={this.handleDelete.bind(this, this.id)}
           confirmLoading={this.loading}
+          name={this.istName}
         />
         {this.showDomain && <CreateDomain
           id={this.domainId}

@@ -8,13 +8,14 @@ import { asyncRouter, nomatch, asyncLocaleProvider } from 'choerodon-front-boot'
 
 // organization
 const Template = asyncRouter(() => import('./organization/template'));
+const Cluster = asyncRouter(() => import('./organization/cluster'));
 // project
 const EnvPipelineIndex = asyncRouter(() => import('./project/envPipeline'));
 const CiPipelineManageIndex = asyncRouter(() => import('./project/ciPipelineManage'));
 const AppVersion = asyncRouter(() => import('./project/appVersion'));
 const App = asyncRouter(() => import('./project/app'));
 const AppStore = asyncRouter(() => import('./project/appStore'));
-const AppDeployment = asyncRouter(() => import('./project/appDeployment'));
+const InstancesIndex = asyncRouter(() => import('./project/instances'));
 const DeploymentApp = asyncRouter(() => import('./project/deploymentApp'));
 const NetworkConfig = asyncRouter(() => import('./project/networkConfig'));
 const Domain = asyncRouter(() => import('./project/domain'));
@@ -25,8 +26,10 @@ const MergeRequest = asyncRouter(() => import('./project/mergeRequest'));
 const AppTag = asyncRouter(() => import('./project/appTag'));
 const Repository = asyncRouter(() => import('./project/repository'));
 const EnvOverview = asyncRouter(() => import('./project/envOverview'));
+const DeployOverview = asyncRouter(() => import('./project/deployOverview'));
 const Certificate = asyncRouter(() => import('./project/certificate'));
 const Reports = asyncRouter(() => import('./project/reports'));
+const DevConsole = asyncRouter(() => import('./project/devConsole'));
 
 @inject('AppState')
 class DEVOPSIndex extends React.Component {
@@ -39,12 +42,14 @@ class DEVOPSIndex extends React.Component {
         <Switch>
           <Route path={`${match.url}/env-pipeline`} component={EnvPipelineIndex} />
           <Route path={`${match.url}/env-overview`} component={EnvOverview} />
+          <Route path={`${match.url}/deploy-overview`} component={DeployOverview} />
           <Route path={`${match.url}/ci-pipeline`} component={CiPipelineManageIndex} />
           <Route path={`${match.url}/template`} component={Template} />
+          <Route path={`${match.url}/cluster`} component={Cluster} />
           <Route path={`${match.url}/app-version`} component={AppVersion} />
           <Route path={`${match.url}/app`} component={App} />
           <Route path={`${match.url}/app-market`} component={AppStore} />
-          <Route path={`${match.url}/instance`} component={AppDeployment} />
+          <Route path={`${match.url}/instance`} component={InstancesIndex} />
           <Route path={`${match.url}/deployment-app`} component={DeploymentApp} />
           <Route path={`${match.url}/service`} component={NetworkConfig} />
           <Route path={`${match.url}/ingress`} component={Domain} />
@@ -56,6 +61,7 @@ class DEVOPSIndex extends React.Component {
           <Route path={`${match.url}/repository`} component={Repository} />
           <Route path={`${match.url}/certificate`} component={Certificate} />
           <Route path={`${match.url}/reports`} component={Reports} />
+          <Route path={`${match.url}/dev-console`} component={DevConsole} />
           <Route path="*" component={nomatch} />
         </Switch>
       </IntlProviderAsync>

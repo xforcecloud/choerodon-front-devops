@@ -54,19 +54,17 @@ class NetworkOverview extends Component {
     const page = store.getPageInfo.current;
     const totalPage = Math.ceil(store.getPageInfo.total / store.getPageInfo.pageSize);
     this.submitting = true;
-    NetworkConfigStore.deleteData(projectId, this.id).then((data) => {
-      if (data) {
-        this.submitting = false;
-        if (lastDatas === 1 && page === totalPage) {
-          store.loadNetwork(projectId, envId, store.getPageInfo.current - 2);
-        } else {
-          store.loadNetwork(projectId, envId, store.getPageInfo.current - 1);
-        }
-        this.closeRemove();
+    NetworkConfigStore.deleteData(projectId, this.id).then(() => {
+      this.submitting = false;
+      if (lastDatas === 1 && page === totalPage) {
+        store.loadNetwork(projectId, envId, store.getPageInfo.current - 2);
+      } else {
+        store.loadNetwork(projectId, envId, store.getPageInfo.current - 1);
       }
+      this.closeRemove();
     }).catch((error) => {
       this.submitting = false;
-      Choerodon.prompt(error);
+      Choerodon.handleResponseError(error);
     });
     store.setInfo({ filters: {}, sort: { columnKey: 'id', order: 'descend' }, paras: [] });
   };
@@ -167,8 +165,20 @@ class NetworkOverview extends Component {
     const node = [];
     if (appInstance && appInstance.length) {
       _.forEach(appInstance, (item) => {
-        const { id, code } = item;
-        node.push(<div className="network-column-instance" key={id}>{code}</div>);
+        const { id, code, instanceStatus } = item;
+        const statusStyle = (instanceStatus !== 'operating' && instanceStatus !== 'running')
+          ? 'c7n-network-status-failed' : '';
+        if (code) {
+          node.push(<div
+            className={`network-column-instance ${statusStyle}`}
+            key={id}
+          >
+            <Tooltip
+              title={instanceStatus ? <FormattedMessage id={instanceStatus} /> : <FormattedMessage id="network.ist.deleted" />}
+              placement="top"
+            >{code}</Tooltip>
+          </div>);
+        }
       });
     }
     if (!_.isEmpty(labels)) {
@@ -332,7 +342,7 @@ class NetworkOverview extends Component {
           </Button>,
         ]}
       >
-        <p><FormattedMessage id="network.delete.tooltip" />？</p>
+        <p><FormattedMessage id="network.delete.tooltip" /></p>
       </Modal>
     </div>);
   }

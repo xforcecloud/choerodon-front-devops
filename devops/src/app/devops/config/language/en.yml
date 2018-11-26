@@ -5,10 +5,10 @@
 "application-management.application-version": "Application Version"
 "application-management.application-release": "Application Release"
 "application-management.application-market": "Application Market"
-"application-management.reports": "Reports"
 
 # 开发流水线
 "development-pipeline": "Development Pipeline"
+"development-pipeline.development-console": "Development Console"
 "development-pipeline.branch": "Branch"
 "development-pipeline.tag": "Tag"
 "development-pipeline.repository": "Repository"
@@ -20,6 +20,7 @@
 # 部署流水线
 "deployment-pipeline": "Deployment Pipeline"
 "deployment-pipeline.environment-pipeline": "Environment Pipeline"
+"deployment-pipeline.deployment-overview": "Deployment Overview"
 "deployment-pipeline.application-deployment": "Application Deployment"
 "deployment-pipeline.instance": "Instance"
 "deployment-pipeline.environment-overview": "Environment Overview"
@@ -27,6 +28,14 @@
 "deployment-pipeline.ingress": "Ingress"
 "deployment-pipeline.container": "Container"
 "deployment-pipeline.certificate": "Certificate"
+
+# 报表
+"platform-reports": "Reports"
+"platform-reports.reports": "DevOps Report"
+
+# 集群管理
+"cluster-management": "Cluster Management"
+"cluster-management.cluster": "Cluster"
 
 # 0.8废弃
 "application-market": "Application Market"
@@ -45,3 +54,5 @@
 "devops.container": "Container"
 "devops.app-release": "App Release"
 "devops.appstore": "App Store"
+"platform_reports": "Reports"
+"platform_reports.reports": "DevOps Report"

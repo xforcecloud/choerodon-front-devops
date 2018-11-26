@@ -1,10 +1,10 @@
 /* eslint-disable react/sort-comp */
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { observable, action, configure } from 'mobx';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Button, Tabs, Form, Select, Icon, Tooltip } from 'choerodon-ui';
+import { Button, Tabs, Form, Select, Icon, Tooltip, Menu, Dropdown } from 'choerodon-ui';
 import { Content, Header, Page, Permission, stores } from 'choerodon-front-boot';
 import _ from 'lodash';
 import '../EnvOverview.scss';
@@ -20,20 +20,17 @@ import CreateCert from '../../certificate/createCert';
 import DomainStore from '../../../../stores/project/domain';
 import NetworkConfigStore from '../../../../stores/project/networkConfig';
 import CertificateStore from '../../../../stores/project/certificate';
+import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
 
 const { AppState } = stores;
 const { TabPane } = Tabs;
 const { Option } = Select;
 
-configure({ enforceActions: false });
+configure({ enforceActions: 'never' });
 
 @observer
 class EnvOverviewHome extends Component {
-  @observable tabKey = 'app';
-
   @observable env = [];
-
-  @observable envId = null;
 
   @observable showDomain = false;
 
@@ -59,6 +56,7 @@ class EnvOverviewHome extends Component {
   componentWillUnmount() {
     const { EnvOverviewStore } = this.props;
     EnvOverviewStore.setIst(null);
+    EnvOverviewStore.setTabKey('app');
   }
 
   /**
@@ -67,9 +65,8 @@ class EnvOverviewHome extends Component {
   handleRefresh = () => {
     const { EnvOverviewStore } = this.props;
     EnvOverviewStore.setVal('');
-    const projectId = AppState.currentMenuType.id;
-    const key = this.tabKey;
-    const tpEnvId = this.envId || EnvOverviewStore.getTpEnvId;
+    const key = EnvOverviewStore.getTabKey;
+    const envId = EnvOverviewStore.getTpEnvId;
     const { filters, sort, paras } = EnvOverviewStore.getInfo;
     const sorter = { field: '', order: 'desc' };
     if (sort.column) {
@@ -89,7 +86,7 @@ class EnvOverviewHome extends Component {
       param: paras.toString(),
     };
     if (this.env.length) {
-      this.loadModuleDate(key, tpEnvId || this.env[0].id, sorter, postData);
+      this.loadModuleDate(key, envId, sorter, postData);
     }
   };
 
@@ -99,22 +96,23 @@ class EnvOverviewHome extends Component {
    */
   @action
   tabChange = (key) => {
-    this.tabKey = key;
     const { EnvOverviewStore } = this.props;
-    const tpEnvId = this.envId || EnvOverviewStore.getTpEnvId;
+    EnvOverviewStore.setTabKey(key);
+    const envId = EnvOverviewStore.getTpEnvId;
     const sort = { field: 'id', order: 'desc' };
     const post = {
       searchParam: {},
       param: '',
     };
-    if (this.env.length) {
-      this.loadModuleDate(key, tpEnvId || this.env[0].id, sort, post);
+    if (this.env.length && envId) {
+      this.loadModuleDate(key, envId, sort, post);
     }
     EnvOverviewStore.setInfo({ filters: {}, sort: { columnKey: 'id', order: 'descend' }, paras: [] });
   };
 
   loadModuleDate = (key, env, sort, post) => {
     this.loadSync(env);
+    this.loadLog(env);
     switch (key) {
       case 'domain':
         this.loadDomainOrNet('domain', env, sort, post);
@@ -123,7 +121,6 @@ class EnvOverviewHome extends Component {
         this.loadDomainOrNet('net', env, sort, post);
         break;
       case 'log':
-        this.loadLog(env);
         break;
       case 'cert':
         this.loadCertData(env);
@@ -139,10 +136,9 @@ class EnvOverviewHome extends Component {
    * @param value
    */
   @action
-  selectEnv = (value) => {
+  handleEnvSelect = (value) => {
     const { EnvOverviewStore } = this.props;
     EnvOverviewStore.setTpEnvId(value);
-    this.envId = value || this.env[0].id;
     this.loadIstOverview(value);
     this.loadDomainOrNet('domain', value);
     this.loadDomainOrNet('net', value);
@@ -161,17 +157,16 @@ class EnvOverviewHome extends Component {
     EnvOverviewStore.loadActiveEnv(projectId)
       .then((env) => {
         if (env.length) {
-          const envSort = _.concat(_.filter(env, ['connect', true]), _.filter(env, ['connect', false]));
-          const tpEnvId = this.envId || EnvOverviewStore.getTpEnvId;
-          this.env = envSort;
-          const flag = _.filter(env, { id: tpEnvId }).length;
-          const envId = flag ? tpEnvId : envSort[0].id;
-          this.loadIstOverview(envId);
-          this.loadDomainOrNet('domain', envId);
-          this.loadDomainOrNet('net', envId);
-          this.loadLog(envId);
-          this.loadSync(envId);
-          this.loadCertData(envId);
+          const envId = EnvOverviewStore.getTpEnvId;
+          this.env = env;
+          if (envId) {
+            this.loadIstOverview(envId);
+            this.loadDomainOrNet('domain', envId);
+            this.loadDomainOrNet('net', envId);
+            this.loadLog(envId);
+            this.loadSync(envId);
+            this.loadCertData(envId);
+          }
         }
       });
   };
@@ -228,7 +223,7 @@ class EnvOverviewHome extends Component {
    * @param envId
    */
   loadCertData = (envId) => {
-    const { page, pageSize, sorter, postData } = CertificateStore.getTableFilter;
+    const { page, pageSize } = CertificateStore.getTableFilter;
     const { id: projectId } = AppState.currentMenuType;
     CertificateStore.loadCertData(projectId, page, pageSize, { field: 'id', order: 'descend' }, { searchParam: {}, param: '' }, envId);
   };
@@ -263,16 +258,16 @@ class EnvOverviewHome extends Component {
    * 关闭域名侧边栏
    */
   @action
-  closeDomain = (isload) => {
+  closeDomain = (isLoad) => {
     const { EnvOverviewStore } = this.props;
     this.props.form.resetFields();
     this.showDomain = false;
     this.domainId = null;
-    if (isload) {
-      const envId = this.envId || this.env[0].id;
+    if (isLoad) {
+      const envId = EnvOverviewStore.getTpEnvId;
       this.loadDomainOrNet('domain', envId);
-      this.loadIstOverview(envId);
       EnvOverviewStore.setInfo({ filters: {}, sort: { columnKey: 'id', order: 'descend' }, paras: [] });
+      EnvOverviewStore.setTabKey('domain');
     }
   };
 
@@ -280,15 +275,15 @@ class EnvOverviewHome extends Component {
    * 关闭网络侧边栏
    */
   @action
-  closeNetwork = (isload) => {
+  closeNetwork = (isLoad) => {
     const { EnvOverviewStore } = this.props;
     this.props.form.resetFields();
     this.showNetwork = false;
-    if (isload) {
-      const envId = this.envId || this.env[0].id;
+    if (isLoad) {
+      const envId = EnvOverviewStore.getTpEnvId;
       this.loadDomainOrNet('net', envId);
-      this.loadIstOverview(envId);
       EnvOverviewStore.setInfo({ filters: {}, sort: { columnKey: 'id', order: 'descend' }, paras: [] });
+      EnvOverviewStore.setTabKey('network');
     }
   };
 
@@ -303,7 +298,17 @@ class EnvOverviewHome extends Component {
   /**
    * 关闭证书侧边栏
    */
-  closeCreateModal = () => this.setState({ createDisplay: false });
+  closeCreateModal = (isLoad) => {
+    const { EnvOverviewStore } = this.props;
+    this.setState({ createDisplay: false });
+    this.props.form.resetFields();
+    if (isLoad) {
+      const envId = EnvOverviewStore.getTpEnvId;
+      this.loadCertData(envId);
+      EnvOverviewStore.setInfo({ filters: {}, sort: { columnKey: 'id', order: 'descend' }, paras: [] });
+      EnvOverviewStore.setTabKey('cert');
+    }
+  };
 
   /**
    * 处理页面跳转
@@ -316,12 +321,12 @@ class EnvOverviewHome extends Component {
 
   /**
    * 条件部署应用
-   * @param envId
    */
-  deployApp = (envId) => {
-    const envID = envId || this.env[0].id;
+  deployApp = () => {
+    const { EnvOverviewStore } = this.props;
+    const envId = EnvOverviewStore.getTpEnvId;
     const { id: projectId, name: projectName, organizationId, type } = AppState.currentMenuType;
-    this.linkToChange(`/devops/deployment-app?type=${type}&id=${projectId}&name=${projectName}&organizationId=${organizationId}&envId=${envID}`);
+    this.linkToChange(`/devops/deployment-app?type=${type}&id=${projectId}&name=${projectName}&organizationId=${organizationId}&envId=${envId}`);
   };
 
   /**
@@ -342,84 +347,157 @@ class EnvOverviewHome extends Component {
   };
 
   /**
-   * 处理环境默认值DOM
-   * @returns {*}
+   * 点击失败状态跳转到日志tab页
    */
-  envNameDom = () => {
-    const { intl, EnvOverviewStore } = this.props;
-    const tpEnvId = this.envId || EnvOverviewStore.getTpEnvId;
-    let envName = '';
-    if (this.env.length) {
-      if (tpEnvId) {
-        envName = tpEnvId;
-      } else {
-        envName = this.env[0].id;
-      }
-    } else {
-      envName = intl.formatMessage({ id: 'envoverview.noEnv' });
-    }
-    return envName;
+  linkToLogTabs = () => {
+    const { EnvOverviewStore } = this.props;
+    EnvOverviewStore.setTabKey('log');
   };
 
   render() {
-    const { intl, EnvOverviewStore } = this.props;
+    const { intl: { formatMessage }, EnvOverviewStore } = this.props;
     const { createDisplay } = this.state;
-    const tpEnvId = this.envId || EnvOverviewStore.getTpEnvId;
+    const envId = EnvOverviewStore.getTpEnvId;
+    const envData = EnvOverviewStore.getEnvcard;
+    const tabKey = EnvOverviewStore.getTabKey;
+    const log = EnvOverviewStore.getLog;
     const sync = EnvOverviewStore.getSync;
     const { type, id: projectId, organizationId: orgId, name } = AppState.currentMenuType;
 
-    const envNameDom = this.env.length ? _.map(this.env, d => (<Option key={d.id} value={d.id}>
-      {d.connect ? <span className="c7n-ist-status_on" /> : <span className="c7n-ist-status_off" />}
-      {d.name}</Option>)) : [];
-
     const envState = this.env.length
-      ? this.env.filter(d => d.id === Number(tpEnvId || this.env[0].id))[0] : true;
+      ? this.env.filter(d => d.id === Number(envId))[0] : { connect: false };
 
-    const tabEnvId = this.envId || (this.env.length ? this.env[0].id : null);
     // tab页选项
     const tabOption = [{
       key: 'app',
       component: <AppOverview
         store={EnvOverviewStore}
-        tabkey={this.tabKey}
-        envState={envState.connect}
-        envId={tabEnvId}
+        tabkey={tabKey}
+        envState={envState && envState.connect}
+        envId={envId}
       />,
       msg: 'network.column.app',
     }, {
       key: 'network',
       component: <NetworkOverview
         store={EnvOverviewStore}
-        tabkey={this.tabKey}
-        envId={tabEnvId}
+        tabkey={tabKey}
+        envId={envId}
       />,
       msg: 'network.header.title',
     }, {
       key: 'domain',
       component: <DomainOverview
         store={EnvOverviewStore}
-        tabkey={this.tabKey}
-        envId={tabEnvId}
+        tabkey={tabKey}
+        envId={envId}
       />,
       msg: 'domain.header.title',
     }, {
       key: 'cert',
       component: <CertTable
         store={CertificateStore}
-        envId={tabEnvId}
+        envId={envId}
       />,
       msg: 'ctf.head',
     }, {
       key: 'log',
       component: <LogOverview
         store={EnvOverviewStore}
-        tabkey={this.tabKey}
-        envId={tabEnvId}
+        tabkey={tabKey}
+        envId={envId}
       />,
       msg: 'envoverview.logs',
     }];
 
     const istStatusType = ['running', 'operating', 'stopped', 'failed'];
+
+    const menu = (
+      <Menu className="c7n-envow-dropdown-link">
+        <Menu.Item
+          key="0"
+          disabled={envState && !envState.connect}
+        >
+          <Permission
+            service={['devops-service.devops-service.create']}
+            type={type}
+            projectId={projectId}
+            organizationId={orgId}
+          >
+            <Tooltip title={envState && !envState.connect ? <FormattedMessage id="envoverview.envinfo" /> : null}>
+              <Button
+                funcType="flat"
+                disabled={envState && !envState.connect}
+                onClick={this.createNetwork}
+              >
+                <FormattedMessage id="network.header.create" />
+              </Button>
+            </Tooltip>
+          </Permission>
+        </Menu.Item>
+        <Menu.Item
+          key="1"
+          disabled={envState && !envState.connect}
+        >
+          <Permission
+            service={['devops-service.devops-ingress.create']}
+            type={type}
+            projectId={projectId}
+            organizationId={orgId}
+          >
+            <Tooltip title={envState && !envState.connect ? <FormattedMessage id="envoverview.envinfo" /> : null}>
+              <Button
+                funcType="flat"
+                disabled={envState && !envState.connect}
+                onClick={this.createDomain.bind(this, 'create', '')}
+              >
+                <FormattedMessage id="domain.header.create" />
+              </Button>
+            </Tooltip>
+          </Permission>
+        </Menu.Item>
+        <Menu.Item
+          key="3"
+          disabled={envState && !envState.connect}
+        >
+          <Permission
+            type={type}
+            projectId={projectId}
+            organizationId={orgId}
+            service={['devops-service.certification.create']}
+          >
+            <Tooltip title={envState && !envState.connect ? <FormattedMessage id="envoverview.envinfo" /> : null}>
+              <Button
+                funcType="flat"
+                disabled={envState && !envState.connect}
+                onClick={this.openCreateModal}
+              >
+                <FormattedMessage id="ctf.create" />
+              </Button>
+            </Tooltip>
+          </Permission>
+        </Menu.Item>
+      </Menu>
+    );
+
+    let syncDom = null;
+
+    if (log && log.length) {
+      syncDom = (<div className="c7n-envow-sync-wrap">
+        <div className="c7n-envow-status-text"><FormattedMessage id="envoverview.error" /></div>
+        <div>
+          <Button ghost funcType="flat" shape="circle" onClick={this.linkToLogTabs}>
+            <Icon type="cancel" className="c7n-envow-error-icon" />
+          </Button>
+        </div>
+      </div>);
+    } else if ((sync && (sync.devopsSyncCommit !== sync.sagaSyncCommit
+      || sync.sagaSyncCommit !== sync.agentSyncCommit)) && envState && envState.connect) {
+      syncDom = (<div className="c7n-envow-sync-wrap">
+        <div className="c7n-envow-status-text"><FormattedMessage id="envoverview.sync" /></div>
+        <div className="c7n-envow-sync-icon"><Icon type="autorenew" /></div>
+      </div>);
+    }
 
     return (
       <Page
@@ -439,6 +517,7 @@ class EnvOverviewHome extends Component {
           'devops-service.application-instance.start',
           'devops-service.application-instance.stop',
           'devops-service.application-instance.listByEnv',
+          'devops-service.application-version.getUpgradeAppVersion',
           'devops-service.devops-env-file-error.page',
           'devops-service.devops-environment.listByProjectIdAndActive',
           'devops-service.application.listByEnvIdAndStatus',
@@ -452,22 +531,50 @@ class EnvOverviewHome extends Component {
           'devops-service.devops-ingress.pageByOptions',
           'devops-service.devops-ingress.queryDomainId',
           'devops-service.devops-ingress.delete',
+          'devops-service.devops-ingress.create',
           'devops-service.devops-ingress.listByEnv',
           'devops-service.certification.listByOptions',
           'devops-service.certification.create',
           'devops-service.certification.delete',
         ]}
       >
-        <Header title={<FormattedMessage id="envoverview.head" />}>
+        {envData && envData.length && envId  ? <Fragment><Header title={<FormattedMessage id="envoverview.head" />}>
           <Select
-            value={this.envNameDom()}
-            dropdownClassName="c7n-envow-select-dropdown"
-            onChange={this.selectEnv}
-            className="c7n-envow-select"
-            notFoundContent={intl.formatMessage({ id: 'envoverview.noEnv' })}
+            className={`${envId? 'c7n-header-select' : 'c7n-header-select c7n-select_min100'}`}
+            dropdownClassName="c7n-header-env_drop"
+            placeholder={formatMessage({ id: 'envoverview.noEnv' })}
+            value={envData && envData.length ? envId : undefined}
+            disabled={envData && envData.length === 0}
+            onChange={this.handleEnvSelect}
           >
-            {envNameDom}
+            {_.map(envData,  e => (
+              <Option key={e.id} value={e.id} disabled={!e.permission} title={e.name}>
+                <Tooltip placement="right" title={e.name}>
+                    <span className="c7n-ib-width_100">
+                      {e.connect ? <span className="c7n-ist-status_on" /> : <span className="c7n-ist-status_off" />}
+                      {e.name}
+                    </span>
+                </Tooltip>
+              </Option>))}
           </Select>
+          <Permission
+            service={[
+              'devops-service.devops-service.create',
+            ]}
+            type={type}
+            projectId={projectId}
+            organizationId={orgId}
+          >
+            <div className="c7n-envow-select">
+              <Dropdown overlay={menu} trigger={['click']}>
+                <a href="#">
+                  <Icon type="playlist_add" />
+                  {formatMessage({ id: 'create' })}
+                  <Icon type="arrow_drop_down" />
+                </a>
+              </Dropdown>
+            </div>
+          </Permission>
           <Permission
             service={[
               'devops-service.application-instance.deploy',
@@ -476,73 +583,23 @@ class EnvOverviewHome extends Component {
             projectId={projectId}
             organizationId={orgId}
           >
-            <Tooltip title={!envState.connect ? <FormattedMessage id="envoverview.envinfo" /> : null}>
+            <Tooltip title={envState && !envState.connect ? <FormattedMessage id="envoverview.envinfo" /> : null}>
               <Button
-                disabled={!envState.connect}
-                onClick={this.deployApp.bind(this, this.envId)}
+                disabled={(envState && !envState.connect) || !envId}
+                onClick={this.deployApp.bind(this, envId)}
                 icon="jsfiddle"
               >
                 <FormattedMessage id="deploy.header.title" />
               </Button>
             </Tooltip>
           </Permission>
-          <Permission
-            service={['devops-service.devops-service.create']}
-            type={type}
-            projectId={projectId}
-            organizationId={orgId}
-          >
-            <Tooltip title={!envState.connect ? <FormattedMessage id="envoverview.envinfo" /> : null}>
-              <Button
-                funcType="flat"
-                disabled={!envState.connect}
-                onClick={this.createNetwork}
-                icon="playlist_add"
-              >
-                <FormattedMessage id="network.header.create" />
-              </Button>
-            </Tooltip>
-          </Permission>
-          <Permission
-            service={['devops-service.devops-ingress.create']}
-            type={type}
-            projectId={projectId}
-            organizationId={orgId}
-          >
-            <Tooltip title={!envState.connect ? <FormattedMessage id="envoverview.envinfo" /> : null}>
-              <Button
-                funcType="flat"
-                disabled={!envState.connect}
-                onClick={this.createDomain.bind(this, 'create', '')}
-                icon="playlist_add"
-              >
-                <FormattedMessage id="domain.header.create" />
-              </Button>
-            </Tooltip>
-          </Permission>
-          <Permission
-            type={type}
-            projectId={projectId}
-            organizationId={orgId}
-            service={['devops-service.certification.create']}
-          >
-            <Tooltip title={!envState.connect ? <FormattedMessage id="envoverview.envinfo" /> : null}>
-              <Button
-                funcType="flat"
-                disabled={!envState.connect}
-                onClick={this.openCreateModal}
-                icon="playlist_add"
-              >
-                <FormattedMessage id="ctf.create" />
-              </Button>
-            </Tooltip>
-          </Permission>
           <Tooltip title={sync && sync.commitUrl
-            ? sync.commitUrl.substr(0, sync.commitUrl.length - 7) : null}
+            ? sync.commitUrl.substr(0, sync.commitUrl.length - 8) : null}
           >
             <a
+              className="c7n-envow-gitlab"
               href={sync && sync.commitUrl
-                ? sync.commitUrl.substr(0, sync.commitUrl.length - 7) : null}
+                ? sync.commitUrl.substr(0, sync.commitUrl.length - 8) : null}
               target="_blank"
               rel="nofollow me noopener noreferrer"
             >
@@ -565,18 +622,23 @@ class EnvOverviewHome extends Component {
           <div className="c7n-envow-status-wrap">
             <div>
               <h2 className="c7n-space-first">
-                <FormattedMessage
+                {envId ? <FormattedMessage
                   id="envoverview.title"
+                  values={{
+                    name: `${envState && envState.name}`,
+                  }}
+                /> : <FormattedMessage
+                  id="envoverview.noenv.title"
                   values={{
                     name: `${name}`,
                   }}
-                />
+                />}
               </h2>
               <p>
                 <FormattedMessage
                   id="envoverview.description"
                 />
-                <a href={this.props.intl.formatMessage({ id: 'envoverview.link' })} rel="nofollow me noopener noreferrer" target="_blank" className="c7n-external-link">
+                <a href={formatMessage({ id: 'envoverview.link' })} rel="nofollow me noopener noreferrer" target="_blank" className="c7n-external-link">
                   <span className="c7n-external-link-content">
                     <FormattedMessage id="learnmore" />
                   </span>
@@ -585,13 +647,7 @@ class EnvOverviewHome extends Component {
               </p>
             </div>
             <div className="c7n-envow-status-content">
-              {(sync && sync.devopsSyncCommit === sync.gitCommit
-              && sync.gitCommit === sync.agentSyncCommit) || !envState.connect
-                ? null
-                : <div className="c7n-envow-sync-wrap">
-                  <div className="c7n-envow-status-text"><FormattedMessage id="envoverview.sync" /></div>
-                  <div><Icon type="autorenew" /></div>
-                </div>}
+              {syncDom}
               <div>
                 <div className="c7n-envow-status-text"><FormattedMessage id="envoverview.istov" /></div>
                 <div className="c7n-envow-status-wrap">
@@ -603,24 +659,24 @@ class EnvOverviewHome extends Component {
               </div>
             </div>
           </div>
-          <Tabs className="c7n-envoverview-tabs" activeKey={this.tabKey} animated={false} onChange={this.tabChange}>
+          <Tabs className="c7n-envoverview-tabs" activeKey={tabKey} animated={false} onChange={this.tabChange}>
             {_.map(tabOption, (item) => {
               const { key, component, msg } = item;
-              return (<TabPane tab={intl.formatMessage({ id: msg })} key={key}>
-                {this.tabKey === key ? component : null}
+              return (<TabPane tab={formatMessage({ id: msg })} key={key}>
+                {tabKey === key ? component : null}
               </TabPane>);
             })}
           </Tabs>
-        </Content>
+        </Content></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="envoverview.head" />} type="env" />}
         {this.showNetwork && <CreateNetwork
           visible={this.showNetwork}
           store={NetworkConfigStore}
-          envId={this.envId || this.env[0].id}
+          envId={envId}
           onClose={this.closeNetwork}
         />}
         {this.showDomain && <CreateDomain
           id={this.domainId}
-          envId={this.envId || this.env[0].id}
+          envId={envId}
           title={this.domainTitle}
           visible={this.showDomain}
           type={this.domainType}
@@ -629,7 +685,7 @@ class EnvOverviewHome extends Component {
         />}
         {createDisplay ? <CreateCert
           visible={createDisplay}
-          envId={this.envId || this.env[0].id}
+          envId={envId}
           store={CertificateStore}
           onClose={this.closeCreateModal}
         /> : null}

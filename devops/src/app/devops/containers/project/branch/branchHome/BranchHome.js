@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
+import React, {Component, Fragment} from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { Button, Tooltip, Modal, Table, Popover, Progress, Select } from 'choerodon-ui';
-import { Content, Header, Page, Permission, stores, axios } from 'choerodon-front-boot';
+import { Button, Tooltip, Modal, Table, Popover, Select, Icon } from 'choerodon-ui';
+import { Content, Header, Page, Permission, stores } from 'choerodon-front-boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import '../../../main.scss';
@@ -13,9 +13,11 @@ import EditBranch from '../editBranch';
 import IssueDetail from '../issueDetail';
 import '../commom.scss';
 import MouserOverWrapper from '../../../../components/MouseOverWrapper';
+import DevPipelineStore from '../../../../stores/project/devPipeline';
+import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
 
 const { AppState } = stores;
-const Option = Select.Option;
+const { Option, OptGroup } = Select;
 
 @observer
 class BranchHome extends Component {
@@ -34,8 +36,14 @@ class BranchHome extends Component {
   }
 
   componentDidMount() {
-    const { BranchStore } = this.props;
-    BranchStore.loadApps();
+    const {
+      history: { location: { state } },
+    } = this.props;
+    let historyAppId = null;
+    if (state && state.appId) {
+      historyAppId = state.appId;
+    }
+    DevPipelineStore.queryAppData(AppState.currentMenuType.id, 'branch', historyAppId);
   }
 
   /**
@@ -51,32 +59,32 @@ class BranchHome extends Component {
     switch (s.typeCode) {
       case 'story':
         mes = formatMessage({ id: 'branch.issue.story' });
-        icon = 'turned_in';
+        icon = 'agile_story';
         color = '#00bfa5';
         break;
       case 'bug':
         mes = formatMessage({ id: 'branch.issue.bug' });
-        icon = 'bug_report';
+        icon = 'agile_fault';
         color = '#f44336';
         break;
       case 'issue_epic':
         mes = formatMessage({ id: 'branch.issue.epic' });
-        icon = 'priority';
+        icon = 'agile_epic';
         color = '#743be7';
         break;
       case 'sub_task':
         mes = formatMessage({ id: 'branch.issue.subtask' });
-        icon = 'relation';
+        icon = 'agile_subtask';
         color = '#4d90fe';
         break;
       default:
         mes = formatMessage({ id: 'branch.issue.task' });
-        icon = 'assignment';
+        icon = 'agile_task';
         color = '#4d90fe';
     }
     return (<span>
       <Tooltip title={mes}>
-        <div style={{ background: color }} className="branch-issue"><i className={`icon icon-${icon}`} /></div>
+        <div style={{ color }} className="branch-issue"><i className={`icon icon-${icon}`} /></div>
       </Tooltip>
       <Tooltip title={s.summary}>
         <span className="branch-issue-content"><span>{s.issueNum}</span></span>
@@ -85,52 +93,21 @@ class BranchHome extends Component {
   };
 
   /**
-   * 获取头像的首字母
-   * @param name
-   */
-  getName = (name) => {
-    const p = /[\u4e00-\u9fa5]/;
-    const str = p.exec(name);
-    let names = '';
-    if (str) {
-      names = str[0];
-    } else {
-      names = name.slice(0, 1);
-    }
-    return names;
-  };
-
-  /**
    * 获取列表的icon
-   * @param name 分支类型
+   * @param name 分支名称
    * @returns {*}
    */
   getIcon =(name) => {
-    let icon;
-    let type;
-    if (name) {
+    const nameArr = ['feature', 'release', 'bugfix', 'hotfix'];
+    let type = '';
+    if (name.includes('-') && nameArr.includes(name.split('-')[0])) {
       type = name.split('-')[0];
+    } else if (name === 'master') {
+      type = name;
+    } else {
+      type = 'custom';
     }
-    switch (type) {
-      case 'feature':
-        icon = <span className="c7n-branch-icon icon-feature">F</span>;
-        break;
-      case 'bugfix':
-        icon = <span className="c7n-branch-icon icon-develop">B</span>;
-        break;
-      case 'hotfix':
-        icon = <span className="c7n-branch-icon icon-hotfix">H</span>;
-        break;
-      case 'master':
-        icon = <span className="c7n-branch-icon icon-master">M</span>;
-        break;
-      case 'release':
-        icon = <span className="c7n-branch-icon icon-release">R</span>;
-        break;
-      default:
-        icon = <span className="c7n-branch-icon icon-custom">C</span>;
-    }
-    return icon;
+    return <span className={`c7n-branch-icon icon-${type}`}>{type.slice(0, 1).toUpperCase()}</span>;
   };
 
   /**
@@ -138,7 +115,7 @@ class BranchHome extends Component {
    * @returns {*}
    */
   get tableBranch() {
-    const { BranchStore, intl } = this.props;
+    const { BranchStore } = this.props;
     const { paras, filters, sort: { columnKey, order } } = this.state;
     const menu = AppState.currentMenuType;
     const { type, organizationId: orgId } = menu;
@@ -191,7 +168,7 @@ class BranchHome extends Component {
             </React.Fragment>
             : <React.Fragment>
               {record.createUserName ? <div>
-                <div className="branch-user-img">{record.createUserRealName && this.getName(record.createUserRealName)}</div>
+                <div className="branch-user-img">{record.createUserRealName && record.createUserRealName.slice(0, 1).toUpperCase()}</div>
                 <div style={{ display: 'inline-block' }}>
                   <span style={{ paddingRight: 5 }}>{record.createUserName}</span>
                   {record.createUserName !== record.createUserRealName
@@ -243,7 +220,7 @@ class BranchHome extends Component {
                     title={<FormattedMessage id="delete" />}
                   >
                     <Button size="small" shape="circle" onClick={this.openRemove.bind(this, record.branchName)}>
-                      <i className="icon icon-delete" />
+                      <i className="icon icon-delete_forever" />
                     </Button>
                   </Tooltip>
                 </Permission>
@@ -254,6 +231,7 @@ class BranchHome extends Component {
         ),
       },
     ];
+    const titleData = ['master', 'feature', 'bugfix', 'release', 'hotfix', 'custom'];
     const title = (<div className="c7n-header-table">
       <span>
         <FormattedMessage id="branch.list" />
@@ -261,76 +239,24 @@ class BranchHome extends Component {
       <Popover
         overlayClassName="branch-popover"
         placement="rightTop"
+        arrowPointAtCenter
         content={<section>
-          <div>
-            <span className="branch-popover-span span-master" />
-            <div className="branch-popover-content">
-              <p className="branch-popover-p">
-                <FormattedMessage id="branch.master" />
-              </p>
-              <p>
-                <FormattedMessage id="branch.masterDes" />
-              </p>
-            </div>
-          </div>
-          <div className="c7n-branch-block">
-            <span className="branch-popover-span span-feature" />
-            <div className="branch-popover-content">
-              <p className="branch-popover-p">
-                <FormattedMessage id="branch.feature" />
-              </p>
-              <p>
-                <FormattedMessage id="branch.featureDes" />
-              </p>
-            </div>
-          </div>
-          <div className="c7n-branch-block">
-            <span className="branch-popover-span span-bugfix" />
-            <div className="branch-popover-content">
-              <p className="branch-popover-p">
-                <FormattedMessage id="branch.bugfix" />
-              </p>
-              <p>
-                <FormattedMessage id="branch.bugfixDes" />
-              </p>
-            </div>
-          </div>
-          <div className="c7n-branch-block">
-            <span className="branch-popover-span span-release" />
-            <div className="branch-popover-content">
-              <p className="branch-popover-p">
-                <FormattedMessage id="branch.release" />
-              </p>
-              <p>
-                <FormattedMessage id="branch.releaseDes" />
-              </p>
-            </div>
-          </div>
-          <div className="c7n-branch-block">
-            <span className="branch-popover-span span-hotfix" />
-            <div className="branch-popover-content">
-              <p className="branch-popover-p">
-                <FormattedMessage id="branch.hotfix" />
-              </p>
-              <p>
-                <FormattedMessage id="branch.hotfixDes" />
-              </p>
-            </div>
-          </div>
-          <div className="c7n-branch-block">
-            <span className="branch-popover-span span-custom" />
-            <div className="branch-popover-content">
-              <p className="branch-popover-p">
-                <FormattedMessage id="branch.custom" />
-              </p>
-              <p>
-                <FormattedMessage id="branch.customDes" />
-              </p>
-            </div>
-          </div>
+          {
+            _.map(titleData, item => (<div className="c7n-branch-block" key={item}>
+              <span className={`branch-popover-span span-${item}`} />
+              <div className="branch-popover-content">
+                <p className="branch-popover-p">
+                  <FormattedMessage id={`branch.${item}`} />
+                </p>
+                <p>
+                  <FormattedMessage id={`branch.${item}Des`} />
+                </p>
+              </div>
+            </div>))
+          }
         </section>}
       >
-        <i className="icon icon-help branch-icon-help" />
+        <Icon className="branch-icon-help" type="help"/>
       </Popover>
     </div>);
     return (
@@ -359,7 +285,8 @@ class BranchHome extends Component {
   loadData = (value) => {
     const { projectId } = this.state;
     const { BranchStore } = this.props;
-    BranchStore.setApp(value);
+    DevPipelineStore.setSelectApp(value);
+    DevPipelineStore.setRecentApp(value);
     BranchStore.setBranchData({ content: [] });
     BranchStore.loadBranchList({ projectId });
   };
@@ -370,7 +297,8 @@ class BranchHome extends Component {
    */
   handleEdit =(name) => {
     const { BranchStore } = this.props;
-    BranchStore.loadBranchByName(this.state.projectId, BranchStore.app, name);
+    this.setState({ name });
+    BranchStore.loadBranchByName(this.state.projectId, DevPipelineStore.selectedApp, name);
     BranchStore.setCreateBranchShow('edit');
   };
 
@@ -412,8 +340,9 @@ class BranchHome extends Component {
   hideSidebar = (isload = true) => {
     const { BranchStore } = this.props;
     BranchStore.setCreateBranchShow(false);
+    BranchStore.setBranch(null);
     if (isload) {
-      this.loadData(BranchStore.app);
+      this.loadData(DevPipelineStore.selectedApp);
       this.setState({ paras: [], filters: {}, sort: { columnKey: 'creationDate', order: 'ascend' } });
     }
   };
@@ -442,9 +371,9 @@ class BranchHome extends Component {
     const menu = AppState.currentMenuType;
     const organizationId = menu.id;
     this.setState({ submitting: true });
-    BranchStore.deleteData(organizationId, BranchStore.app, name).then((data) => {
+    BranchStore.deleteData(organizationId, DevPipelineStore.getSelectApp, name).then((data) => {
       this.setState({ submitting: false });
-      this.loadData(BranchStore.app);
+      this.loadData(DevPipelineStore.selectedApp);
       this.closeRemove();
     }).catch((error) => {
       this.setState({ submitting: false });
@@ -498,9 +427,12 @@ class BranchHome extends Component {
 
   render() {
     const { name } = AppState.currentMenuType;
-    const { BranchStore, intl: { formatMessage } } = this.props;
+    const { BranchStore, intl: { formatMessage }, history: { location: { state } } } = this.props;
     const { name: branchName, submitting, visible } = this.state;
-    const apps = BranchStore.apps.slice();
+    const apps = DevPipelineStore.appData.slice();
+    const appId = DevPipelineStore.getSelectApp;
+    const titleName = _.find(apps, ['id', appId]) ? _.find(apps, ['id', appId]).name : name;
+    const  backPath = state && state.backPath;
     return (
       <Page
         className="c7n-region c7n-branch"
@@ -517,8 +449,36 @@ class BranchHome extends Component {
           'agile-service.work-log.queryWorkLogListByIssueId',
         ]}
       >
-        <Header title={<FormattedMessage id="branch.head" />}>
-          {BranchStore.getBranchList.length && BranchStore.app ? <Permission
+        {apps && apps.length ? <Fragment><Header
+          title={<FormattedMessage id="branch.head" />}
+          backPath={backPath}
+        >
+          <Select
+            filter
+            className="c7n-header-select"
+            dropdownClassName="c7n-header-select_drop"
+            placeholder={formatMessage({ id: 'ist.noApp' })}
+            value={apps && apps.length ? DevPipelineStore.getSelectApp : undefined}
+            disabled={apps.length === 0}
+            filterOption={(input, option) => option.props.children.props.children.props.children
+              .toLowerCase().indexOf(input.toLowerCase()) >= 0}
+            onChange={this.loadData}
+          >
+            <OptGroup label={formatMessage({ id: 'recent' })} key="recent">
+              {_.map(DevPipelineStore.getRecentApp, app => <Option key={`recent-${app.id}`} value={app.id}>
+                <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
+              </Option>)}
+            </OptGroup>
+            <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
+              {
+                _.map(apps, (app, index) => (
+                  <Option value={app.id} key={index}>
+                    <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
+                  </Option>))
+              }
+            </OptGroup>
+          </Select>
+          {BranchStore.getBranchList.length && DevPipelineStore.selectedApp ? <Permission
             service={['devops-service.devops-git.createBranch']}
           >
             <Button
@@ -535,39 +495,19 @@ class BranchHome extends Component {
             <FormattedMessage id="refresh" />
           </Button>
         </Header>
-        <Content code="branch" value={{ name }} className="page-content">
-          <Select
-            onChange={this.loadData}
-            value={BranchStore.app ? BranchStore.app : undefined}
-            className="branch-select_512"
-            label={formatMessage({ id: 'deploy.step.one.app' })}
-            filterOption={(input, option) => option.props.children.props.children.props.children
-              .toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filter
-          >
-            {
-              _.map(apps, (app, index) => (
-                <Option value={app.id} key={index}>
-                  <Tooltip title={app.code}>
-                    <span style={{ width: '100%', display: 'inline-block' }}>
-                      {app.name}
-                    </span>
-                  </Tooltip>
-                </Option>))
-            }
-          </Select>
+        <Content code={apps.length ? 'branch.app' : 'branch'} values={{ name: titleName }} className="page-content">
           {this.tableBranch}
         </Content>
         {BranchStore.createBranchShow === 'create' && <CreateBranch
-          name={_.filter(apps, app => app.id === BranchStore.app)[0].name}
-          appId={BranchStore.app}
+          name={_.filter(apps, app => app.id === DevPipelineStore.selectedApp)[0].name}
+          appId={DevPipelineStore.selectedApp}
           store={BranchStore}
           visible={BranchStore.createBranchShow === 'create'}
           onClose={this.hideSidebar}
         /> }
         {BranchStore.createBranchShow === 'edit' && <EditBranch
-          appId={BranchStore.app}
+          name={branchName}
+          appId={DevPipelineStore.selectedApp}
           store={BranchStore}
           visible={BranchStore.createBranchShow === 'edit'}
           onClose={this.hideSidebar}
@@ -581,17 +521,17 @@ class BranchHome extends Component {
         <Modal
           confirmLoading={submitting}
           visible={visible}
-          title={<FormattedMessage id="branch.action.delete" />}
+          title={`${formatMessage({ id: 'branch.action.delete' })}“${branchName}”`}
           closable={false}
           footer={[
-            <Button key="back" onClick={this.closeRemove}>{<FormattedMessage id="cancel" />}</Button>,
+            <Button key="back" onClick={this.closeRemove} disabled={submitting}>{<FormattedMessage id="cancel" />}</Button>,
             <Button key="submit" type="danger" onClick={this.handleDelete} loading={submitting}>
               {formatMessage({ id: 'delete' })}
             </Button>,
           ]}
         >
           <p>{formatMessage({ id: 'branch.delete.tooltip' })}</p>
-        </Modal>
+        </Modal></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="branch.head" />} type="app" />}
       </Page>
     );
   }

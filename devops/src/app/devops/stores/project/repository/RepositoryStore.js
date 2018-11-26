@@ -1,6 +1,7 @@
 import { observable, action, computed } from 'mobx';
-import { axios, store } from 'choerodon-front-boot';
+import {axios, store, stores} from 'choerodon-front-boot';
 import { handleProptError } from '../../../utils';
+import DeploymentPipelineStore from '../deploymentPipeline';
 
 const orderMapping = {
   ascend: 'asc',

@@ -1,5 +1,13 @@
 import { observable, action, computed } from 'mobx';
-import { axios, store } from 'choerodon-front-boot';
+import { axios, store, stores } from 'choerodon-front-boot';
+import _ from 'lodash';
+import ContainerStore from '../container';
+import CertificateStore from '../certificate';
+import InstancesStore from '../instances';
+import { handleProptError } from '../../../utils';
+import DeploymentPipelineStore from '../deploymentPipeline';
+
+const { AppState } = stores;
 
 const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 @store('EnvOverviewStore')
@@ -8,7 +16,9 @@ class EnvOverviewStore {
 
   @observable val = '';
 
-  @observable envcard = [];
+  @observable envCard = [];
+
+  @observable preProId = AppState.currentMenuType.id;
 
   @observable ist = null;
 
@@ -22,6 +32,8 @@ class EnvOverviewStore {
 
   @observable tpEnvId = null;
 
+  @observable tabKey = 'app';
+
   @observable pageInfo = {
     current: 1, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15,
   };
@@ -29,6 +41,10 @@ class EnvOverviewStore {
   @observable Info = {
     filters: {}, sort: { columnKey: 'id', order: 'descend' }, paras: [],
   };
+
+  @action setPreProId(id) {
+    this.preProId = id;
+  }
 
   @action setPageInfo(page) {
     this.pageInfo.current = page.number + 1;
@@ -40,8 +56,8 @@ class EnvOverviewStore {
     return this.pageInfo;
   }
 
-  @action setEnvcard(envcard) {
-    this.envcard = envcard;
+  @action setEnvcard(envCard) {
+    this.envCard = envCard;
   }
 
   @action setIst(ist) {
@@ -65,7 +81,7 @@ class EnvOverviewStore {
   }
 
   @computed get getEnvcard() {
-    return this.envcard;
+    return this.envCard;
   }
 
   @action setVal(val) {
@@ -82,6 +98,14 @@ class EnvOverviewStore {
 
   @computed get getTpEnvId() {
     return this.tpEnvId;
+  }
+
+  @action setTabKey(tabKey) {
+    this.tabKey = tabKey;
+  }
+
+  @computed get getTabKey() {
+    return this.tabKey;
   }
 
   @computed get getVal() {
@@ -122,15 +146,73 @@ class EnvOverviewStore {
     return this.isLoading;
   }
 
-  loadActiveEnv = projectId => axios.get(`devops/v1/projects/${projectId}/envs?active=true`)
-    .then((data) => {
-      if (data && data.failed) {
-        Choerodon.prompt(data.message);
-      } else {
-        this.setEnvcard(data);
-      }
-      return data;
-    });
+  loadActiveEnv = (projectId, type) => {
+    if (Number(this.preProId) !== Number(projectId)) {
+      this.setEnvcard([]);
+      this.setTpEnvId(null);
+      DeploymentPipelineStore.setProRole('env', '');
+    }
+    this.setPreProId(projectId);
+    return axios.get(`devops/v1/projects/${projectId}/envs?active=true`)
+      .then((data) => {
+        const res = handleProptError(data);
+        if (res) {
+          const envSort = _.concat(_.filter(data, ['connect', true]), _.filter(data, ['connect', false]));
+          const flag = _.filter(envSort, ['permission', true]);
+          const flagConnect = _.filter(flag, ['connect', true]);
+          this.setEnvcard(envSort);
+          if (!this.tpEnvId && flagConnect.length) {
+            const envId = flagConnect[0].id;
+            this.setTpEnvId(envId);
+          } else if (!this.tpEnvId && flag.length) {
+            const envId = flag[0].id;
+            this.setTpEnvId(envId);
+          } else if (flag.length && _.filter(flag, ['id', this.tpEnvId]).length === 0) {
+            const envId = flag[0].id;
+            this.setTpEnvId(envId);
+          } else if (flag.length === 0) {
+            this.setTpEnvId(null);
+          }
+          if (data.length && this.tpEnvId) {
+            switch (type) {
+              case 'container':
+                const appId = ContainerStore.getappId;
+                ContainerStore.loadData(false, projectId, this.tpEnvId, appId);
+                break;
+              case 'certificate':
+                const { page, pageSize, sorter, postData } = CertificateStore.getTableFilter;
+                CertificateStore.loadCertData(projectId, page, pageSize, sorter, postData, this.tpEnvId);
+                break;
+              case 'instance':
+                const {
+                  loadAppNameByEnv,
+                  loadInstanceAll,
+                  getIsCache,
+                  getAppId,
+                } = InstancesStore;
+                if (!getIsCache) {
+                  const appPageSize = Math.floor((window.innerWidth - 350) / 200) * 3;
+                  InstancesStore.setAppPageSize(appPageSize);
+                  loadAppNameByEnv(projectId, this.tpEnvId, 0, appPageSize);
+                  loadInstanceAll(projectId, { envId: this.tpEnvId, appId: getAppId }).catch((err) => {
+                    InstancesStore.changeLoading(false);
+                  });
+                }
+                InstancesStore.setIsCache(false);
+                break;
+              case 'all':
+                break;
+              default:
+                break;
+            }
+          } else {
+            DeploymentPipelineStore.judgeRole();
+          }
+        }
+        this.changeLoading(false);
+        return data;
+      });
+  };
 
   loadIstOverview = (projectId, envId, datas = {
     searchParam: {},
@@ -140,20 +222,22 @@ class EnvOverviewStore {
     this.setIst(null);
     axios.post(`/devops/v1/projects/${projectId}/app_instances/${envId}/listByEnv`, JSON.stringify(datas))
       .then((data) => {
-        if (data && data.failed) {
-          Choerodon.prompt(data.message);
-        } else {
+        const res = handleProptError(data);
+        if (res) {
           this.setIst(data);
         }
-        this.changeLoading(false);        
+        this.changeLoading(false);
       });
   };
 
-  loadDomain = (proId, envId, page, pageSize, sort, datas) => {
+  loadDomain = (proId, envId, page = this.pageInfo.current - 1, pageSize = this.pageInfo.pageSize, sort = { field: 'id', order: 'desc' }, datas = {
+    searchParam: {},
+    param: '',
+  }) => {
     this.changeLoading(true);
     return axios.post(`/devops/v1/projects/${proId}/ingress/${envId}/listByEnv?page=${page}&size=${pageSize}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(datas))
       .then((data) => {
-        const res = this.handleProptError(data);
+        const res = handleProptError(data);
         if (res) {
           const { number, size, totalElements } = data;
           this.setPageInfo({ number, size, totalElements });
@@ -163,11 +247,14 @@ class EnvOverviewStore {
       });
   };
 
-  loadNetwork = (proId, envId, page, pageSize, sort, datas) => {
+  loadNetwork = (proId, envId, page = this.pageInfo.current - 1, pageSize = this.pageInfo.pageSize, sort = { field: 'id', order: 'desc' }, datas = {
+    searchParam: {},
+    param: '',
+  }) => {
     this.changeLoading(true);
     return axios.post(`/devops/v1/projects/${proId}/service/${envId}/listByEnv?page=${page}&size=${pageSize}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(datas))
       .then((data) => {
-        const res = this.handleProptError(data);
+        const res = handleProptError(data);
         if (res) {
           const { number, size, totalElements } = data;
           this.setPageInfo({ number, size, totalElements });
@@ -181,7 +268,7 @@ class EnvOverviewStore {
     this.changeLoading(true);
     return axios.get(`/devops/v1/projects/${proId}/envs/${envId}/error_file/list_by_page?page=${page}&size=${pageSize}`)
       .then((data) => {
-        const res = this.handleProptError(data);
+        const res = handleProptError(data);
         if (res) {
           const { number, size, totalElements } = data;
           this.setPageInfo({ number, size, totalElements });
@@ -203,17 +290,6 @@ class EnvOverviewStore {
       this.setSync(null);
       Choerodon.prompt(error);
     });
-
-  handleProptError =(error) => {
-    if (error && error.failed) {
-      Choerodon.prompt(error.message);
-      this.changeLoading(false);
-      return false;
-    } else {
-      this.changeLoading(false);
-      return error;
-    }
-  }
 }
 
 const envOverviewStore = new EnvOverviewStore();

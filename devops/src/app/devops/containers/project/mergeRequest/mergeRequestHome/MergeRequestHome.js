@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Button, Tabs, Icon, Select, Table, Tooltip } from 'choerodon-ui';
@@ -9,9 +9,12 @@ import _ from 'lodash';
 import './MergeRequestHome.scss';
 import '../../../main.scss';
 import MouserOverWrapper from '../../../../components/MouseOverWrapper';
+import DevPipelineStore from '../../../../stores/project/devPipeline';
+import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
+import { getTableTitle } from '../../../../utils';
 
 const { AppState } = stores;
-const Option = Select.Option;
+const { Option, OptGroup } = Select;
 const TabPane = Tabs.TabPane;
 
 @observer
@@ -25,15 +28,9 @@ class MergeRequestHome extends Component {
 
   componentDidMount() {
     const { MergeRequestStore } = this.props;
-    MergeRequestStore.loadInitData();
+    DevPipelineStore.queryAppData(AppState.currentMenuType.id, 'merge');
     MergeRequestStore.loadUser();
   }
-
-  componentWillUnmount() {
-    const { MergeRequestStore } = this.props;
-    MergeRequestStore.setCurrentApp({});
-  }
-
 
   /**
    * 刷新函数
@@ -45,7 +42,7 @@ class MergeRequestHome extends Component {
     const { MergeRequestStore } = this.props;
     MergeRequestStore.setLoading(true);
     MergeRequestStore.loadMergeRquest(
-      MergeRequestStore.currentApp.id,
+      DevPipelineStore.selectedApp,
       this.state.tabKey,
       MergeRequestStore.pageInfo.current - 1,
       MergeRequestStore.pageInfo.pageSize,
@@ -61,7 +58,7 @@ class MergeRequestHome extends Component {
     if (key === 'assignee') {
       keys = 'opened';
     }
-    MergeRequestStore.loadMergeRquest(MergeRequestStore.currentApp.id, keys);
+    MergeRequestStore.loadMergeRquest(DevPipelineStore.selectedApp, keys);
   };
 
   /**
@@ -80,7 +77,7 @@ class MergeRequestHome extends Component {
     }
     MergeRequestStore.setLoading(true);
     MergeRequestStore.loadMergeRquest(
-      MergeRequestStore.currentApp.id,
+      DevPipelineStore.selectedApp,
       keys,
       pagination.current - 1,
       pagination.pageSize,
@@ -113,9 +110,9 @@ class MergeRequestHome extends Component {
       tabKey: 'opened',
     });
     const { MergeRequestStore } = this.props;
-    const currentApp = MergeRequestStore.apps.find(app => app.id === id);
     const projectId = parseInt(AppState.currentMenuType.id, 10);
-    MergeRequestStore.setCurrentApp(currentApp);
+    DevPipelineStore.setSelectApp(id);
+    DevPipelineStore.setRecentApp(id);
     MergeRequestStore.setAssignee([]);
     MergeRequestStore.setAssigneeCount(0);
     MergeRequestStore.loadMergeRquest(id, 'opened');
@@ -124,21 +121,23 @@ class MergeRequestHome extends Component {
 
   render() {
     const { type, organizationId, name, id: projectId } = AppState.currentMenuType;
-    const { MergeRequestStore, intl } = this.props;
+    const { MergeRequestStore, intl, history: { location: { state } } } = this.props;
     const { param, tabKey } = this.state;
     const {
       getPageInfo: { opened: op, merged: mp, closed: cp, all: ap },
       getMerge: { opened: od, merged: md, closed: cd, all: ad },
       getCount: { closeCount, mergeCount, openCount, totalCount },
       getIsLoading,
-      getApps,
       getAssignee,
       getAssigneeCount,
-      currentApp: { id },
     } = MergeRequestStore;
+    const appData = DevPipelineStore.getAppData;
+    const appId = DevPipelineStore.getSelectApp;
+    const titleName = _.find(appData, ['id', appId]) ? _.find(appData, ['id', appId]).name : name;
+    const  backPath = state && state.backPath;
 
     const columnsAll = [{
-      title: <FormattedMessage id="app.code" />,
+      title: getTableTitle('app.code'),
       key: 'iid',
       render: record => (<span>!{record.iid}</span>),
     }, {
@@ -149,7 +148,7 @@ class MergeRequestHome extends Component {
         {record.title}
       </MouserOverWrapper>),
     }, {
-      title: <FormattedMessage id="app.branch" />,
+      title: getTableTitle('app.branch'),
       key: 'targetBranch',
       render: record => (
         <div className="c7n-merge-branches">
@@ -165,15 +164,15 @@ class MergeRequestHome extends Component {
       dataIndex: 'state',
       key: 'state',
     }, {
-      title: <FormattedMessage id="create" />,
+      title: getTableTitle('create'),
       key: 'createdAt',
       render: record => (
         <div>
-          <Tooltip title={record.author.username !== record.author.name ? `${record.author.username} ${record.author.name}` : record.author.name}>
+          {record.author ? (<Tooltip title={record.author.username !== record.author.name ? `${record.author.username} ${record.author.name}` : record.author.name}>
             {record.author.avatarUrl
               ? <img className="c7n-merge-avatar" src={record.author.avatarUrl} alt="avatar" />
               : <span className="apptag-commit apptag-commit-avatar">{record.author.name.toString().substr(0, 1)}</span>}
-          </Tooltip>
+          </Tooltip>) : <span className="apptag-commit apptag-commit-avatar">?</span>}
           <Tooltip
             title={record.createdAt}
           >
@@ -185,7 +184,7 @@ class MergeRequestHome extends Component {
           </Tooltip>
         </div>),
     }, {
-      title: <FormattedMessage id="merge.commit" />,
+      title: getTableTitle('merge.commit'),
       key: 'commits',
       render: record => (
         <div>
@@ -229,7 +228,7 @@ class MergeRequestHome extends Component {
     }];
 
     const columns = [{
-      title: <FormattedMessage id="app.code" />,
+      title: getTableTitle('app.code'),
       key: 'iid',
       render: record => (<span>!{record.iid}</span>),
     }, {
@@ -240,7 +239,7 @@ class MergeRequestHome extends Component {
         {record.title}
       </MouserOverWrapper>),
     }, {
-      title: <FormattedMessage id="app.branch" />,
+      title: getTableTitle('app.branch'),
       key: 'targetBranch',
       render: record => (
         <div className="c7n-merge-branches">
@@ -252,15 +251,15 @@ class MergeRequestHome extends Component {
         </div>
       ),
     }, {
-      title: <FormattedMessage id="create" />,
+      title: getTableTitle('create'),
       key: 'createdAt',
       render: record => (
         <div>
-          <Tooltip title={record.author.username !== record.author.name ? `${record.author.username} ${record.author.name}` : record.author.name}>
+          {record.author ? (<Tooltip title={record.author.username !== record.author.name ? `${record.author.username} ${record.author.name}` : record.author.name}>
             {record.author.avatarUrl
               ? <img className="c7n-merge-avatar" src={record.author.avatarUrl} alt="avatar" />
               : <span className="apptag-commit apptag-commit-avatar">{record.author.name.toString().substr(0, 1)}</span>}
-          </Tooltip>
+          </Tooltip>) : <span className="apptag-commit apptag-commit-avatar">?</span>}
           <Tooltip title={record.createdAt}>
             <TimeAgo
               className="c7n-merge-time"
@@ -270,7 +269,7 @@ class MergeRequestHome extends Component {
           </Tooltip>
         </div>),
     }, {
-      title: <FormattedMessage id="merge.commit" />,
+      title: getTableTitle('merge.commit'),
       key: 'commits',
       render: record => (
         <div>
@@ -316,7 +315,7 @@ class MergeRequestHome extends Component {
     }];
 
     const columnsOpen = [{
-      title: <FormattedMessage id="app.code" />,
+      title: getTableTitle('app.code'),
       key: 'iid',
       render: record => (<span>!{record.iid}</span>),
     }, {
@@ -327,27 +326,27 @@ class MergeRequestHome extends Component {
         {record.title}
       </MouserOverWrapper>),
     }, {
-      title: <FormattedMessage id="app.branch" />,
+      title: getTableTitle('app.branch'),
       key: 'targetBranch',
       render: record => (
         <div className="c7n-merge-branches">
           <Icon type="branch" />
-          <span>{record.sourceBranch}</span>
+          <MouserOverWrapper text={record.sourceBranch} width={0.1}>{record.sourceBranch}</MouserOverWrapper>
           <Icon type="keyboard_backspace" className="c7n-merge-right" />
           <Icon type="branch" />
           <span>{record.targetBranch}</span>
         </div>
       ),
     }, {
-      title: <FormattedMessage id="create" />,
+      title: getTableTitle('create'),
       key: 'createdAt',
       render: record => (
         <div>
-          <Tooltip title={record.author.username !== record.author.name ? `${record.author.username} ${record.author.name}` : record.author.name}>
+          {record.author ? (<Tooltip title={record.author.username !== record.author.name ? `${record.author.username} ${record.author.name}` : record.author.name}>
             {record.author.avatarUrl
               ? <img className="c7n-merge-avatar" src={record.author.avatarUrl} alt="avatar" />
               : <span className="apptag-commit apptag-commit-avatar">{record.author.name.toString().substr(0, 1)}</span>}
-          </Tooltip>
+          </Tooltip>) : <span className="apptag-commit apptag-commit-avatar">?</span>}
           <Tooltip title={record.createdAt}>
             <TimeAgo
               className="c7n-merge-time"
@@ -357,7 +356,7 @@ class MergeRequestHome extends Component {
           </Tooltip>
         </div>),
     }, {
-      title: <FormattedMessage id="merge.commit" />,
+      title: getTableTitle('merge.commit'),
       key: 'commits',
       render: record => (
         <div>
@@ -425,14 +424,42 @@ class MergeRequestHome extends Component {
           'devops-service.devops-git.getUrl',
         ]}
       >
-        <Header title={<FormattedMessage id="merge.head" />}>
-          <Button
+        {appData && appData.length ? <Fragment><Header
+          title={<FormattedMessage id="merge.head" />}
+          backPath={backPath}
+        >
+          <Select
+            filter
+            className="c7n-header-select"
+            dropdownClassName="c7n-header-select_drop"
+            placeholder={intl.formatMessage({ id: 'ist.noApp' })}
+            value={appData && appData.length ? DevPipelineStore.getSelectApp : undefined}
+            disabled={appData.length === 0}
+            filterOption={(input, option) => option.props.children.props.children.props.children
+              .toLowerCase().indexOf(input.toLowerCase()) >= 0}
+            onChange={this.handleChange.bind(this)}
+          >
+            <OptGroup label={intl.formatMessage({ id: 'recent' })} key="recent">
+              {_.map(DevPipelineStore.getRecentApp, app => <Option key={`recent-${app.id}`} value={app.id}>
+                <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
+              </Option>)}
+            </OptGroup>
+            <OptGroup label={intl.formatMessage({ id: 'deploy.app' })} key="app">
+              {
+                _.map(appData, (app, index) => (
+                  <Option value={app.id} key={index}>
+                    <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
+                  </Option>))
+              }
+            </OptGroup>
+          </Select>
+          {appData.length ? (<Button
             funcType="flat"
             onClick={this.linkToNewMerge}
           >
             <i className="icon-playlist_add icon" />
             <FormattedMessage id="merge.createMerge" />
-          </Button>
+          </Button>) : null}
           <Button
             funcType="flat"
             onClick={this.reload}
@@ -441,19 +468,7 @@ class MergeRequestHome extends Component {
             <FormattedMessage id="refresh" />
           </Button>
         </Header>
-        <Content code="merge" value={{ name }}>
-          <Select
-            className="c7n-app-select_512"
-            value={id}
-            label={intl.formatMessage({ id: 'deploy.step.one.app' })}
-            filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-            filter
-            onChange={this.handleChange.bind(this)}
-          >
-            {
-              _.map(getApps, (app, index) => <Option key={index} value={app.id}>{app.name}</Option>)
-            }
-          </Select>
+        <Content code={appData.length ? 'merge.app' : 'merge'} values={{ name: titleName }}>
           <Tabs activeKey={tabKey} onChange={this.tabChange} animated={false}>
             <TabPane tab={`${intl.formatMessage({ id: 'merge.tab1' })}(${openCount || 0})`} key="opened">
               <Table
@@ -507,7 +522,7 @@ class MergeRequestHome extends Component {
                 filterBar={false}
               />
             </TabPane>
-            {getAssigneeCount !== 0 ? <TabPane tab={`${intl.formatMessage({ id: 'merge.tab5' })}(${assigneeCount || 0})`} key="assignee">
+            {getAssigneeCount !== 0 ? <TabPane tab={`${intl.formatMessage({ id: 'merge.tab5' })}(${getAssigneeCount || 0})`} key="assignee">
               <Table
                 filterBarPlaceholder={intl.formatMessage({ id: 'filter' })}
                 onChange={this.tableChange}
@@ -521,7 +536,7 @@ class MergeRequestHome extends Component {
               />
             </TabPane> : null}
           </Tabs>
-        </Content>
+        </Content></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="merge.head" />} type="app" />}
       </Page>
     );
   }

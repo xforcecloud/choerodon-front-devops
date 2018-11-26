@@ -27,10 +27,15 @@
     }
 
     .c7n-envow-sync-wrap {
-      padding-right: 10px;
+      padding-right: 30px;
     }
 
-    div i {
+    .c7n-envow-error-icon {
+      font-size: 32px;
+      color: #f44336;
+    }
+
+    .c7n-envow-sync-icon i {
       font-size: 32px;
       color: #3f51b5;
       animation: ant-progress-rotate 1.4s linear infinite;
@@ -39,7 +44,7 @@
 }
 
 .c7n-envow-status-running {
-  border-left-color: #1ec024 !important;
+  border-left-color: #00bf96 !important;
 }
 
 .c7n-envow-status-operating {
@@ -55,11 +60,16 @@
 }
 
 .c7n-envow-select-dropdown {
-  width: 120px !important;
+  li {
+    padding-right: 0;
+    padding-left: 6px;
+  }
 }
 
 .c7n-envow-select {
   margin-right: 18px;
+  line-height: 58px;
+  font-weight: 500 !important;
 
   .ant-select-selection__rendered {
     margin-bottom: 0;
@@ -70,6 +80,18 @@
 
   .ant-select-underline {
     display: none;
+  }
+
+  a {
+    height: 20px;
+    line-height: 20px;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  i {
+    line-height: 58px;
   }
 }
 
@@ -165,12 +187,12 @@
 
   .ant-collapse > .ant-collapse-item > .ant-collapse-header {
     background-color: white;
-    padding: 6px;
+    padding: 5px 9px;
 
     .icon-navigate_next {
       font-size: 18px;
-      line-height: 26px;
-      margin-right: 12px;
+      line-height: 30px;
+      margin-right: 9px;
     }
   }
 
@@ -184,6 +206,12 @@
 
   .c7n-envow-ist-fail {
     display: inline-block;
+    .ant-progress {
+      circle {
+        stroke: #3f51b5 !important;
+        stroke-width: 7px;
+      }
+    }
   }
 
   .c7n-envow-ist-name {
@@ -196,6 +224,10 @@
   .c7n-envow-ist-version {
     line-height: 30px;
     width: 35%;
+    .c7n-envow-version-text {
+      display: inline-block;
+      vertical-align: middle;
+    }
   }
 
   .c7n-envow-ist-action {
@@ -204,6 +236,7 @@
 }
 
 .c7n-envow-contaners-title {
+  width: 90%;
   color: rgba(0, 0, 0, 0.65);
   line-height: 20px;
   margin-bottom: 16px;
@@ -299,10 +332,21 @@
   height: 20px;
   margin-bottom: 10px;
 
+  .c7n-envow-expanded-keys {
+    margin-right: 20px;
+    display: inline-block;
+    width: 120px;
+  }
+
+  .c7n-envow-expanded-values {
+    color: rgba(0, 0, 0, 0.65);
+  }
+
   .c7n-envow-ls-arrow-wrap {
     display: inline-block;
     line-height: 17px;
   }
+
   .c7n-envow-ls-arrow {
     font-size: 20px;
     color: rgba(0, 0, 0, 0.64);
@@ -335,10 +379,38 @@
   font-size: 16px;
   font-weight: 500;
   margin-bottom: 16px;
+
+  .envow-sync-text {
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  .c7n-envow-sync-icon {
+    font-size: 16px;
+    color: rgba(0, 0, 0, 0.36);
+  }
+}
+
+.c7n-envow-sync-popover {
+  width: 300px;
+
+  .envow-popover-describe,
+  .envow-popover-desc {
+    font-size: 12px;
+    margin-bottom: 10px;
+    color: rgba(0, 0, 0, 0.65);
+  }
+
+  .envow-popover-describe {
+    margin-bottom: 14px;
+  }
+
+  .envow-popover-title {
+    font-size: 12px;
+    color: #000;
+  }
 }
 
 .c7n-envow-sync-wrap {
-
   .c7n-envow-sync-line {
     display: flex;
     margin-bottom: 32px;
@@ -388,4 +460,23 @@
 
 .c7n-envow-none {
   display: none;
+}
+
+.c7n-envow-dropdown-link {
+  button {
+    padding: 5px 12px;
+    line-height: 22px;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+
+  .ant-dropdown-menu-item {
+    padding: 0;
+  }
+}
+
+.c7n-envow-gitlab {
+  margin: 0 8px;
 }

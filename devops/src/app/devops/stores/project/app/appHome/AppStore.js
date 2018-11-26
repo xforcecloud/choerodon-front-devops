@@ -1,6 +1,8 @@
 import { observable, action, computed } from 'mobx';
-import { axios, store } from 'choerodon-front-boot';
+import { axios, store, stores } from 'choerodon-front-boot';
+import DeploymentPipelineStore from '../../deploymentPipeline';
 
+const { AppState } = stores;
 const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
 @store('AppStore')
@@ -34,7 +36,6 @@ class AppStore {
   @computed get getPageInfo() {
     return this.pageInfo;
   }
-
 
   @computed get getAllData() {
     return this.allData.slice();
@@ -84,7 +85,7 @@ class AppStore {
     return this.Info;
   }
 
-  loadData = (isRefresh = false, projectId, page = this.pageInfo.current - 1, size = this.pageInfo.pageSize, sort = { field: '', order: 'desc' }, postData = { searchParam: {},
+  loadData = (isRefresh = false, projectId, envId, page = this.pageInfo.current - 1, size = this.pageInfo.pageSize, sort = { field: '', order: 'desc' }, postData = { searchParam: {},
     param: '',
   }) => {
     if (isRefresh) {
@@ -153,6 +154,12 @@ class AppStore {
     });
 
   changeAppStatus = (projectId, id, status) => axios.put(`/devops/v1/projects/${projectId}/apps/${id}?active=${status}`)
+    .then((datas) => {
+      const res = this.handleProptError(datas);
+      return res;
+    });
+
+  deleteApps = (projectId, id) => axios.delete(`/devops/v1/projects/${projectId}/apps/${id}`)
     .then((datas) => {
       const res = this.handleProptError(datas);
       return res;

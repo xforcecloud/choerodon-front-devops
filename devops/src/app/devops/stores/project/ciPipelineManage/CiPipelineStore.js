@@ -1,6 +1,5 @@
 import { observable, action } from 'mobx';
 import { axios, store, stores } from 'choerodon-front-boot';
-import _ from 'lodash';
 
 const { AppState } = stores;
 const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
@@ -21,33 +20,10 @@ class CiPipelineStore {
 
   @observable loading = true;
 
-  loadInitData = () => {
-    this.setLoading(true);
-    this.setCiPipelines([]);
-    this.loadApps(AppState.currentMenuType.id).then((res) => {
-      this.setApps(res || []);
-      const response = this.handleProptError(res);
-      if (response) {
-        if (res.length) {
-          const defaultApp = res[0];
-          this.setCurrentApp(defaultApp);
-          this.loadPipelines(defaultApp.id);
-        } else {
-          this.setLoading(false);
-        }
-      }
-    });
-  };
-
-  loadApps(projectId) {
-    return axios.get(`/devops/v1/projects/${projectId}/apps`)
-      .then(datas => this.handleProptError(datas));
-  }
-
-  loadPipelines(appId, page = 0, size = 10, projectId = AppState.currentMenuType.id) {
+  loadPipelines(appId, page = 0, size = this.pagination.pageSize, projectId = AppState.currentMenuType.id) {
     this.setCiPipelines([]);
     this.setLoading(true);
-    axios.get(`/devops/v1/projects/${projectId}/applications/${appId}/pipelines?page=${page}&size=${size}`)
+    axios.get(`/devops/v1/projects/${projectId}/pipeline/page?appId=${appId}&page=${page}&size=${size}`)
       .then((res) => {
         const response = this.handleProptError(res);
         if (response) {
@@ -56,33 +32,9 @@ class CiPipelineStore {
             pageSize: res.size,
             total: res.totalElements,
           });
-          if (res.content) {
-            this.loadCommits(res.content, _.map(res.content, 'sha'));
-          } else {
-            this.setLoading(false);
-          }
-        }
-      })
-      .catch((error) => {
-        this.setLoading(false);
-        Choerodon.prompt(error.message);
-      });
-  }
-
-  loadCommits(content, shas, projectId = AppState.currentMenuType.id) {
-    this.setCommits([]);
-    axios.post(`/devops/v1/projects/${projectId}/gitlab_projects/${content[0].gitlabProjectId}/commit_sha`, shas)
-      .then((res) => {
-        const response = this.handleProptError(res);
-        if (response) {
-          this.setCommits(res);
-          this.setCiPipelines(content);
+          this.setCiPipelines(res.content);
         }
         this.setLoading(false);
-      })
-      .catch((error) => {
-        this.setLoading(false);
-        Choerodon.prompt(error.message);
       });
   }
 
@@ -94,14 +46,6 @@ class CiPipelineStore {
   retryPipeline(gitlabProjectId, pipelineId) {
     return axios.post(`/devops/v1/projects/${AppState.currentMenuType.id}/gitlab_projects/${gitlabProjectId}/pipelines/${pipelineId}/retry`)
       .then(datas => this.handleProptError(datas));
-  }
-
-  @action setApps(data) {
-    this.apps = data;
-  }
-
-  @action setCurrentApp(data) {
-    this.currentApp = data;
   }
 
   @action setCiPipelines(data) {

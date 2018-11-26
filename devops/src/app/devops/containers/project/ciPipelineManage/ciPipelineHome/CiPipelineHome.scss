@@ -3,6 +3,10 @@
     display: flex;
     align-items: center;
 
+    .c7n-status-link {
+      display: contents;
+    }
+
     .c7n-text-status {
       margin-left: 6px;
     }
@@ -23,7 +27,7 @@
       font-style: normal;
       font-weight: 400;
       display: inline-block;
-      background-color: #1bc123;
+      background-color: #00bf96;
       line-height: 1;
       color: #fff;
       text-align: center;
@@ -81,6 +85,13 @@
     font-size: 12px;
   }
 
+  .c7n-image-avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+
   .c7n-paginationWrap {
     display: flex;
     justify-content: flex-end;
@@ -100,7 +111,11 @@
   }
 
   .c7n-icon-success {
-    color: #1ab16f;
+    color: #00bf96;
+  }
+
+  .c7n-icon-passed {
+    color: #00bf96;
   }
 
   .c7n-icon-pending {
@@ -121,6 +136,12 @@
 
   .c7n-icon-skipped {
     color: rgba(0, 0, 0, 0.26);
+  }
+  .c7n-icon-created {
+    color: #d3d3d3;
+  }
+  .c7n-icon-manual {
+    color: #d3d3d3;
   }
 
   .black {

@@ -58,8 +58,19 @@
       &:nth-last-child(2) {
         margin-right: 0;
       }
-      .ant-input-content {
-        padding-top: 18px;
+      &.c7ncd-domain-path {
+        flex: 0 0 220px;
+        width: 220px;
+        .ant-input-content {
+          padding-top: 19px;
+          .ant-input-label {
+            margin-bottom: 3px;
+          }
+        }
+      }
+      &.c7ncd-domain-port {
+        flex: 0 0 100px;
+        width: 100px;
       }
     }
     .c7n-domain-icon-delete {
@@ -79,37 +90,6 @@
     color: #d50000;
     vertical-align: middle;
   }
-}
-
-.c7n-domain-create-status {
-  display: inline-block;
-  height: 16px;
-  font-size: 13px;
-  border-radius: 2px;
-  color: white;
-  text-align: center;
-  line-height: 16px;
-  margin-right: 8px;
-
-  div {
-    transform: scale(0.8);
-  }
-}
-
-.c7n-domain-create-status_running {
-  background: #1bc123;
-}
-
-.c7n-domain-create-status_failed {
-  background: #f44336;
-}
-
-.c7n-domain-create-status_operating {
-  background: #4d90fe;
-}
-
-.c7n-domain-create-status_deleted {
-  background: rgba(0, 0, 0, 0.36);
 }
 
 .domain-port-disable {

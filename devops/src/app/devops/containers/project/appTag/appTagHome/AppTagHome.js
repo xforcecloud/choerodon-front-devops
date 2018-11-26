@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { observer, inject } from 'mobx-react';
+import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Content, Header, Page, Permission, stores } from 'choerodon-front-boot';
@@ -8,10 +8,12 @@ import ReactMarkdown from 'react-markdown';
 import _ from 'lodash';
 import LoadingBar from '../../../../components/loadingBar';
 import TimePopover from '../../../../components/timePopover/index';
-import CreateTag from '../createTag/CreateTag';
-import EditTag from '../editTag/EditTag';
+import CreateTag from '../createTag';
+import EditTag from '../editTag';
 import '../../../main.scss';
 import './AppTagHome.scss';
+import DevPipelineStore from '../../../../stores/project/devPipeline';
+import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
 
 const { AppState } = stores;
 const { Option, OptGroup } = Select;
@@ -37,7 +39,6 @@ class AppTagHome extends Component {
 
   componentDidMount() {
     const { AppTagStore } = this.props;
-    AppTagStore.setSelectApp(null);
     AppTagStore.setLoading(null);
     AppTagStore.setTagData([]);
     this.loadInitData();
@@ -49,9 +50,9 @@ class AppTagHome extends Component {
    * @param option
    */
   handleSelect = (id, option) => {
-    const { AppTagStore } = this.props;
     this.setState({ page: 0, pageSize: 10, appName: option.props.children });
-    AppTagStore.setSelectApp(id);
+    DevPipelineStore.setSelectApp(id);
+    DevPipelineStore.setRecentApp(id);
     this.loadTagData();
   };
 
@@ -67,9 +68,7 @@ class AppTagHome extends Component {
    * 加载应用信息
    */
   loadInitData = () => {
-    const { AppTagStore } = this.props;
-    const { id: projectId } = AppState.currentMenuType;
-    AppTagStore.queryAppData(projectId);
+    DevPipelineStore.queryAppData(AppState.currentMenuType.id, 'tag');
     this.setState({ appName: null });
   };
 
@@ -120,7 +119,7 @@ class AppTagHome extends Component {
       if (data && data.failed) {
         Choerodon.prompt(data.message);
       } else {
-        this.loadTagData(projectId);
+        this.loadTagData();
       }
       this.setState({ deleteLoading: false, visible: false });
     }).catch((error) => {
@@ -154,15 +153,18 @@ class AppTagHome extends Component {
   };
 
   render() {
-    const { intl: { formatMessage }, AppTagStore, form } = this.props;
+    const { intl: { formatMessage }, AppTagStore, history: { location: { state } } } = this.props;
     const { type, id: projectId, organizationId: orgId, name } = AppState.currentMenuType;
-    const { visible, deleteLoading, creationDisplay, appName, editDisplay, editTag, editRelease } = this.state;
-    const appData = AppTagStore.getAppData;
+    const { visible, deleteLoading, creationDisplay, appName, editDisplay, editTag, editRelease, tag } = this.state;
+    const appData = DevPipelineStore.getAppData;
+    const appId = DevPipelineStore.getSelectApp;
+    const titleName = _.find(appData, ['id', appId]) ? _.find(appData, ['id', appId]).name : name;
     const tagData = AppTagStore.getTagData;
     const loading = AppTagStore.getLoading;
-    const currentAppName = appName || AppTagStore.getDefaultAppName;
+    const currentAppName = appName || DevPipelineStore.getDefaultAppName;
     const { current, total, pageSize } = AppTagStore.pageInfo;
     const tagList = [];
+    const  backPath = state && state.backPath;
     _.forEach(tagData, (item) => {
       const {
         commit: {
@@ -254,19 +256,7 @@ class AppTagHome extends Component {
         </div> : formatMessage({ id: 'apptag.release.empty' })}</div>
       </Panel>);
     });
-    const noTag = (<div className="c7n-tag-empty">
-      <div>
-        <Icon type="info" className="c7n-tag-empty-icon" />
-        <span className="c7n-tag-empty-text">{formatMessage({ id: 'apptag.empty' })}</span>
-      </div>
-      <Button
-        type="primary"
-        funcType="raised"
-        onClick={() => this.displayCreateModal(true)}
-      >
-        <FormattedMessage id="apptag.create" />
-      </Button>
-    </div>);
+    const empty = appData && appData.length ? 'tag' : 'app';
     return (
       <Page
         className="c7n-tag-wrapper"
@@ -274,12 +264,41 @@ class AppTagHome extends Component {
           'devops-service.application.listByActive',
           'devops-service.devops-git.getTagByPage',
           'devops-service.devops-git.listByAppId',
+          'devops-service.devops-git.updateTagRelease',
           'devops-service.devops-git.createTag',
           'devops-service.devops-git.checkTag',
           'devops-service.devops-git.deleteTag',
         ]}
       >
-        <Header title={<FormattedMessage id="apptag.head" />}>
+        {appData && appData.length ? <Fragment><Header
+          title={<FormattedMessage id="apptag.head" />}
+          backPath={backPath}
+        >
+          <Select
+            filter
+            className="c7n-header-select"
+            dropdownClassName="c7n-header-select_drop"
+            placeholder={formatMessage({ id: 'ist.noApp' })}
+            value={appData && appData.length ? DevPipelineStore.getSelectApp : undefined}
+            disabled={appData.length === 0}
+            filterOption={(input, option) => option.props.children.props.children.props.children
+              .toLowerCase().indexOf(input.toLowerCase()) >= 0}
+            onChange={(value, option) => this.handleSelect(value, option)}
+          >
+            <OptGroup label={formatMessage({ id: 'recent' })} key="recent">
+              {_.map(DevPipelineStore.getRecentApp, app => <Option key={`recent-${app.id}`} value={app.id}>
+                <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
+              </Option>)}
+            </OptGroup>
+            <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
+              {
+                _.map(appData, (app, index) => (
+                  <Option value={app.id} key={index}>
+                    <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
+                  </Option>))
+              }
+            </OptGroup>
+          </Select>
           {appData && appData.length ? (
             <Permission
               service={[
@@ -308,20 +327,8 @@ class AppTagHome extends Component {
             <FormattedMessage id="refresh" />
           </Button>
         </Header>
-        <Content code="apptag" value={{ name }}>
-          <Select
-            filter
-            className="c7n-select_512"
-            value={AppTagStore.getSelectApp}
-            label={formatMessage({ id: 'chooseApp' })}
-            filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-            onChange={(value, option) => this.handleSelect(value, option)}
-          >
-            {
-              _.map(appData, app => <Option key={app.id} value={app.id}>{app.name}</Option>)
-            }
-          </Select>
-          <h4 className="c7n-tag-table"><FormattedMessage id="apptag.table" /></h4>
+        <Content code={appData.length ? 'apptag.app' : 'apptag'} values={{ name: titleName }}>
+          <div className="c7n-tag-table"><FormattedMessage id="apptag.table" /></div>
           {loading || _.isNull(loading) ? <LoadingBar display /> : <Fragment>
             {tagList.length ? <Fragment>
               <Collapse bordered={false}>{tagList}</Collapse>
@@ -334,23 +341,37 @@ class AppTagHome extends Component {
                   onShowSizeChange={this.handlePaginChange}
                 />
               </div>
-            </Fragment> : noTag}
+            </Fragment> : (<div className="c7n-tag-empty">
+              <div>
+                <Icon type="info" className="c7n-tag-empty-icon" />
+                <span className="c7n-tag-empty-text">{formatMessage({ id: `apptag.${empty}.empty` })}</span>
+              </div>
+              {empty === 'tag' ? (
+                <Button
+                  type="primary"
+                  funcType="raised"
+                  onClick={() => this.displayCreateModal(true, empty)}
+                >
+                  <FormattedMessage id="apptag.create" />
+                </Button>
+              ) : null}
+            </div>)}
           </Fragment>}
         </Content>
         <Modal
           confirmLoading={deleteLoading}
           visible={visible}
-          title={<FormattedMessage id="apptag.action.delete" />}
+          title={`${formatMessage({ id: 'apptag.action.delete' })}“${tag}”`}
           closable={false}
           footer={[
-            <Button key="back" onClick={this.closeRemove}>{<FormattedMessage id="cancel" />}</Button>,
+            <Button key="back" onClick={this.closeRemove} disabled={deleteLoading}>{<FormattedMessage id="cancel" />}</Button>,
             <Button key="submit" type="danger" onClick={this.deleteTag} loading={deleteLoading}>
               {formatMessage({ id: 'delete' })}
             </Button>,
           ]}
         ><p>{formatMessage({ id: 'apptag.delete.tooltip' })}</p></Modal>
         {creationDisplay ? <CreateTag
-          app={currentAppName}
+          app={titleName}
           store={AppTagStore}
           show={creationDisplay}
           close={this.displayCreateModal}
@@ -362,7 +383,7 @@ class AppTagHome extends Component {
           release={editRelease}
           show={editDisplay}
           close={this.displayEditModal}
-        /> : null}
+        /> : null}</Fragment> : <DepPipelineEmpty title={<FormattedMessage id="apptag.head" />} type="app" />}
       </Page>
     );
   }

@@ -8,6 +8,7 @@ import { getTimeLeft } from '../../../../utils';
 import MouserOverWrapper from '../../../../components/MouseOverWrapper';
 import StatusIcon from '../../../../components/StatusIcon';
 import './CertTable.scss';
+import { getTableTitle } from '../../../../utils';
 
 const { AppState } = stores;
 const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
@@ -108,9 +109,10 @@ class CertTable extends Component {
    * 显示删除确认框
    * @param id
    */
-  openRemoveModal = id => this.setState({
+  openRemoveModal = (id, certName) => this.setState({
     removeDisplay: true,
     deleteCert: id,
+    certName,
   });
 
   closeRemoveModal = () => this.setState({ removeDisplay: false });
@@ -158,7 +160,7 @@ class CertTable extends Component {
    * @param orgId
    */
   opColumn = (record, type, projectId, orgId) => {
-    const { id, domains } = record;
+    const { id, domains, certName } = record;
     const { intl: { formatMessage } } = this.props;
     const detail = {
       CommonName: [domains[0]],
@@ -201,7 +203,7 @@ class CertTable extends Component {
             shape="circle"
             size="small"
             funcType="flat"
-            onClick={this.openRemoveModal.bind(this, id)}
+            onClick={this.openRemoveModal.bind(this, id, certName)}
           />
         </Tooltip>
       </Permission>
@@ -210,7 +212,7 @@ class CertTable extends Component {
 
   render() {
     const { intl: { formatMessage }, store } = this.props;
-    const { removeDisplay, deleteStatus } = this.state;
+    const { removeDisplay, deleteStatus, certName } = this.state;
     const {
       filters,
       sorter: {
@@ -261,7 +263,7 @@ class CertTable extends Component {
         {text}
       </React.Fragment>),
     }, {
-      title: <FormattedMessage id="validDate" />,
+      title: getTableTitle('validDate'),
       key: 'valid',
       render: this.validColumn,
     }, {
@@ -284,10 +286,10 @@ class CertTable extends Component {
       <Modal
         confirmLoading={deleteStatus}
         visible={removeDisplay}
-        title={<FormattedMessage id="ctf.delete" />}
+        title={`${formatMessage({ id: 'ctf.delete' })}“${certName}”`}
         closable={false}
         footer={[
-          <Button key="back" onClick={this.closeRemoveModal}><FormattedMessage id="cancel" /></Button>,
+          <Button key="back" onClick={this.closeRemoveModal} disabled={deleteStatus}><FormattedMessage id="cancel" /></Button>,
           <Button key="submit" loading={deleteStatus} type="danger" onClick={this.handleDelete}>
             <FormattedMessage id="delete" />
           </Button>,

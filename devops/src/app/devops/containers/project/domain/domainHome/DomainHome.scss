@@ -39,6 +39,11 @@
     }
   }
 
+  .c7n-network-service {
+    display: flex;
+    align-items: center;
+  }
+
   .c7n-network-square {
     display: inline-block;
     background: #f3f3f3;
@@ -60,11 +65,7 @@
   }
 
   .c7n-network-text_top {
-    // vertical-align: top;
-  }
-
-  .c7n-network-col {
-    padding: 0 0 !important;
+    width: 84px;
   }
 
   .c7n-network-change {

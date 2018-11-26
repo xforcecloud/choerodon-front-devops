@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { Select, Button, Radio, Steps, Icon } from 'choerodon-ui';
+import { Select, Button, Radio, Steps, Icon, Tooltip } from 'choerodon-ui';
 import { Content, Header, Page, Permission, stores, axios } from 'choerodon-front-boot';
 import _ from 'lodash';
 import YAML from 'yamljs';
@@ -10,6 +10,8 @@ import '../../../main.scss';
 import './DeployApp.scss';
 import AceForYaml from '../../../../components/yamlAce';
 import SelectApp from '../selectApp';
+import EnvOverviewStore from '../../../../stores/project/envOverview';
+import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
 
 const RadioGroup = Radio.Group;
 const Step = Steps.Step;
@@ -21,21 +23,23 @@ class DeploymentAppHome extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      is_project: !props.match.params.appId,
-      appId: props.match.params.appId || undefined,
-      versionId: props.match.params.verId || undefined,
-      current: props.match.params.appId ? 2 : 1,
+      is_project: !props.match.params.appId && (props.location.search.indexOf('isProject') === -1),
+      appId: props.location.search.split('appId=')[1] ? Number(props.location.search.split('appId=')[1].split('&')[0]) : props.match.params.appId,
+      versionId: props.location.search.split('verId=')[1] ? Number(props.location.search.split('verId=')[1]) : props.match.params.verId,
+      current: props.match.params.appId || (props.location.search.indexOf('isProject') === -1 && props.location.search.split('appId=')[1]) ? 2 : 1,
       envId: props.location.search.split('envId=')[1] ? Number(props.location.search.split('envId=')[1]) : undefined,
       mode: 'new',
       markers: null,
       projectId: AppState.currentMenuType.id,
       loading: false,
       changeYaml: false,
+      disabled: false,
     };
   }
 
   componentDidMount() {
     const { DeploymentAppStore } = this.props;
+    const { projectId, current, appId, versionId, envId: id } = this.state;
     DeploymentAppStore.setValue(null);
     if (this.state.appId) {
       DeploymentAppStore.loadApps(this.state.appId)
@@ -43,14 +47,40 @@ class DeploymentAppHome extends Component {
           this.setState({ app: data });
         });
       const versionId = parseInt(this.state.versionId, 10);
-      DeploymentAppStore.loadVersion(this.state.appId, this.state.projectId, true)
-        .then((data) => {
-          this.setState({ versionDto: _.filter(data, v => v.id === versionId)[0] });
-        });
+      if (this.state.is_project) {
+        DeploymentAppStore.loadVersion(this.state.appId, this.state.projectId, '')
+          .then((data) => {
+            this.setState({ versionDto: _.filter(data, v => v.id === versionId)[0] });
+          });
+      } else if (this.props.location.search.split('verId=')[1]) {
+        DeploymentAppStore.loadVersion(this.state.appId, this.state.projectId, true)
+          .then((data) => {
+            this.setState({ versionDto: _.filter(data, v => v.id === versionId)[0] });
+          });
+        this.setState({ versionId: undefined });
+      } else {
+        DeploymentAppStore.loadVersion(this.state.appId, this.state.projectId, true)
+          .then((data) => {
+            this.setState({ versionDto: _.filter(data, v => v.id === versionId)[0] });
+          });
+      }
     } else {
       DeploymentAppStore.setVersions([]);
     }
-    DeploymentAppStore.loadEnv();
+    if (current === 2) {
+      const envs = EnvOverviewStore.getEnvcard;
+      const envID = EnvOverviewStore.getTpEnvId;
+      const env = _.filter(envs, { 'connect': true, 'id': envID });
+      const envId = env && env.length ? env[0].id : id;
+      this.setState({ envId, envDto: env[0] });
+      DeploymentAppStore.setValue(null);
+      DeploymentAppStore.loadValue(appId, versionId, envId)
+        .then((data) => {
+          this.setState({ errorLine: data.errorLines });
+        });
+      DeploymentAppStore.loadInstances(appId, envId);
+    }
+    EnvOverviewStore.loadActiveEnv(projectId);
   }
 
 
@@ -78,16 +108,26 @@ class DeploymentAppHome extends Component {
    */
   changeStep = (index) => {
     const { DeploymentAppStore } = this.props;
-    const { appId, versionId, envId, mode } = this.state;
-    this.setState({ current: index });
+    const { appId, versionId, envId: id, mode } = this.state;
+    const envs = EnvOverviewStore.getEnvcard;
+    const envID = EnvOverviewStore.getTpEnvId;
+    const env = _.filter(envs, { 'connect': true, 'id': envID });
+    const envId = env && env.length ? env[0].id : id;
+    this.setState({ current: index, disabled: false });
     this.loadReview();
     if (index === 2 && appId && versionId && envId) {
+      this.setState({ envId, envDto: env[0] });
       DeploymentAppStore.setValue(null);
       DeploymentAppStore.loadValue(appId, versionId, envId)
         .then((data) => {
           this.setState({ errorLine: data.errorLines });
         });
+      DeploymentAppStore.loadInstances(appId, envId);
     }
+    if (index === 3 || index === 4) {
+      this.setState({ disabled: true });
+    }
+    document.getElementsByClassName('page-content')[0].scrollTop = 0;
   };
 
   /**
@@ -135,7 +175,6 @@ class DeploymentAppHome extends Component {
           is_project: false,
           versionId: undefined,
           versionDto: null,
-          // versionId: this.props.match.params.verId
         });
       }
     } else {
@@ -149,7 +188,8 @@ class DeploymentAppHome extends Component {
    */
   handleSelectEnv = (value) => {
     const { DeploymentAppStore } = this.props;
-    const envs = DeploymentAppStore.envs;
+    const envs = EnvOverviewStore.getEnvcard;
+    EnvOverviewStore.setTpEnvId(value);
     const envDto = _.filter(envs, v => v.id === value)[0];
     this.setState({ envId: value, envDto, value: null, yaml: null, changeYaml: false, mode: 'new' });
     const { appId, versionId } = this.state;
@@ -171,10 +211,11 @@ class DeploymentAppHome extends Component {
     const versions = DeploymentAppStore.versions;
     const versionDto = _.filter(versions, v => v.id === value)[0];
     DeploymentAppStore.setValue(null);
-    this.setState({ versionId: value, versionDto, value: null, markers: [] });
-    if (this.state.envId) {
-      this.handleSelectEnv(this.state.envId);
-    }
+    this.setState({ versionId: value, versionDto, value: null, markers: [] }, () => {
+      if (this.state.envId) {
+        this.handleSelectEnv(this.state.envId);
+      }
+    });
   };
 
   /**
@@ -268,7 +309,7 @@ class DeploymentAppHome extends Component {
       instanceId: undefined,
       changeYaml: false,
     });
-    if (location.search.indexOf('envId') !== -1) {
+    if (location.search.indexOf('envId') !== -1 || location.search.indexOf('appId') !== -1) {
       const { history } = this.props;
       history.go(-1);
     }
@@ -277,7 +318,7 @@ class DeploymentAppHome extends Component {
   /**
    * 部署应用
    */
-  handleDeploy = () => {
+  handleDeploy = (isNotChange) => {
     this.setState({
       loading: true,
     });
@@ -285,6 +326,7 @@ class DeploymentAppHome extends Component {
     const instances = DeploymentAppStore.currentInstance;
     const value = this.state.value || DeploymentAppStore.value.yaml;
     const applicationDeployDTO = {
+      isNotChange,
       appId: this.state.appId,
       appVerisonId: this.state.versionId,
       environmentId: this.state.envId,
@@ -327,7 +369,6 @@ class DeploymentAppHome extends Component {
     const { DeploymentAppStore, intl } = this.props;
     const { formatMessage } = intl;
     const versions = DeploymentAppStore.versions;
-    const proId = parseInt(AppState.currentMenuType.id, 10);
     return (
       <div className="deployApp-app">
         <p>
@@ -340,7 +381,7 @@ class DeploymentAppHome extends Component {
           </div>
           <div className="deploy-text">
             {this.state.app && <div className="section-text-margin">
-              <span className={`icon ${this.state.is_project ? 'icon-project' : 'icon-apps'} section-text-icon`} />
+              <Tooltip title={<FormattedMessage id={this.state.is_project ? 'project' : 'market'} />}><span className={`icon ${this.state.is_project ? 'icon-project' : 'icon-apps'} section-text-icon`} /></Tooltip>
               <span className="section-text">{this.state.app.name}({this.state.app.code})</span>
             </div>}
             <Permission service={['devops-service.application.pageByOptions', 'devops-service.application-market.listAllApp']}>
@@ -396,7 +437,9 @@ class DeploymentAppHome extends Component {
   handleRenderEnv = () => {
     const { DeploymentAppStore, intl } = this.props;
     const { formatMessage } = intl;
-    const envs = DeploymentAppStore.envs;
+    const envs = EnvOverviewStore.getEnvcard;
+    const envId = EnvOverviewStore.getTpEnvId;
+    const env = _.filter(envs, { 'connect': true, 'id': envId });
     const data = this.state.yaml || DeploymentAppStore.value;
     return (
       <div className="deployApp-env">
@@ -409,7 +452,7 @@ class DeploymentAppHome extends Component {
             <span className="section-title">{formatMessage({ id: 'deploy.step.two.env.title' })}</span>
           </div>
           <Select
-            value={this.state.envId}
+            value={env && env.length ? env[0].id : this.state.envId}
             label={<span className="deploy-text">{formatMessage({ id: 'deploy.step.two.env' })}</span>}
             className="section-text-margin"
             onSelect={this.handleSelectEnv}
@@ -419,7 +462,7 @@ class DeploymentAppHome extends Component {
               .toLowerCase().indexOf(input.toLowerCase()) >= 0}
             filter
           >
-            {envs.map(v => (<Option value={v.id} key={v.id} disabled={!v.connect}>
+            {envs.map(v => (<Option value={v.id} key={v.id} disabled={!v.connect || !v.permission}>
               {v.connect ? <span className="c7n-ist-status_on" /> : <span className="c7n-ist-status_off" />}
               {v.name}
             </Option>))}
@@ -429,6 +472,10 @@ class DeploymentAppHome extends Component {
           <div className="deploy-title">
             <i className="icon icon-description section-title-icon " />
             <span className="section-title">{formatMessage({ id: 'deploy.step.two.config' })}</span>
+            <i className="icon icon-error c7n-deploy-ist-operate section-instance-icon" />
+            <span className="deploy-tip-text">
+              {formatMessage({ id: 'deploy.step.two.description_1' })}
+            </span>
           </div>
           {data && (<AceForYaml
             newLines={data.newLines}
@@ -448,7 +495,7 @@ class DeploymentAppHome extends Component {
             type="primary"
             funcType="raised"
             onClick={this.changeStep.bind(this, 3)}
-            disabled={!(this.state.envId && (this.state.value || (data && data.yaml)) 
+            disabled={!(this.state.envId && (this.state.value || (data && data.yaml))
               && (this.state.errorLine
                 ? this.state.errorLine.length === 0 : (data && data.errorLines === null)))}
           >
@@ -486,14 +533,14 @@ class DeploymentAppHome extends Component {
               label={<span className="deploy-text">{formatMessage({ id: 'deploy.step.three.mode' })}</span>}
             >
               <Radio className="deploy-radio" value="new">{formatMessage({ id: 'deploy.step.three.mode.new' })}</Radio>
-              <Radio className="deploy-radio" value="replace" disabled={instances.length === 0 || (instances.length === 1 && (instances[0].appVersion === this.state.versionDto.version) && !this.state.changeYaml)}>{formatMessage({ id: 'deploy.step.three.mode.replace' })}
+              <Radio className="deploy-radio" value="replace" disabled={instances.length === 0}>{formatMessage({ id: 'deploy.step.three.mode.replace' })}
                 <i className="icon icon-error section-instance-icon" />
                 <span className="deploy-tip-text">{formatMessage({ id: 'deploy.step.three.mode.help' })}</span>
               </Radio>
             </RadioGroup>
             {this.state.mode === 'replace' && <Select
               onSelect={this.handleSelectInstance}
-              value={this.state.instanceId 
+              value={this.state.instanceId
                 || (instances && instances.length === 1 && instances[0].id)}
               label={<FormattedMessage id="deploy.step.three.mode.replace.label" />}
               className="deploy-select"
@@ -503,7 +550,7 @@ class DeploymentAppHome extends Component {
                 .toLowerCase().indexOf(input.toLowerCase()) >= 0}
               filter
             >
-              {instances.map(v => (<Option value={v.id} key={v.id} disabled={this.state.changeYaml ? false : v.appVersion === this.state.versionDto.version}>
+              {instances.map(v => (<Option value={v.id} key={v.id}>
                 {v.code}
               </Option>))}
             </Select>}
@@ -535,13 +582,16 @@ class DeploymentAppHome extends Component {
     const { intl } = this.props;
     const { formatMessage } = intl;
     const data = this.state.yaml || DeploymentAppStore.value;
-    const { app, versionId, envId, instanceId, mode } = this.state;
+    const { app, versionId, envId, versionDto, mode, instanceDto, instanceId } = this.state;
+    const instanceID = instanceId || (instances && instances.length === 1 && instances[0].id);
+    const instance = instanceDto || _.filter(instances, v => v.id === instanceID)[0];
     const options = {
       theme: 'neat',
       mode: 'yaml',
       readOnly: true,
       lineNumbers: true,
     };
+    const isNotChange = (this.state.changeYaml || mode === 'new') ? false : versionDto.version === instance.appVersion;
     return (
       <section className="deployApp-review">
         <section>
@@ -581,7 +631,7 @@ class DeploymentAppHome extends Component {
         </section>
         <section className="deployApp-section">
           <Permission service={['devops-service.application-instance.deploy']}>
-            <Button type="primary" funcType="raised" disabled={!(app && versionId && envId && mode)} onClick={this.handleDeploy} loading={this.state.loading}>{formatMessage({ id: 'deploy.btn.deploy' })}</Button>
+            <Button type="primary" funcType="raised" disabled={!(app && versionId && envId && mode)} onClick={this.handleDeploy.bind(this, isNotChange)} loading={this.state.loading}>{formatMessage({ id: 'deploy.btn.deploy' })}</Button>
           </Permission>
           <Button funcType="raised" onClick={this.changeStep.bind(this, 3)}>{formatMessage({ id: 'previous' })}</Button>
           <Button funcType="raised" className="c7n-deploy-clear" onClick={this.clearStepOne}>{formatMessage({ id: 'cancel' })}</Button>
@@ -602,12 +652,22 @@ class DeploymentAppHome extends Component {
     );
   }
 
+  /**
+   * 环境选择请求函数
+   * @param value
+   */
+  handleEnvSelect = (value) => {
+    EnvOverviewStore.setTpEnvId(value);
+  };
+
   render() {
     const { DeploymentAppStore, intl } = this.props;
     const { formatMessage } = intl;
     const data = DeploymentAppStore.value;
     const projectName = AppState.currentMenuType.name;
-    const { appId, versionId, envId, instanceId, mode, value, current } = this.state;
+    const { appId, versionId, envId, instanceId, mode, value, current, disabled } = this.state;
+    const envData = EnvOverviewStore.getEnvcard;
+    const { getTpEnvId } = EnvOverviewStore;
     return (
       <Page
         service={[
@@ -616,7 +676,7 @@ class DeploymentAppHome extends Component {
           'devops-service.devops-environment.listByProjectIdAndActive',
           'devops-service.application-instance.queryValues',
           'devops-service.application-instance.formatValue',
-          'devops-service.application-instance.listByAppVersionId',
+          'devops-service.application-instance.listByAppIdAndEnvId',
           'devops-service.application-instance.deploy',
           'devops-service.application.pageByOptions',
           'devops-service.application-market.listAllApp',
@@ -624,7 +684,26 @@ class DeploymentAppHome extends Component {
         ]}
         className="c7n-region c7n-deployApp"
       >
-        <Header title={<FormattedMessage id="deploy.header.title" />} />
+        {envData && envData.length && getTpEnvId  ? <Fragment><Header title={<FormattedMessage id="deploy.header.title" />}>
+          <Select
+            className={`${getTpEnvId? 'c7n-header-select' : 'c7n-header-select c7n-select_min100'}`}
+            dropdownClassName="c7n-header-env_drop"
+            placeholder={formatMessage({ id: 'envoverview.noEnv' })}
+            value={envData && envData.length ? getTpEnvId : undefined}
+            disabled={ disabled || (envData && envData.length === 0)}
+            onChange={this.handleEnvSelect}
+          >
+            {_.map(envData,  e => (
+              <Option key={e.id} value={e.id} disabled={!e.permission} title={e.name}>
+                <Tooltip placement="right" title={e.name}>
+                    <span className="c7n-ib-width_100">
+                      {e.connect ? <span className="c7n-ist-status_on" /> : <span className="c7n-ist-status_off" />}
+                      {e.name}
+                    </span>
+                </Tooltip>
+              </Option>))}
+          </Select>
+        </Header>
         <Content className="c7n-deployApp-wrapper" code="deploy" values={{ name: projectName }}>
           <div className="deployApp-card">
             <Steps current={this.state.current}>
@@ -669,7 +748,7 @@ class DeploymentAppHome extends Component {
             handleCancel={this.handleCancel}
             handleOk={this.handleOk}
           />}
-        </Content>
+        </Content></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="deploy.header.title" />} type="env" />}
       </Page>
     );
   }

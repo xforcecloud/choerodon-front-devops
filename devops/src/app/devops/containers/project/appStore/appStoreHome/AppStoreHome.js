@@ -27,6 +27,12 @@ class AppStoreHome extends Component {
     this.loadAppCards();
   }
 
+  componentWillUnmount() {
+    const { AppStoreStore } = this.props;
+    AppStoreStore.setAppCards([]);
+    AppStoreStore.setApp([]);
+  }
+
   /**
    * pageSize 变化的回调
    * @param current 当前页码
@@ -262,6 +268,8 @@ class AppStoreHome extends Component {
           'devops-service.application-market.listAllApp',
           'devops-service.application-market.queryApp',
           'devops-service.application-market.queryAppVersionReadme',
+          'devops-service.application-market.exportFile',
+          'devops-service.application-market.importApps',
         ]}
       >
         <Header title={<FormattedMessage id="appstore.title" />}>
@@ -299,7 +307,7 @@ class AppStoreHome extends Component {
             <FormattedMessage id="refresh" />
           </Button>
         </Header>
-        <Content code="appstore" value={{ name }}>
+        <Content code="appstore" values={{ name }}>
           <div className="c7n-store-search">
             <Input
               placeholder={formatMessage({ id: 'appstore.search' })}

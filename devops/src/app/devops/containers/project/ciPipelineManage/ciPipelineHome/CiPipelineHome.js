@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { observer, inject } from 'mobx-react';
+import React, { Component, Fragment } from 'react';
+import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Button, Table, Tooltip, Popover, Select } from 'choerodon-ui';
 import { Content, Header, Page, Permission, stores } from 'choerodon-front-boot';
@@ -9,9 +9,18 @@ import _ from 'lodash';
 import '../../../main.scss';
 import './CiPipelineHome.scss';
 import CiPipelineStore from '../../../../stores/project/ciPipelineManage';
+import MouserOverWrapper from '../../../../components/MouseOverWrapper';
+import DevPipelineStore from '../../../../stores/project/devPipeline';
+import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
+import { getTableTitle } from '../../../../utils';
 
-const Option = Select.Option;
+const { Option, OptGroup } = Select;
 const ICONS = {
+  passed: {
+    icon: 'icon-check_circle',
+    code: 'passed',
+    display: 'Passed',
+  },
   success: {
     icon: 'icon-check_circle',
     code: 'success',
@@ -33,14 +42,24 @@ const ICONS = {
     display: 'Failed',
   },
   canceled: {
-    icon: 'icon-not_interested',
+    icon: 'icon-cancle_b',
     code: 'canceled',
-    display: 'Cancel',
+    display: 'Canceled',
   },
   skipped: {
     icon: 'icon-skipped_b',
     code: 'skipped',
     display: 'Skipped',
+  },
+  created: {
+    icon: 'icon-radio_button_checked',
+    code: 'created',
+    display: 'Created',
+  },
+  manual: {
+    icon: 'icon-radio_button_checked',
+    code: 'manual',
+    display: 'Manual',
   },
 };
 const ICONS_ACTION = {
@@ -67,39 +86,20 @@ class CiPipelineHome extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      param: [],
     };
   }
 
   componentDidMount() {
-    CiPipelineStore.loadInitData();
+    DevPipelineStore.queryAppData(AppState.currentMenuType.id, 'ci');
   }
 
   componentWillUnmount() {
-    CiPipelineStore.setCurrentApp({});
-  }
-
-  get filterBar() {
-    return (
-      <div>
-        <Select
-          className="c7n-app-select_512"
-          value={CiPipelineStore.currentApp.id}
-          label={this.props.intl.formatMessage({ id: 'deploy.step.one.app' })}
-          filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-          filter
-          onChange={this.handleChange.bind(this)}
-        >
-          {
-            _.map(CiPipelineStore.apps, (app, index) => <Option key={index} value={app.id}>{app.name}</Option>)
-          }
-        </Select>
-      </div>
-    );
+    CiPipelineStore.setCiPipelines([]);
   }
 
   get tableCiPipeline() {
-    const { param } = this.state;
+    const { loading, pagination, ciPipelines } = CiPipelineStore;
+    const { intl: { formatMessage } } = this.props;
 
     const ciPipelineColumns = [
       {
@@ -108,45 +108,45 @@ class CiPipelineHome extends Component {
         render: (status, record) => this.renderStatus(status, record),
       },
       {
-        title: <FormattedMessage id="ciPipeline.sign" />,
-        dataIndex: 'id',
-        render: (id, record) => this.renderSign(id, record),
+        title: getTableTitle('ciPipeline.sign'),
+        dataIndex: 'pipelineId',
+        render: (pipelineId, record) => this.renderSign(pipelineId, record),
       },
       {
-        title: <FormattedMessage id="ciPipeline.commit" />,
-        dataIndex: 'sha',
-        render: (sha, record) => this.renderCommit(sha, record),
+        title: getTableTitle('ciPipeline.commit'),
+        dataIndex: 'commit',
+        render: (commit, record) => this.renderCommit(commit, record),
       },
       {
-        title: <FormattedMessage id="ciPipeline.jobs" />,
-        dataIndex: 'jobs',
-        render: (jobs, record) => this.renderJobs(jobs, record),
+        title: getTableTitle('ciPipeline.jobs'),
+        dataIndex: 'stages',
+        render: (stages, record) => this.renderstages(stages, record),
       },
       {
         title: <FormattedMessage id="ciPipeline.time" />,
-        dataIndex: 'time',
-        render: (time, record) => (
+        dataIndex: 'pipelineTime',
+        render: (pipelineTime, record) => (
           <span>
-            {this.renderTime(time, record)}
+            {this.renderTime(pipelineTime, record)}
           </span>
         ),
       },
       {
         title: <FormattedMessage id="ciPipeline.createdAt" />,
-        dataIndex: 'createdAt',
-        render: (createdAt, record) => (
+        dataIndex: 'creationDate',
+        render: (creationDate, record) => (
           <div>
             <Popover
               rowKey="creationDate"
               title={<FormattedMessage id="ciPipeline.createdAt" />}
-              content={createdAt}
+              content={creationDate}
               placement="left"
             >
               <TimeAgo
-                datetime={createdAt}
-                locale={this.props.intl.formatMessage({ id: 'language' })}
+                datetime={creationDate}
+                locale={formatMessage({ id: 'language' })}
               />
-            </Popover> 
+            </Popover>
           </div>),
       },
       {
@@ -158,14 +158,12 @@ class CiPipelineHome extends Component {
     return (
       <div>
         <Table
-          filterBarPlaceholder={this.props.intl.formatMessage({ id: 'filter' })}
-          loading={CiPipelineStore.loading}
+          loading={loading}
           size="middle"
-          pagination={CiPipelineStore.pagination}
+          pagination={pagination}
           columns={ciPipelineColumns}
-          dataSource={CiPipelineStore.ciPipelines.slice()}
-          rowKey={record => record.id}
-          filters={param}
+          dataSource={ciPipelines.slice()}
+          rowKey={record => record.pipelineId}
           onChange={this.handleTableChange}
           filterBar={false}
         />
@@ -173,55 +171,54 @@ class CiPipelineHome extends Component {
     );
   }
 
-  handleTableChange = (pagination, filters, sorter, param) => {
-    this.setState({ param });
-    CiPipelineStore.setLoading(true);
+  handleTableChange = (pagination) => {
     CiPipelineStore.loadPipelines(
-      CiPipelineStore.currentApp.id,
+      DevPipelineStore.selectedApp,
       pagination.current - 1,
       pagination.pageSize,
     );
   };
 
   handleRefresh =() => {
-    this.setState({
-      param: [],
-    });
-    CiPipelineStore.setLoading(true);
     CiPipelineStore.loadPipelines(
-      CiPipelineStore.currentApp.id,
+      DevPipelineStore.selectedApp,
       CiPipelineStore.pagination.current - 1,
       CiPipelineStore.pagination.pageSize,
     );
   };
 
   handleChange(appId) {
-    const currentApp = CiPipelineStore.apps.find(app => app.id === appId);
-    CiPipelineStore.setCurrentApp(currentApp);
+    DevPipelineStore.setSelectApp(appId);
+    DevPipelineStore.setRecentApp(appId);
     CiPipelineStore.loadPipelines(appId);
   }
 
   handleAction(record) {
     if (record.status === 'running' || record.status === 'pending') {
-      CiPipelineStore.cancelPipeline(record.gitlabProjectId, record.id);
+      CiPipelineStore.cancelPipeline(record.gitlabProjectId, record.pipelineId);
     } else {
-      CiPipelineStore.retryPipeline(record.gitlabProjectId, record.id);
+      CiPipelineStore.retryPipeline(record.gitlabProjectId, record.pipelineId);
     }
     this.handleRefresh();
   }
 
-  renderStatus = (status, record) => (
-    <div className="c7n-status">
-      <a
-        href={`${record.gitlabUrl.slice(0, -4)}/pipelines/${record.id}`}
-        target="_blank"
-        rel="nofollow me noopener noreferrer"
-      >
-        <i className={`icon ${ICONS[status].icon} c7n-icon-${status} c7n-icon-lg`} />
-        <span className="c7n-text-status black">{ICONS[status].display}</span>
-      </a>
-    </div>
-  );
+  renderStatus = (status, record) => {
+    if (status) {
+      return (<div className="c7n-status">
+        <a
+          href={record.gitlabUrl ? `${record.gitlabUrl.slice(0, -4)}/pipelines/${record.pipelineId}` : null}
+          target="_blank"
+          rel="nofollow me noopener noreferrer"
+          className="c7n-status-link"
+        >
+          <i className={`icon ${ICONS[status].icon} c7n-icon-${status} c7n-icon-lg`} />
+          <span className="c7n-text-status black">{ICONS[status].display}</span>
+        </a>
+      </div>);
+    } else {
+      return 'Null';
+    }
+  };
 
   renderSign = (id, record) => (
     <div className="c7n-sign">
@@ -229,7 +226,7 @@ class CiPipelineHome extends Component {
         <span>
           <a
             className="c7n-link-decoration"
-            href={`${record.gitlabUrl.slice(0, -4)}/pipelines/${record.id}`}
+            href={record.gitlabUrl ? `${record.gitlabUrl.slice(0, -4)}/pipelines/${record.pipelineId}` : null}
             target="_blank"
             rel="nofollow me noopener noreferrer"
           >
@@ -241,14 +238,18 @@ class CiPipelineHome extends Component {
         </span>
         <Tooltip
           placement="top"
-          title={record.createUser}
+          title={record.pipelineUserName ? record.pipelineUserName : ''}
           trigger="hover"
         >
-          <span className="c7n-avatar m8 mt3">{record.createUser.substring(0, 1)}</span>
+          {
+            record.pipelineUserUrl
+              ? <img className="c7n-image-avatar m8" src={record.pipelineUserUrl} alt="avatar" />
+              : <span className="c7n-avatar m8 mt3">{record.pipelineUserName ? record.pipelineUserName.substring(0, 1).toUpperCase() : ''}</span>
+          }
         </Tooltip>
       </div>
       {
-        record.latest 
+        record.latest
           ? (
             <Tooltip
               placement="top"
@@ -265,42 +266,34 @@ class CiPipelineHome extends Component {
     </div>
   );
 
-  renderCommit = (sha, record) => (
+  renderCommit = (commit, record) => (
     <div className="c7n-commit">
       <div className="c7n-title-commit">
         <i className="icon icon-branch mr7" />
-        <Tooltip
-          placement="top"
-          title={record.ref}
-          trigger="hover"
-        >
+        <MouserOverWrapper text={record.ref} width={0.1}>
           <a
             className="c7n-link-decoration"
-            href={`${record.gitlabUrl.slice(0, -4)}/commits/${record.ref}`}
+            href={record.gitlabUrl ? `${record.gitlabUrl.slice(0, -4)}/commits/${record.ref}` : null}
             target="_blank"
             rel="nofollow me noopener noreferrer"
           >
             <span className="black">{record.ref}</span>
           </a>
-        </Tooltip>
+        </MouserOverWrapper>
         <i className="icon icon-point m8" />
         <Tooltip
           placement="top"
-          title={record.sha}
+          title={record.commit}
           trigger="hover"
         >
           <a
             className="c7n-link-decoration"
-            href={`${record.gitlabUrl.slice(0, -4)}/commit/${record.sha}`}
+            href={record.gitlabUrl ? `${record.gitlabUrl.slice(0, -4)}/commit/${record.commit}` : null}
             target="_blank"
             rel="nofollow me noopener noreferrer"
           >
             <span>
-              {
-                _.find(CiPipelineStore.commits, { id: sha }) 
-                  ? _.find(CiPipelineStore.commits, { id: sha }).shortId
-                  : ''
-              }
+              { record.commit ? record.commit.slice(0, 8) : '' }
             </span>
           </a>
         </Tooltip>
@@ -308,43 +301,35 @@ class CiPipelineHome extends Component {
       <div className="c7n-des-commit">
         <Tooltip
           placement="top"
-          title={
-            _.find(CiPipelineStore.commits, { id: sha }) 
-              ? _.find(CiPipelineStore.commits, { id: sha }).authorName
-              : ''
-          }
+          title={record.commitUserName ? record.commitUserName : ''}
           trigger="hover"
         >
-          <span className="c7n-avatar mr7">
-            {
-              _.find(CiPipelineStore.commits, { id: sha }) 
-                ? _.find(CiPipelineStore.commits, { id: sha }).authorName.substring(0, 1)
-                : ''
-            }
-          </span>
+          {
+            record.commitUserUrl
+              ? <img className="c7n-image-avatar" src={record.commitUserUrl} alt="avatar" />
+              : <span className="c7n-avatar mr7">{ record.commitUserName ? record.commitUserName.substring(0, 1).toUpperCase() : '' }</span>
+          }
         </Tooltip>
-        <a
-          className="c7n-link-decoration"
-          href={`${record.gitlabUrl.slice(0, -4)}/commit/${record.sha}`}
-          target="_blank"
-          rel="nofollow me noopener noreferrer"
-        >
-          <span className="gray">
-            {
-              _.find(CiPipelineStore.commits, { id: sha }) 
-                ? _.find(CiPipelineStore.commits, { id: sha }).title
-                : ''
-            }
-          </span>
-        </a>
+        <MouserOverWrapper text={record.commitContent} width={0.2}>
+          <a
+            className="c7n-link-decoration"
+            href={record.gitlabUrl ? `${record.gitlabUrl.slice(0, -4)}/commit/${record.commit}` : null}
+            target="_blank"
+            rel="nofollow me noopener noreferrer"
+          >
+            <span className="gray">
+              {record.commitContent}
+            </span>
+          </a>
+        </MouserOverWrapper>
       </div>
     </div>
   );
 
-  renderJobs = (jobs, record) => {
+  renderstages = (stages, record) => {
     const pipeStage = [];
-    if (jobs && jobs.length) {
-      for (let i = 0, l = jobs.length; i < l; i += 1) {
+    if (stages && stages.length) {
+      for (let i = 0, l = stages.length; i < l; i += 1) {
         pipeStage.push(<span className="c7n-jobs" key={i}>
           {
             i !== 0
@@ -352,20 +337,20 @@ class CiPipelineHome extends Component {
               : null
           }
           <Tooltip
-            title={(jobs[i].stage === 'sonarqube' && jobs[i].status === 'failed') ? `${jobs[i].stage} : ${jobs[i].description}` : `${jobs[i].stage} : ${jobs[i].status}`}
+            title={(stages[i].name === 'sonarqube' && stages[i].status === 'failed') ? `${stages[i].name} : ${stages[i].description}` : `${stages[i].name} : ${stages[i].status}`}
           >
-            {jobs[i].stage === 'sonarqube' ? <i
-              className={`icon ${ICONS[jobs[i].status || 'skipped'].icon || ''}
-                c7n-icon-${jobs[i].status} c7n-icon-lg`}
+            {stages[i].stage === 'sonarqube' ? <i
+              className={`icon ${ICONS[stages[i].status || 'skipped'].icon || ''}
+                c7n-icon-${stages[i].status} c7n-icon-lg`}
             /> : <a
               className=""
-              href={`${record.gitlabUrl.slice(0, -4)}/-/jobs/${jobs[i].id}`}
+              href={record.gitlabUrl ? `${record.gitlabUrl.slice(0, -4)}/-/jobs/${stages[i].id}` : null}
               target="_blank"
               rel="nofollow me noopener noreferrer"
             >
               <i
-                className={`icon ${ICONS[jobs[i].status || 'skipped'].icon || ''}
-                c7n-icon-${jobs[i].status} c7n-icon-lg`}
+                className={`icon ${ICONS[stages[i].status || 'skipped'].icon || ''}
+                c7n-icon-${stages[i].status} c7n-icon-lg`}
               />
             </a>}
           </Tooltip>
@@ -379,13 +364,19 @@ class CiPipelineHome extends Component {
     );
   };
 
-  renderTime = (time, record) => {
-    if (time) {
-      const day = time[0] ? `${time[0]}${this.props.intl.formatMessage({ id: 'ist.day' })}` : '';
-      const hour = time[1] ? `${time[1]}${this.props.intl.formatMessage({ id: 'ist.hour' })}` : '';
-      const minute = time[2] ? `${time[2]}${this.props.intl.formatMessage({ id: 'ist.min' })}` : '';
-      const second = time[3] ? `${time[3]}${this.props.intl.formatMessage({ id: 'ist.sec' })}` : '';
-      return `${day}${hour}${minute}${second}`;
+  renderTime = (pipelineTime, record) => {
+    const { intl: { formatMessage } } = this.props;
+    if (pipelineTime) {
+      if (pipelineTime.split('.')[1] === '00') {
+        pipelineTime = `${pipelineTime.toString().split('.')[0]}${formatMessage({ id: 'minutes' })}`;
+      } else if (pipelineTime.split('.')[0] === '0') {
+        pipelineTime = `${(Number(pipelineTime.toString().split('.')[1]) * 0.6).toFixed()}${formatMessage({ id: 'seconds' })}`;
+      } else if (pipelineTime.split('.').length === 2) {
+        pipelineTime = `${pipelineTime.toString().split('.')[0]}${formatMessage({ id: 'minutes' })}${(Number(pipelineTime.toString().split('.')[1]) * 0.6).toFixed()}${formatMessage({ id: 'seconds' })}`;
+      } else {
+        pipelineTime = null;
+      }
+      return pipelineTime;
     } else {
       return '--';
     }
@@ -395,7 +386,7 @@ class CiPipelineHome extends Component {
     const projectId = AppState.currentMenuType.id;
     const organizationId = AppState.currentMenuType.organizationId;
     const type = AppState.currentMenuType.type;
-    if (record.status && record.status !== 'success' && record.status !== 'skipped') {
+    if (record.status && record.status !== 'passed' && record.status !== 'success' && record.status !== 'skipped') {
       return (
         <Permission
           service={['devops-service.project-pipeline.retry', 'devops-service.project-pipeline.cancel']}
@@ -421,18 +412,46 @@ class CiPipelineHome extends Component {
 
   render() {
     const { name } = AppState.currentMenuType;
+    const { intl: { formatMessage } } = this.props;
+    const appData = DevPipelineStore.getAppData;
+    const appId = DevPipelineStore.getSelectApp;
+    const titleName = _.find(appData, ['id', appId]) ? _.find(appData, ['id', appId]).name : name;
     return (
       <Page
         className="c7n-region c7n-ciPipeline"
         service={[
-          'devops-service.project-pipeline.list',
           'devops-service.application.listByActive',
-          'devops-service.gitlab-commit.list',
           'devops-service.project-pipeline.cancel',
           'devops-service.project-pipeline.retry',
+          'devops-service.devops-gitlab-pipeline.pagePipeline',
         ]}
       >
-        <Header title={<FormattedMessage id="ciPipeline.head" />}>
+        {appData && appData.length ? <Fragment><Header title={<FormattedMessage id="ciPipeline.head" />}>
+          <Select
+            filter
+            className="c7n-header-select"
+            dropdownClassName="c7n-header-select_drop"
+            placeholder={formatMessage({ id: 'ist.noApp' })}
+            value={appData && appData.length ? DevPipelineStore.getSelectApp : undefined}
+            disabled={appData.length === 0}
+            filterOption={(input, option) => option.props.children.props.children.props.children
+              .toLowerCase().indexOf(input.toLowerCase()) >= 0}
+            onChange={this.handleChange.bind(this)}
+          >
+            <OptGroup label={formatMessage({ id: 'recent' })} key="recent">
+              {_.map(DevPipelineStore.getRecentApp, app => <Option key={`recent-${app.id}`} value={app.id}>
+                <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
+              </Option>)}
+            </OptGroup>
+            <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
+              {
+                _.map(appData, (app, index) => (
+                  <Option value={app.id} key={index}>
+                    <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
+                  </Option>))
+              }
+            </OptGroup>
+          </Select>
           <Button
             funcType="flat"
             onClick={this.handleRefresh}
@@ -441,10 +460,9 @@ class CiPipelineHome extends Component {
             <FormattedMessage id="refresh" />
           </Button>
         </Header>
-        <Content code="ciPipeline" value={{ name }}>
-          {this.filterBar}
+        <Content code={appData.length ? 'ciPipeline.app' : 'ciPipeline'} values={{ name: titleName }}>
           {this.tableCiPipeline}
-        </Content>
+        </Content></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="ciPipeline.head" />} type="app" />}
       </Page>
     );
   }

@@ -1,9 +1,13 @@
 import React, { Component } from 'react';
+import { Tooltip } from 'choerodon-ui';
 import './StatusTags.scss';
 
 const Color = {
-  success: '#1bc123',
+  success: '#00bf96',
   error: '#f44336',
+  failed: '#f44336',
+  merged: '#4D90FE',
+  opened: '#FFB100',
 };
 
 class StatusTags extends Component {
@@ -13,16 +17,20 @@ class StatusTags extends Component {
   }
 
   render() {
-    const { name, color, colorCode } = this.props;
+    const { name, color, colorCode, style, ellipsis, error } = this.props;
     return (
       <div
         className="c7n-status-tags"
         style={{
           background: color || Color[colorCode] || 'rgba(0, 0, 0, 0.28)',
-          ...this.props.style,
+          ...style,
         }}
       >
-        <div>{ name || '' }</div>
+        <div style={ellipsis || {}}>
+          <Tooltip title={ellipsis ? (name || '') : (error)}>
+            { name || '' }
+          </Tooltip>
+        </div>
       </div>
     );
   }

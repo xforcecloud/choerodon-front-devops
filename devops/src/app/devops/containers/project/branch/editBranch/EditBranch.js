@@ -1,18 +1,20 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react';
-import { Modal, Form, Radio, Input, Select, Tooltip } from 'choerodon-ui';
-import { stores, axios, Content } from 'choerodon-front-boot';
+import { Modal, Form, Select, Tooltip } from 'choerodon-ui';
+import { stores, Content } from 'choerodon-front-boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import '../../../main.scss';
 import '../CreateBranch/CreateBranch.scss';
 import '../commom.scss';
 import MouserOverWrapper from '../../../../components/MouseOverWrapper';
+import DevPipelineStore from '../../../../stores/project/devPipeline';
+import DevConsoleStore from '../../../../stores/project/devConsole';
 
 const { AppState } = stores;
 const Sidebar = Modal.Sidebar;
-const { Option, OptGroup } = Select;
+const { Option } = Select;
 const FormItem = Form.Item;
 const formItemLayout = {
   labelCol: {
@@ -48,35 +50,35 @@ class EditBranch extends Component {
     switch (s.typeCode) {
       case 'story':
         mes = formatMessage({ id: 'branch.issue.story' });
-        icon = 'turned_in';
+        icon = 'agile_story';
         color = '#00bfa5';
         break;
       case 'bug':
         mes = formatMessage({ id: 'branch.issue.bug' });
-        icon = 'bug_report';
+        icon = 'agile_fault';
         color = '#f44336';
         break;
       case 'issue_epic':
         mes = formatMessage({ id: 'branch.issue.epic' });
-        icon = 'priority';
+        icon = 'agile_epic';
         color = '#743be7';
         break;
       case 'sub_task':
         mes = formatMessage({ id: 'branch.issue.subtask' });
-        icon = 'relation';
+        icon = 'agile_subtask';
         color = '#4d90fe';
         break;
       default:
         mes = formatMessage({ id: 'branch.issue.task' });
-        icon = 'assignment';
+        icon = 'agile_task';
         color = '#4d90fe';
     }
     return (<span>
       <Tooltip title={mes}>
-        <div style={{ background: color, marginRight: 5 }} className="branch-issue"><i className={`icon icon-${icon}`} /></div>
+        <div style={{ color: color, marginRight: 5 }} className="branch-issue"><i className={`icon icon-${icon}`} /></div>
         <span className="branch-issue-content">
           <span style={{ color: 'rgb(0,0,0,0.65)' }}>{s.issueNum}</span>
-          <MouserOverWrapper style={{ display: 'inline-block', verticalAlign: 'sub' }} width={0.3} text={s.summary}>{s.summary}</MouserOverWrapper>
+          <MouserOverWrapper style={{ display: 'inline-block', verticalAlign: 'sub' }} width="350px" text={s.summary}>{s.summary}</MouserOverWrapper>
         </span>
       </Tooltip>
     </span>);
@@ -88,9 +90,9 @@ class EditBranch extends Component {
    */
   handleOk = (e) => {
     e.preventDefault();
-    const { store } = this.props;
-    const appId = store.app;
-    const { projectId, type } = this.state;
+    const { store, isDevConsole } = this.props;
+    const appId = DevPipelineStore.selectedApp;
+    const { projectId } = this.state;
     let isModify = false;
     const issueId = this.props.form.getFieldValue('issueId');
     if (!store.branch.issueId && issueId) {
@@ -103,6 +105,9 @@ class EditBranch extends Component {
         store.updateBranchByName(projectId, appId, data)
           .then(() => {
             store.loadBranchData({ projectId });
+            if (isDevConsole) {
+              DevConsoleStore.loadBranchList(projectId, appId);
+            }
             this.props.onClose();
             this.props.form.resetFields();
             this.setState({ submitting: false });
@@ -143,8 +148,7 @@ class EditBranch extends Component {
 
 
   render() {
-    const { name } = AppState.currentMenuType;
-    const { visible, intl, store, form: { getFieldDecorator } } = this.props;
+    const { visible, store, form: { getFieldDecorator }, name } = this.props;
     const issueInitValue = store.issueInitValue;
     const issue = store.issue.slice();
     const branch = store.branch;

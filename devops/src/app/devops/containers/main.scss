@@ -421,6 +421,15 @@ table {
   margin-right: 5px;
 }
 
+.c7n-ist-status_update {
+  width: 8px;
+  height: 8px;
+  border-radius: 8px;
+  display: inline-block;
+  background: #ffb100;
+  flex-shrink: 0;
+}
+
 /* 修改UI组件默认样式 */
 .is-required {
   .ant-select-disabled {
@@ -470,6 +479,44 @@ table {
     font-size: 13px;
     margin-left: 10px;
   }
+
+  .c7n-tooltip-icon {
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.36);
+    margin-left: 2px;
+  }
+}
+
+.c7n-domain-create-status {
+  display: inline-block;
+  height: 16px;
+  font-size: 12px;
+  border-radius: 2px;
+  color: white;
+  text-align: center;
+  line-height: 16px;
+  margin-right: 8px;
+
+  div {
+    transform: scale(0.83333);
+    white-space: nowrap;
+  }
+}
+
+.c7n-domain-create-status_running {
+  background: #00bf96;
+}
+
+.c7n-domain-create-status_failed {
+  background: #f44336;
+}
+
+.c7n-domain-create-status_operating {
+  background: #4d90fe;
+}
+
+.c7n-domain-create-status_deleted {
+  background: rgba(0, 0, 0, 0.36);
 }
 
 // 创建侧边栏中的卡片区域
@@ -538,4 +585,132 @@ input::-webkit-contacts-auto-fill-button {
 
 .c7ncd-link-icon {
   font-size: 13px;
+}
+
+.c7n-ib-width_100 {
+  width: 100%;
+  display: inline-block;
+}
+
+.c7n-header-select {
+  max-width: 105px;
+  margin-right: 28px;
+  font-weight: 500;
+
+  .icon-arrow_drop_down {
+    font-size: 18px;
+  }
+
+  .ant-select-selection__rendered {
+    margin-bottom: 0;
+    color: #3f51b5;
+  }
+
+  .ant-select-underline {
+    display: none;
+  }
+}
+
+.c7n-select_min100 {
+  min-width: 100px;
+}
+
+.c7n-header-env_drop {
+  width: 100px !important;
+  .ant-select-dropdown-menu-item {
+    padding: 4px 6px !important;
+  }
+}
+
+.c7n-header-select_drop {
+  width: 200px !important;
+  top: 90px !important;
+}
+
+.c7n-notice-wrap_error {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12), inset 4px 0 0 0 #f44336;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding-left: 14px;
+  margin-bottom: 20px;
+
+  i {
+    color: #f44336;
+    font-size: 20px;
+    margin-right: 14px;
+  }
+}
+
+.c7n-table-title-tip {
+  display: flex;
+  align-items: center;
+
+  i {
+    color: rgba(0, 0, 0, 0.36);
+    margin-left: 2px;
+    font-size: 14px;
+  }
+}
+
+// 表单选择器添加末尾icon
+.c7n-create-sidebar-tooltip {
+
+  .ant-select-selection__rendered {
+    padding-right: 52px;
+  }
+
+  .c7ncd-sidebar-select {
+    position: relative;
+  }
+
+  .ant-select-arrow {
+    position: absolute !important;
+    right: 20px;
+    bottom: 0;
+    margin: 0;
+    transition: opacity .15s ease;
+    cursor: pointer;
+  }
+
+  .c7n-select-tip {
+    position: absolute !important;
+    right: 1px;
+    top: 19px;
+    color: rgba(0, 0, 0, .65);
+  }
+
+  .ant-select-clear {
+    right: 34px;
+  }
+
+  .ant-input-rendered-wrapper {
+    .c7n-select-tip {
+      top: 2px;
+    }
+  }
+}
+
+.c7n-tips-popover {
+  max-width: 350px;
+}
+
+.ant-select-dropdown.ant-select-dropdown--multiple .ant-select-dropdown-menu-item-selected,
+.ant-select-dropdown-menu-item, .ant-select-selection__choice__content {
+
+  .c7n-table-title-tip {
+    display: inline-block;
+    padding: 0 8px;
+
+    i {
+      display: none;
+    }
+  }
+}
+
+.ant-table-filter-select-dropdown, .ant-select-selection__choice__content {
+
+  .c7n-table-title-tip {
+    padding: 0;
+  }
 }

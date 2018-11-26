@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Content, stores } from 'choerodon-front-boot';
@@ -7,6 +7,7 @@ import _ from 'lodash';
 import MdEditor from '../../../../components/MdEditor';
 import '../../../main.scss';
 import './CreateTag.scss';
+import { getSelectTip } from '../../../../utils';
 
 const { AppState } = stores;
 const { Option, OptGroup } = Select;
@@ -136,9 +137,8 @@ class CreateTag extends Component {
   };
 
   render() {
-    const { intl: { formatMessage }, store, form: { getFieldDecorator }, show } = this.props;
+    const { intl: { formatMessage }, store, form: { getFieldDecorator }, show, app: name } = this.props;
     const { submitting, release } = this.state;
-    const { name } = AppState.currentMenuType;
     const { content, totalElements, numberOfElements } = store.getBranchData;
     return (<Sidebar
       destroyOnClose
@@ -149,6 +149,7 @@ class CreateTag extends Component {
       cancelText={<FormattedMessage id="cancel" />}
       confirmLoading={submitting}
       onCancel={this.handleCancel}
+      className="c7n-create-sidebar-tooltip"
     >
       <Content code="apptag.create" values={{ name }} className="c7n-tag-create sidebar-content">
         <Form layout="vertical" className="c7n-sidebar-form">
@@ -184,8 +185,7 @@ class CreateTag extends Component {
                   required: true,
                   message: formatMessage({ id: 'required' }),
                 }],
-              })(
-                <Select
+              })(<Select
                   onFilterChange={this.searchBranch}
                   allowClear
                   label={<FormattedMessage id="apptag.ref" />}
@@ -212,9 +212,10 @@ class CreateTag extends Component {
                       >{formatMessage({ id: 'ist.more' })}</div>
                     </Option> : null }
                   </OptGroup>
-                </Select>,
+                </Select>
               )}
             </FormItem>
+            {getSelectTip('apptag.tip')}
           </div>
         </Form>
         <div className="c7n-apptag-release-title">{formatMessage({ id: 'apptag.release.title' })}</div>

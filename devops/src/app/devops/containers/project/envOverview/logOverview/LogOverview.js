@@ -3,7 +3,7 @@ import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Table, Form } from 'choerodon-ui';
+import { Table, Form, Icon, Popover } from 'choerodon-ui';
 import { stores } from 'choerodon-front-boot';
 import TimePopover from '../../../../components/timePopover';
 import '../EnvOverview.scss';
@@ -33,7 +33,7 @@ class LogOverview extends Component {
 
 
   render() {
-    const { store } = this.props;
+    const { store, intl } = this.props;
     const log = store.getLog;
     const sync = store.getSync;
 
@@ -70,18 +70,40 @@ class LogOverview extends Component {
       render: record => <TimePopover content={record.errorTime} />,
     }];
 
+    const content = (<Fragment>
+      <p className="envow-popover-describe"><FormattedMessage id="envoverview.commit.desc" /></p>
+      <h4 className="envow-popover-title"><FormattedMessage id="envoverview.gitlab" /></h4>
+      <p className="envow-popover-desc"><FormattedMessage id="envoverview.commit.repo" /></p>
+      <h4 className="envow-popover-title"><FormattedMessage id="envoverview.analysis" /></h4>
+      <p className="envow-popover-desc"><FormattedMessage id="envoverview.commit.anal" /></p>
+      <h4 className="envow-popover-title"><FormattedMessage id="envoverview.agent" /></h4>
+      <p className="envow-popover-desc"><FormattedMessage id="envoverview.commit.carr" /></p>
+    </Fragment>);
+
+    const tableLocale = {
+      emptyText: intl.formatMessage({ id: 'envoverview.log.table' }),
+    };
 
     return (<div>
       <div className="c7n-envow-sync-wrap">
         <div className="c7n-envow-sync-title">
-          <FormattedMessage id="envoverview.commit.sync" />
+          <span className="envow-sync-text"><FormattedMessage id="envoverview.commit.sync" /></span>
+          <Popover
+            overlayClassName="c7n-envow-sync-popover"
+            placement="bottomLeft"
+            content={content}
+            trigger="hover"
+            arrowPointAtCenter
+          >
+            <Icon type="help" className="c7n-envow-sync-icon" />
+          </Popover>
         </div>
         <div className="c7n-envow-sync-line">
           <div className="c7n-envow-sync-card">
             <div className="c7n-envow-sync-step"><FormattedMessage id="envoverview.gitlab" /></div>
             <div className="c7n-envow-sync-commit">
-              <a href={sync && `${sync.commitUrl}${sync.gitCommit}`} target="_blank" rel="nofollow me noopener noreferrer">
-                {sync && (sync.gitCommit ? sync.gitCommit.slice(0, 8) : null)}
+              <a href={sync && `${sync.commitUrl}${sync.sagaSyncCommit}`} target="_blank" rel="nofollow me noopener noreferrer">
+                {sync && (sync.sagaSyncCommit ? sync.sagaSyncCommit.slice(0, 8) : null)}
               </a>
             </div>
           </div>
@@ -114,6 +136,7 @@ class LogOverview extends Component {
       </div>
       <Table
         filterBar={false}
+        locale={tableLocale}
         loading={store.isLoading}
         pagination={store.getPageInfo}
         columns={columns}

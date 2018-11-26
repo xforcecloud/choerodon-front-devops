@@ -1,0 +1,274 @@
+.c7n-dc-card-wrap {
+  border-radius: 2px;
+  padding: 20px 16px;
+  box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+
+  .c7n-tag-empty {
+    box-shadow: none;
+    padding-left: 30px;
+    justify-content: flex-start;
+    align-items: center;
+
+    button {
+      margin-left: auto;
+    }
+  }
+
+  .spin-container {
+    margin: 100px auto;
+  }
+}
+
+.c7n-dc-card-title {
+  font-size: 18px;
+  color: rgba(0, 0, 0, 0.87);
+  display: flex;
+
+  i {
+    margin-right: 6px;
+    font-size: 24px;
+    line-height: 27px;
+   }
+}
+
+.c7n-dc-collapse-padding {
+  padding-left: 12px;
+}
+
+.c7n-dc-app-code {
+  display: inline-block;
+  margin-top: 13px;
+
+  .ant-btn-sm {
+    margin-left: 8px;
+  }
+}
+
+.c7n-dc-url-wrap {
+  margin: 13px 0 0 40px;
+  display: inline-block;
+
+  .ant-btn-sm {
+    margin-left: 8px;
+  }
+}
+
+.c7n-dc-content_1 {
+  display: flex;
+
+  .c7n-tag-empty {
+    box-shadow: none;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  .c7n-dc-card-branch, .page-content-header {
+    flex: 6;
+    margin-right: 16px;
+    max-width: none;
+
+    &:hover {
+      .c7n-branch-action {
+        display: inline-block;
+
+        button {
+          width: 20px;
+          height: 20px;
+          line-height: 20px;
+        }
+      }
+    }
+  }
+
+  .c7n-dc-card-merge {
+    flex: 4;
+  }
+
+  .c7n-dc-data-wrap {
+    flex: 2;
+    color: rgba(0, 0, 0, 0.65);
+
+    .commit-number {
+      margin: 10px 0 8px 30px;
+      font-size: 24px;
+
+      a {
+        color: #303f9f;
+      }
+    }
+
+    .c7n-commit-title {
+      font-size: 12px;
+    }
+
+    .c7n-data-number {
+      height: 33px;
+
+      &:last-child {
+        margin: 0;
+      }
+
+      a {
+        font-size: 14px;
+        color: #303f9f;
+      }
+
+      i {
+        margin: 0 2px 0 16px;
+      }
+
+      .c7n-data-number_link {
+        text-align: right;
+      }
+    }
+  }
+}
+
+.c7n-envow-dropdown-link {
+  button {
+    padding: 5px 12px;
+    line-height: 22px;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+
+  .ant-dropdown-menu-item {
+    padding: 0;
+  }
+}
+
+.c7n-dc-create-select {
+  line-height: 58px;
+  margin-right: 18px;
+  font-weight: 500 !important;
+
+  a {
+    height: 20px;
+    line-height: 20px;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+
+    .icon-playlist_add {
+      margin-right: 2px;
+    }
+  }
+}
+
+.c7n-dc-branch {
+  max-height: 300px;
+  overflow: scroll;
+  padding-right: 1px;
+}
+
+.c7n-dc-branch-content {
+  padding: 8px 30px;
+
+  .branch-content-title {
+    display: flex;
+    width: 100%;
+    height: 20px;
+    align-items: center;
+
+    .branch-name {
+      width: 183px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+  }
+
+  .c7n-branch-issue {
+    margin-right: 40px;
+
+    .c7n-issue-type {
+      display: inline-block;
+      text-align: center;
+      line-height: 14px;
+      margin-right: 8px;
+
+      i {
+        font-size: 20px;
+      }
+    }
+  }
+
+  .c7n-branch-action {
+    display: none;
+  }
+
+  .c7n-merge-action {
+    margin-left: 10px;
+  }
+
+  .c7n-branch-commit {
+    margin: 2px 0 0 24px;
+    color: rgba(0, 0, 0, 0.65);
+    display: flex;
+
+    .branch-column-icon {
+      color: rgba(0, 0, 0, 0.54);
+      line-height: 20px;
+      padding-right: 6px;
+    }
+
+    .branch-col-icon {
+      margin-left: 10px;
+    }
+
+    .c7n-branch-avatar {
+      margin: 0 8px 0 12px;
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+      border-radius: 9px;
+    }
+
+    .ant-avatar-sm > * {
+      line-height: 18px;
+    }
+
+    .branch-sha {
+      width: 60px;
+    }
+
+    .c7n-branch-time {
+      width: 58px;
+    }
+  }
+
+  .c7n-merge-title {
+    margin: 0 12px 0 6px;
+  }
+
+  .c7n-merge-branch {
+    color: rgba(0, 0, 0, 0.65);
+    margin-top: 2px;
+    display: flex;
+
+    .c7n-merge-icon {
+      line-height: 20px;
+      margin-right: 6px;
+    }
+
+    .c7n-merge-icon-arrow {
+      line-height: 20px;
+      margin: 0 10px;
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.c7n-devCs-nomerge {
+  padding: 18px 0 0 30px;
+}
+
+.mb25 {
+  margin-bottom: 25px;
+}
+
+.mb16 {
+  margin-bottom: 16px;
+}

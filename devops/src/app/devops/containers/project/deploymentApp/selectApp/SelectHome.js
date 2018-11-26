@@ -6,7 +6,6 @@ import {
   Button, Tabs, Icon, Modal, Input, Table, Pagination,
 } from 'choerodon-ui';
 import { stores, Content } from 'choerodon-front-boot';
-import _ from 'lodash';
 import Loadingbar from '../../../../components/loadingBar';
 import '../../../main.scss';
 import './SelectApp.scss';
@@ -33,6 +32,11 @@ class DeployAppHome extends Component {
     const { projectId } = this.state;
     SelectAppStore.loadData({ projectId });
     this.handleSelectData();
+  }
+
+  componentWillUnmount() {
+    SelectAppStore.setAllData([]);
+    SelectAppStore.setStoreData([]);
   }
 
   /**
@@ -133,7 +137,7 @@ class DeployAppHome extends Component {
       dataIndex: 'category',
       key: 'category',
     }, {
-      title: <FormattedMessage id="appstore.description" />,
+      title: <FormattedMessage id="appstore.description.label" />,
       dataIndex: 'description',
       key: 'description',
     }];

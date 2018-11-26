@@ -125,7 +125,7 @@ class DomainStore {
     return this.Info;
   }
 
-  loadData = (isRefresh = true, proId, page = this.pageInfo.current - 1, pageSize = this.pageInfo.pageSize, sort = { field: 'id', order: 'desc' }, datas = {
+  loadData = (isRefresh = true, proId, envId, page = this.pageInfo.current - 1, pageSize = this.pageInfo.pageSize, sort = { field: 'id', order: 'desc' }, datas = {
     searchParam: {},
     param: '',
   }) => {
@@ -133,7 +133,7 @@ class DomainStore {
       this.changeIsRefresh(true);
     }
     this.changeLoading(true);
-    return axios.post(`/devops/v1/projects/${proId}/ingress/list_by_options?page=${page}&size=${pageSize}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(datas))
+    return axios.post(`/devops/v1/projects/${proId}/ingress/${envId}/listByEnv?page=${page}&size=${pageSize}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(datas))
       .then((data) => {
         const res = handleProptError(data);
         if (res) {
@@ -170,7 +170,7 @@ class DomainStore {
   checkName = (projectId, envId, value) => axios.get(`/devops/v1/projects/${projectId}/ingress/check_name?name=${envId}&envId=${value}`)
     .then(data => handleProptError(data));
 
-  checkPath =(projectId, domain, value, id = '') => axios.get(`/devops/v1/projects/${projectId}/ingress/check_domain?domain=${domain}&path=${value}&id=${id}`)
+  checkPath =(projectId, domain, env, value, id = '') => axios.get(`/devops/v1/projects/${projectId}/ingress/check_domain?domain=${domain}&envId=${env}&path=${value}&id=${id}`)
     .then(data => handleProptError(data));
 
   updateData = (projectId, id, data) => axios.put(`/devops/v1/projects/${projectId}/ingress/${id}`, JSON.stringify(data))

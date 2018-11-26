@@ -51,19 +51,17 @@ class DomainOverview extends Component {
     const page = store.getPageInfo.current;
     const totalPage = Math.ceil(store.getPageInfo.total / store.getPageInfo.pageSize);
     this.submitting = true;
-    DomainStore.deleteData(projectId, this.id).then((data) => {
-      if (data) {
-        this.submitting = false;
-        if (lastDatas === 1 && page === totalPage) {
-          store.loadDomain(projectId, envId, store.getPageInfo.current - 2);
-        } else {
-          store.loadDomain(projectId, envId, store.getPageInfo.current - 1);
-        }
-        this.closeRemove();
+    DomainStore.deleteData(projectId, this.id).then(() => {
+      this.submitting = false;
+      if (lastDatas === 1 && page === totalPage) {
+        store.loadDomain(projectId, envId, store.getPageInfo.current - 2);
+      } else {
+        store.loadDomain(projectId, envId, store.getPageInfo.current - 1);
       }
+      this.closeRemove();
     }).catch((error) => {
       this.submitting = false;
-      Choerodon.prompt(error);
+      Choerodon.handleResponseError(error);
     });
     store.setInfo({ filters: {}, sort: { columnKey: 'id', order: 'descend' }, paras: [] });
   };
@@ -152,11 +150,10 @@ class DomainOverview extends Component {
   };
 
   render() {
-    const { intl, store } = this.props;
+    const { intl, store, envId } = this.props;
     const data = store.getDomain;
     const { filters, sort: { columnKey, order }, paras } = store.getInfo;
     const menu = AppState.currentMenuType;
-    const projectName = menu.name;
     const { type, id: projectId, organizationId: orgId } = menu;
     const columns = [{
       title: intl.formatMessage({ id: 'domain.column.name' }),
@@ -278,6 +275,7 @@ class DomainOverview extends Component {
       {this.showDomain && <CreateDomain
         id={this.domainId}
         title={this.domainTitle}
+        envId={envId}
         visible={this.showDomain}
         type={this.domainType}
         store={DomainStore}

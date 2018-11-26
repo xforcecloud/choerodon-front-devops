@@ -21,9 +21,9 @@ class ContainerStore {
     current: 1, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15,
   };
 
-  @observable appdata = [];
+  @observable appData = [];
 
-  @observable envcard = [];
+  @observable envCard = [];
 
   @observable filterValue = '';
 
@@ -81,20 +81,20 @@ class ContainerStore {
     return this.logs;
   }
 
-  @action setEnvcard(envcard) {
-    this.envcard = envcard;
+  @action setEnvCard(envCard) {
+    this.envCard = envCard;
   }
 
-  @computed get getEnvcard() {
-    return this.envcard;
+  @computed get getEnvCard() {
+    return this.envCard;
   }
 
   @action setAppDate(data) {
-    this.appdata = data;
+    this.appData = data;
   }
 
   @computed get getAppData() {
-    return this.appdata;
+    return this.appData;
   }
 
   @action setFilterValue(filterValue) {
@@ -113,38 +113,40 @@ class ContainerStore {
     return this.Info;
   }
 
-  @action setenvId(id) {
+  @action setEnvId(id) {
     this.envId = id;
   }
 
-  @computed get getenvId() {
+  @computed get getEnvId() {
     return this.envId;
   }
 
-  @action setappId(id) {
+  @action setAppId(id) {
     this.appId = id;
   }
 
-  @computed get getappId() {
+  @computed get getAppId() {
     return this.appId;
   }
 
 
-  loadActiveEnv = projectId => axios.get(`devops/v1/projects/${projectId}/envs?active=true`).then((data) => {
-    const res = this.handleProptError(data);
-    if (res) {
-      this.setEnvcard(data);
-    }
-  });
+  loadActiveEnv = projectId => axios.get(`devops/v1/projects/${projectId}/envs?active=true`)
+    .then((data) => {
+      if (data && data.failed) {
+        Choerodon.prompt(data.message);
+      } else {
+        this.setEnvCard(data);
+      }
+      return data;
+    });
 
-  loadAppData = projectId => axios.get(`devops/v1/projects/${projectId}/apps/list_all`).then((data) => {
-    const res = handleProptError(data);
-    if (res) {
-      this.setAppDate(data);
-    }
-  });
-
-  loadAppDataByEnv = (projectId, envId) => axios.get(`devops/v1/projects/${projectId}/apps/options?envId=${envId}&status=running`).then((data) => {
+  /**
+   *
+   * @param projectId
+   * @param envId
+   * @param appId 返回的数据中必须包含被传入的appId
+   */
+  loadAppDataByEnv = (projectId, envId, appId=null) => axios.get(`devops/v1/projects/${projectId}/apps/options?envId=${envId}${appId ? `&status=running$appId=${appId}` : ''}`).then((data) => {
     const res = handleProptError(data);
     if (res) {
       this.setAppDate(data);
@@ -152,7 +154,19 @@ class ContainerStore {
     return res;
   });
 
-  loadData = (isRefresh = false, proId, envId = this.envId, appId = this.appId, page = this.pageInfo.current - 1, size = this.pageInfo.pageSize, sort = { field: 'id', order: 'desc' }, datas = {
+
+  /**
+   * 加载容器
+   * @param isRefresh 是否刷新
+   * @param proId 项目id
+   * @param envId 环境id
+   * @param appId 应用id
+   * @param page
+   * @param size
+   * @param sort
+   * @param datas 筛选条件
+   */
+  loadData = (isRefresh = false, proId, envId = this.envId, appId = this.appId, page = 0, size = this.pageInfo.pageSize, sort = { field: 'id', order: 'desc' }, datas = {
     searchParam: {},
     param: '',
   }) => {
@@ -188,15 +202,8 @@ class ContainerStore {
     this.setPageInfo(page);
   };
 
-  loadPodParam(projectId, id, type) {
-    if (type) {
-      return axios.get(`devops/v1/projects/${projectId}/app_pod/${id}/containers/logs/${type}`)
-        .then(datas => this.handleProptError(datas));
-    } else {
-      return axios.get(`devops/v1/projects/${projectId}/app_pod/${id}/containers/logs`)
-        .then(datas => this.handleProptError(datas));
-    }
-  }
+  loadPodParam = (projectId, id, type) => axios.get(`devops/v1/projects/${projectId}/app_pod/${id}/containers/logs${type ? `/${type}` : ''}`)
+    .then(data => this.handleProptError(data));
 
   handleProptError =(error) => {
     if (error && error.failed) {
