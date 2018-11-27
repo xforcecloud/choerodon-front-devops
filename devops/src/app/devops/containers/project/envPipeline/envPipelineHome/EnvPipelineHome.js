@@ -720,7 +720,9 @@ class EnvPipelineHome extends Component {
           >
             {sideType === 'edit' ? <Content className="sidebar-content">
               <h2 className="c7n-space-first"><FormattedMessage id={'env.edit.title'} values={{ name: envData ? envData.code : '' }} /></h2>
-              <br/>
+              <p>
+                <FormattedMessage id={'env.edit.description'} />
+              </p>
               <br/>
               {formContent}
             </Content>: <Content code={`env.${sideType}`} value={{projectName}} className="sidebar-content">
