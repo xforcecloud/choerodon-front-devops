@@ -718,9 +718,14 @@ class EnvPipelineHome extends Component {
             cancelText={<FormattedMessage id="cancel" />}
             okText={this.okText(sideType)}
           >
-            <Content code={`env.${sideType}`} value={{ projectName }} className="sidebar-content">
+            {sideType === 'edit' ? <Content className="sidebar-content">
+              <h2 className="c7n-space-first"><FormattedMessage id={'env.edit.title'} values={{ name: envData ? envData.code : '' }} /></h2>
+              <br/>
+              <br/>
               {formContent}
-            </Content>
+            </Content>: <Content code={`env.${sideType}`} value={{projectName}} className="sidebar-content">
+              {formContent}
+            </Content>}
           </Sidebar>
           <Modal
             visible={ban}
