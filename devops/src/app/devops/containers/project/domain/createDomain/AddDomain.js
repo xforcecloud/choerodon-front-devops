@@ -163,10 +163,10 @@ class CreateDomain extends Component {
         const pathList = [];
         _.forEach(paths, (item) => {
           const pt = path[item];
-          const rewritePath = rewritePath[item];
+          const rp = rewritePath[item];
           const serviceId = network[item];
           const servicePort = port[item];
-          pathList.push({ path: pt, rewritePath, serviceId, servicePort });
+          pathList.push({ path: pt, rewritePath: rp, serviceId, servicePort });
         });
         postData.pathList = pathList;
         if (type === 'create') {
@@ -501,7 +501,7 @@ class CreateDomain extends Component {
         >
           {getFieldDecorator(`rewritePath[${k}]`, {
 
-            initialValue: '',
+            initialValue: initRewritePath,
           })(
             <Input
               //onChange={() => this.setState({ pathCountChange: true })}
