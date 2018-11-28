@@ -682,6 +682,7 @@ const zhCN = {
   'domain.column.env': '环境名称',
   'domain.column.network': '网络',
   'domain.column.path': '路径',
+  'domain.column.rewritePath': 'rewrite path',
   'domain.column.domain': '地址',
   'domain.column.port': '端口',
   'domain.form.domain': '域名地址',
