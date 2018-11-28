@@ -393,6 +393,7 @@ class DeployAppHome extends Component {
     const prefix = <Icon type="search" onClick={this.handleSearch} />;
     const suffix = val ? <Icon type="close" onClick={() => this.clearInputValue(activeTab)} /> : null;
     const loading = SelectAppStore.getLoading;
+    const { type, organizationId } = AppState.currentMenuType;
     return (
       <SideBar
         title={<FormattedMessage id="deploy.step.one.app" />}
@@ -530,8 +531,7 @@ class DeployAppHome extends Component {
                   </React.Fragment>
                 )}
               </TabPane>
-              <Permission level = ResourceLevel.ORGANIZATION
-                          roles = {"role/organization/default/deploy-administrator"}>
+              <Permission type={type} organizationId={organizationId} service={['devops-service.application-market.org']}>
                 <TabPane className="c7n-deploy-tabpane" tab={formatMessage({ id: 'deploy.sidebar.organization' })} key="3">
                   {view === 'list' && this.getOrganizationTable()}
                   {view === 'card' && (
