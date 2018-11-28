@@ -5,7 +5,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import {
   Button, Tabs, Icon, Modal, Input, Table, Pagination,
 } from 'choerodon-ui';
-import { stores, Content } from 'choerodon-front-boot';
+import { stores, Content, Permission } from 'choerodon-front-boot';
 import Loadingbar from '../../../../components/loadingBar';
 import '../../../main.scss';
 import './SelectApp.scss';
