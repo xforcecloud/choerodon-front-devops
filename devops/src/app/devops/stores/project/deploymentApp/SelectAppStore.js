@@ -9,6 +9,8 @@ class SelectAppStore {
 
   @observable storeData = [];
 
+  @observable organizationData = [];
+
   @observable isRefresh= false; // 页面的loading
 
   @observable loading = false; // 打开tab的loading
@@ -25,6 +27,9 @@ class SelectAppStore {
     current: 1, total: 0, pageSize: 30,
   };
 
+  @observable organizationPageInfo = {
+    current: 1, total: 0, pageSize: 30,
+  };
 
   @observable searchValue = '';
 
@@ -51,6 +56,27 @@ class SelectAppStore {
 
   @computed get getLocalPageInfo() {
     return this.localPageInfo;
+  }
+
+  /**
+   * 当前组织应用数据
+   */
+  @action setOrganizationData(data) {
+    this.organizationData = data;
+  }
+
+  @computed get getOrganizationData() {
+    return this.organizationData.slice();
+  }
+
+  @action setOrganizationPageInfo(page) {
+    this.organizationPageInfo.current = page.number + 1;
+    this.organizationPageInfo.total = page.totalElements;
+    this.organizationPageInfo.pageSize = page.size;
+  }
+
+  @computed get getOrganizationPageInfo() {
+    return this.organizationPageInfo;
   }
 
   /**
@@ -150,8 +176,30 @@ class SelectAppStore {
       });
   };
 
+  loadOrganizationApps = (
+    {
+      organizationId,
+      page = this.organizationPageInfo.current - 1,
+      size = this.organizationPageInfo.pageSize,
+      sort = { field: 'id', order: 'desc' },
+      postData = { searchParam: {}, param: '' },
+    },
+  ) => {
+    this.changeLoading(true);
+    return axios.post(`devops/v1/organizations/${organizationId}/apps?page=${page}&size=${size}`, JSON.stringify(postData))
+      .then((data) => {
+        const res = this.handleProptError(data);
+        if (res) {
+          if (this.searchValue === '' || this.searchValue === postData.param) {
+            this.handleData(data, 'organization');
+          }
+        }
+        this.changeLoading(false);
+      });
+  };
+
   /**
-   * 项目内和商店中判断
+   * 项目内和商店和组织中判断
    * @param data
    * @param type
    */
@@ -162,6 +210,9 @@ class SelectAppStore {
     if (type === 'local') {
       this.setAllData(content);
       this.setLocalPageInfo({ number, size, totalElements });
+    } else if (type === 'organization'){
+      this.setOrganizationData(content);
+      this.setOrganizationPageInfo({ number, size, totalElements });
     } else {
       this.setStoreData(content);
       this.setStorePageInfo({ number, size, totalElements });

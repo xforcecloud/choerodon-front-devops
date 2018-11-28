@@ -10,7 +10,7 @@ const pageDetail = {
   'network.link': `${docServer}/user-guide/deployment-pipeline/service/`,
   'network.create.title': '项目"{name}"中创建网络',
   'network.create.description': '您可在此选择环境及实例，配置网络转发策略。目前支持内部和外部两种网络转发方式。\n'
-    + '        转发内部网络，则只需定义端口即可，系统会自动为您分配集群内部IP；转发外部网络，则需要定义外部IP及端口。',
+  + '        转发内部网络，则只需定义端口即可，系统会自动为您分配集群内部IP；转发外部网络，则需要定义外部IP及端口。',
   'network.create.link': `${docServer}/user-guide/deployment-pipeline/service/`,
   'network.update.title': '对网络"{name}"进行修改',
   'network.update.description': '您可在此修改网络配置信息。',
@@ -443,6 +443,7 @@ const zhCN = {
   'deploy.sidebar.project': '项目应用',
   'deploy.sidebar.market': '应用市场',
   'deploy.sidebar.search': '搜索应用',
+  'deploy.sidebar.organization': '本组织应用',
 
   // envPipeline
   'envPl.head': '环境流水线',

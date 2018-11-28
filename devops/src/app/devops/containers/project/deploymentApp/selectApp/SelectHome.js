@@ -24,13 +24,16 @@ class DeployAppHome extends Component {
     this.state = {
       activeTab: '1',
       projectId: AppState.currentMenuType.id,
+      organizationId: AppState.currentMenuType.organizationId,
       view: 'card',
     };
   }
 
   componentDidMount() {
     const { projectId } = this.state;
+    const { organizationId } = this.state;
     SelectAppStore.loadData({ projectId });
+    SelectAppStore.loadOrganizationApps({ organizationId });
     this.handleSelectData();
   }
 
@@ -40,7 +43,7 @@ class DeployAppHome extends Component {
    * @param size
    */
   onPageChange =(page, size) => {
-    const { activeTab, projectId } = this.state;
+    const { activeTab, projectId, organizationId } = this.state;
     const key = activeTab;
     if (key === '1') {
       SelectAppStore.loadData({
@@ -48,9 +51,15 @@ class DeployAppHome extends Component {
         page: page - 1,
         size,
       });
-    } else {
+    } else if (key === '2'){
       SelectAppStore.loadApps({
         projectId,
+        page: page - 1,
+        size,
+      });
+    } else {
+      SelectAppStore.loadOrganizationApps({
+        organizationId,
         page: page - 1,
         size,
       });
@@ -156,6 +165,53 @@ class DeployAppHome extends Component {
   };
 
   /**
+   * 获取本组织的app
+   * @returns {*}
+   */
+  getOrganizationTable = () => {
+    const { intl } = this.props;
+    const { app, isMarket } = this.state;
+    const dataSource = SelectAppStore.getOrganizationData;
+    const column = [{
+      key: 'check',
+      width: '50px',
+      render: record => (
+        app && record.id === app.id && !isMarket && <i className="icon icon-check icon-select" />
+      ),
+
+    }, {
+      title: <FormattedMessage id="app.name" />,
+      dataIndex: 'name',
+      key: 'name',
+      sorter: true,
+      filters: [],
+    }, {
+      title: <FormattedMessage id="app.code" />,
+      dataIndex: 'code',
+      key: 'code',
+      sorter: true,
+      filters: [],
+    }];
+    return (
+      <Table
+        filterBarPlaceholder={intl.formatMessage({ id: 'filter' })}
+        rowClassName="col-check"
+        onRow={(record) => {
+          const a = record;
+          return {
+            onClick: this.handleSelectApp.bind(this, record),
+          };
+        }}
+        onChange={this.tableChange}
+        columns={column}
+        rowKey={record => record.id}
+        dataSource={dataSource}
+        pagination={SelectAppStore.getOrganizationData}
+      />
+    );
+  };
+
+  /**
    * 初始化选择数据
    */
   handleSelectData =() => {
@@ -181,7 +237,7 @@ class DeployAppHome extends Component {
    * @param e
    */
   handleSearch =(e) => {
-    const { activeTab, projectId } = this.state;
+    const { activeTab, projectId, organizationId } = this.state;
     this.setState({ val: e.target.value });
     SelectAppStore.setSearchValue(e.target.value);
     if (activeTab === '1') {
@@ -190,6 +246,12 @@ class DeployAppHome extends Component {
         postData: { param: e.target.value, searchParam: {} },
         page: 0,
       });
+    } else if (activeTab === '3'){
+      SelectAppStore.loadOrganizationApps({
+        organizationId,
+        postData: { param: e.target.value, searchParam: {} },
+        page: 0,
+      })
     } else {
       SelectAppStore.loadApps({
         projectId,
@@ -202,7 +264,7 @@ class DeployAppHome extends Component {
    * 清空搜索框数据
    */
   clearInputValue = (key) => {
-    const { projectId, activeKey } = this.state;
+    const { projectId, activeKey, organizationId } = this.state;
     const keys = key || activeKey;
     SelectAppStore.setSearchValue('');
     this.setState({ val: '' });
@@ -212,6 +274,12 @@ class DeployAppHome extends Component {
         page: 0,
         size: SelectAppStore.localPageInfo.pageSize,
       });
+    } else if (keys === '3'){
+      SelectAppStore.loadOrganizationApps({
+        organizationId,
+        page: 0,
+        size: SelectAppStore.localPageInfo.pageSize,
+      })
     } else {
       SelectAppStore.loadApps({
         projectId,
@@ -267,7 +335,15 @@ class DeployAppHome extends Component {
         page,
         size: pagination.pageSize,
       });
-    } else {
+    } else if (activeTab == '3'){
+      SelectAppStore.loadOrganizationApps({
+        organizationId: organizationId,
+        sort,
+        postData,
+        page,
+        size: pagination.pageSize,
+      });
+    }else{
       SelectAppStore.loadApps({
         projectId: organizationId,
         sort,
@@ -309,8 +385,10 @@ class DeployAppHome extends Component {
     } = this.state;
     const localDataSource = SelectAppStore.getAllData;
     const storeDataSource = SelectAppStore.getStoreData;
+    const organizationData = SelectAppStore.getOrganizationData;
     const { total: lt, current: lc, pageSize: lp } = SelectAppStore.getLocalPageInfo;
     const { total: st, current: sc, pageSize: sp } = SelectAppStore.getStorePageInfo;
+    const { total: ot, current: oc, pageSize: op } = SelectAppStore.getOrganizationPageInfo;
     const projectName = AppState.currentMenuType.name;
     const prefix = <Icon type="search" onClick={this.handleSearch} />;
     const suffix = val ? <Icon type="close" onClick={() => this.clearInputValue(activeTab)} /> : null;
@@ -452,6 +530,67 @@ class DeployAppHome extends Component {
                   </React.Fragment>
                 )}
               </TabPane>
+              <Permission level = ResourceLevel.ORGANIZATION
+                          roles = {"role/organization/default/deploy-administrator"}>
+                <TabPane className="c7n-deploy-tabpane" tab={formatMessage({ id: 'deploy.sidebar.organization' })} key="3">
+                  {view === 'list' && this.getOrganizationTable()}
+                  {view === 'card' && (
+                    <React.Fragment>
+                      <div className="c7n-store-search">
+                        <Input
+                          value={val}
+                          prefix={prefix}
+                          suffix={suffix}
+                          onChange={this.handleSearch}
+                          onPressEnter={this.handleSearch}
+                          placeholder={formatMessage({ id: 'deploy.sidebar.search' })}
+                          // eslint-disable-next-line no-return-assign
+                          ref={node => this.searchInput = node}
+                        />
+                      </div>
+                      {loading ? <Loadingbar display /> : (
+                        <React.Fragment>
+                          <div>
+                            {organizationData.length >= 1 && organizationData.map(card => (
+                              <div
+                                key={card.id}
+                                role="none"
+                                className={`c7n-store-card ${app && app.id === card.id && !isMarket && 'c7n-card-active'}`}
+                                onClick={this.handleSelectApp.bind(this, card)}
+                              >
+                                {app && !isMarket && app.id === card.id && <span className="span-icon-check"><i className="icon icon-check" /></span> }
+                                <div className="c7n-store-card-icon" />
+                                <div className="c7n-store-card-name">
+                                  <MouserOverWrapper
+                                    text={card.name}
+                                    width={0.15}
+                                  >
+                                    {card.name}
+                                  </MouserOverWrapper>
+                                </div>
+                                <div title={card.code} className="c7n-store-card-des-60">
+                                  {card.code}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="c7n-store-pagination">
+                            <Pagination
+                              total={ot}
+                              current={oc}
+                              pageSize={op}
+                              showSizeChanger
+                              onChange={this.onPageChange}
+                              onShowSizeChange={this.onPageChange}
+                            />
+                          </div>
+                        </React.Fragment>
+                      )}
+                    </React.Fragment>
+                  )}
+
+                </TabPane>
+              </Permission>
             </Tabs>
           </div>
         </Content>
