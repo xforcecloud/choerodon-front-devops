@@ -139,13 +139,22 @@ class DeploymentAppHome extends Component {
           versionId: undefined,
           versionDto: null,
         });
-      } else {
+      } else if ( key === '2' ) {
         DeploymentAppStore.loadVersion(app.appId, this.state.projectId, true);
         this.setState({
           app,
           appId: app.appId,
           show: false,
           is_project: false,
+          versionId: undefined,
+          versionDto: null,
+        });
+      } else {
+        DeploymentAppStore.loadVersion(app.id, this.state.projectId, '');
+        this.setState({
+          app,
+          appId: app.id,
+          show: false,
           versionId: undefined,
           versionDto: null,
         });
