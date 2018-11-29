@@ -246,16 +246,16 @@ class DeployAppHome extends Component {
         postData: { param: e.target.value, searchParam: {} },
         page: 0,
       });
-    } else if (activeTab === '3'){
+    } else if (activeTab === '2'){
+      SelectAppStore.loadApps({
+        projectId,
+        postData: { param: e.target.value, searchParam: {}, page: 0 },
+      });
+    } else {
       SelectAppStore.loadOrganizationApps({
         organizationId,
         postData: { param: e.target.value, searchParam: {} },
         page: 0,
-      })
-    } else {
-      SelectAppStore.loadApps({
-        projectId,
-        postData: { param: e.target.value, searchParam: {}, page: 0 },
       });
     }
   };
@@ -335,17 +335,17 @@ class DeployAppHome extends Component {
         page,
         size: pagination.pageSize,
       });
-    } else if (activeTab == '3'){
-      SelectAppStore.loadOrganizationApps({
-        organizationId: organizationId,
+    } else if (activeTab == '2'){
+      SelectAppStore.loadApps({
+        projectId: organizationId,
         sort,
         postData,
         page,
         size: pagination.pageSize,
       });
-    }else{
-      SelectAppStore.loadApps({
-        projectId: organizationId,
+    } else {
+      SelectAppStore.loadOrganizationApps({
+        organizationId: organizationId,
         sort,
         postData,
         page,
@@ -393,7 +393,7 @@ class DeployAppHome extends Component {
     const prefix = <Icon type="search" onClick={this.handleSearch} />;
     const suffix = val ? <Icon type="close" onClick={() => this.clearInputValue(activeTab)} /> : null;
     const loading = SelectAppStore.getLoading;
-    const { type, organizationId } = AppState.currentMenuType;
+    const { type, id: projectId, organizationId: orgId } = AppState.currentMenuType;
     return (
       <SideBar
         title={<FormattedMessage id="deploy.step.one.app" />}
@@ -531,7 +531,9 @@ class DeployAppHome extends Component {
                   </React.Fragment>
                 )}
               </TabPane>
+
                 <TabPane className="c7n-deploy-tabpane" tab={formatMessage({ id: 'deploy.sidebar.organization' })} key="3">
+                  <Permission type={type} projectId={projectId} organizationId={orgId} service={['devops-service.application-market.org']}>
                   {view === 'list' && this.getOrganizationTable()}
                   {view === 'card' && (
                     <React.Fragment>
@@ -587,8 +589,9 @@ class DeployAppHome extends Component {
                       )}
                     </React.Fragment>
                   )}
-
+                  </Permission>
                 </TabPane>
+
             </Tabs>
           </div>
         </Content>

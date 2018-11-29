@@ -501,7 +501,7 @@ class CreateDomain extends Component {
         >
           {getFieldDecorator(`rewritePath[${k}]`, {
 
-            initialValue: initRewritePath,
+            initialValue: '/',
           })(
             <Input
               //onChange={() => this.setState({ pathCountChange: true })}
