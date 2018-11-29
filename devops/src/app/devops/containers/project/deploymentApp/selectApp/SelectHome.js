@@ -176,7 +176,7 @@ class DeployAppHome extends Component {
       key: 'check',
       width: '50px',
       render: record => (
-        app && record.id === app.id && !isMarket && <i className="icon icon-check icon-select" />
+        app && record.id === app.appId && !isMarket && <i className="icon icon-check icon-select" />
       ),
 
     }, {
