@@ -150,12 +150,12 @@ class DeploymentAppHome extends Component {
           versionDto: null,
         });
       } else {
-        DeploymentAppStore.loadVersion(app.appId, this.state.projectId, '');
+        DeploymentAppStore.loadVersion(app.id, this.state.projectId, '');
         this.setState({
           app,
-          appId: app.appId,
+          appId: app.id,
           show: false,
-          is_project: true,
+          is_project: false,
           versionId: undefined,
           versionDto: null,
         });
