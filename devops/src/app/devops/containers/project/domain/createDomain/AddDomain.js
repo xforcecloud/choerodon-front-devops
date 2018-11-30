@@ -81,9 +81,10 @@ class CreateDomain extends Component {
         const { pathList, envId: domainEnv, certId, certName, domain } = data;
         const deletedService = [];
         _.forEach(pathList, (item, index) => {
-          const { serviceStatus, serviceName, serviceId } = item;
+          const { rewritePath, serviceStatus, serviceName, serviceId } = item;
           if (serviceStatus !== 'running') {
             deletedService[index] = {
+              rewritePath: rewritePath,
               name: serviceName,
               id: serviceId,
               status: serviceStatus,
@@ -501,7 +502,7 @@ class CreateDomain extends Component {
         >
           {getFieldDecorator(`rewritePath[${k}]`, {
 
-            initialValue: '/',
+            initialValue: initRewritePath,
           })(
             <Input
               //onChange={() => this.setState({ pathCountChange: true })}
