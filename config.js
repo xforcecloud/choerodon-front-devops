@@ -35,7 +35,7 @@ const config = {
   titlename: 'XforceCloud', // html title
   favicon: 'favicon.ico',
   theme: { // less/sass modify vars
-    'primary-color': '#00896C',
+    'primary-color': '#3F51B5',
     'icon-font-size-base': '16px',
   },
   dashboard: {
