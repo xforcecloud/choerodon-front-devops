@@ -229,10 +229,10 @@ class SingleApp extends Component {
    * @param verId
    * @param appId
    */
-  upgradeIst = (name, id, envId, verId, appId) => {
+  upgradeIst = (name, id, envId, verId, appId, projectId) => {
     const { store, intl } = this.props;
-    const projectId = parseInt(AppState.currentMenuType.id, 10);
-    store.loadUpVersion(projectId, verId)
+    const projectID = parseInt(projectId, 10);
+    store.loadUpVersion(projectID, verId)
       .then((val) => {
         if (val && val.failed) {
           Choerodon.prompt(val.message);
@@ -479,7 +479,7 @@ class SingleApp extends Component {
             service: ['devops-service.application-version.getUpgradeAppVersion'],
             text: intl.formatMessage({ id: 'ist.upgrade' }),
             action: this.upgradeIst.bind(this, record.code, record.id,
-              record.envId, record.appVersionId, record.appId),
+              record.envId, record.appVersionId, record.appId, record.projectId),
           }, {
             type,
             organizationId,
@@ -629,7 +629,9 @@ class SingleApp extends Component {
     const envID = envId || (envCard.length ? envCard[0].id : null);
     const appID = appId || (appNames.length ? appNames[0].id : null);
 
-    const appName = appID ? `${appID}-${pId || projectId}` : null;
+    const appName = appID ? (appNames.length ? (<React.Fragment>
+      {appNames[0].projectId === projectId ? <i className="icon icon-project c7n-icon-publish" /> : <i className="icon icon-apps c7n-icon-publish" />}
+      {appNames[0].name}</React.Fragment>) : undefined) : null;
 
     const appVersion = appVer.length
       ? _.map(appVer, d => d.version && <Option key={d.id}>{d.version}</Option>) : undefined;
@@ -749,7 +751,7 @@ class SingleApp extends Component {
     return (
       <div className="c7n-region">
         <Select
-          value={appName}
+          defaultValue={appName}
           label={intl.formatMessage({ id: 'deploy.appName' })}
           className="c7n-app-select_220"
           onChange={this.loadAppVer}
@@ -814,6 +816,7 @@ class SingleApp extends Component {
           appInstanceId={this.state.id}
           idArr={this.state.idArr}
           onClose={this.handleCancelUp}
+          projectId={this.state.projectId}
         /> }
         <DelIst
           open={this.state.openRemove}
