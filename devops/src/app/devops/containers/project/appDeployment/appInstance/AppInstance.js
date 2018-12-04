@@ -99,10 +99,10 @@ class AppInstance extends Component {
    * @param verId
    * @param appId
    */
-  upgradeIst = (name, id, envId, verId, appId) => {
+  upgradeIst = (name, id, envId, verId, appId, projectId) => {
     const { store, intl } = this.props;
-    const projectId = parseInt(AppState.currentMenuType.id, 10);
-    store.loadUpVersion(projectId, verId)
+    const projectD = parseInt(projectId, 10);
+    store.loadUpVersion(projectD, verId)
       .then((val) => {
         if (val && val.failed) {
           Choerodon.prompt(val.message);
@@ -311,7 +311,7 @@ class AppInstance extends Component {
             service: ['devops-service.application-version.getUpgradeAppVersion'],
             text: intl.formatMessage({ id: 'ist.upgrade' }),
             action: this.upgradeIst.bind(this, record.code, record.id,
-              record.envId, record.appVersionId, record.appId),
+              record.envId, record.appVersionId, record.appId, record.projectId),
           }, {
             type,
             organizationId,
@@ -447,6 +447,7 @@ class AppInstance extends Component {
           appInstanceId={this.state.id}
           idArr={this.state.idArr}
           onClose={this.handleCancelUp}
+          projectId={this.state.projectId}
         /> }
         <DelIst
           open={this.state.openRemove}
