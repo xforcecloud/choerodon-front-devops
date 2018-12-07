@@ -81,9 +81,10 @@ class CreateDomain extends Component {
         const { pathList, envId: domainEnv, certId, certName, domain } = data;
         const deletedService = [];
         _.forEach(pathList, (item, index) => {
-          const { serviceStatus, serviceName, serviceId } = item;
+          const { rewritePath, serviceStatus, serviceName, serviceId } = item;
           if (serviceStatus !== 'running') {
             deletedService[index] = {
+              rewritePath: rewritePath,
               name: serviceName,
               id: serviceId,
               status: serviceStatus,
@@ -138,7 +139,7 @@ class CreateDomain extends Component {
     validateFieldsAndScroll((err, data) => {
       if (!err) {
         this.setState({ submitting: true });
-        const { domain, name, envId, certId, paths, path, network, port } = data;
+        const { domain, name, envId, certId, paths, path, rewritePath, network, port } = data;
         const postData = { domain, name, envId };
         if (certId) {
           postData.certId = certId;
@@ -147,9 +148,10 @@ class CreateDomain extends Component {
         const pathList = [];
         _.forEach(paths, (item) => {
           const pt = path[item];
+          const rp = rewritePath[item];
           const serviceId = network[item];
           const servicePort = port[item];
-          pathList.push({ path: pt, serviceId, servicePort });
+          pathList.push({ path: pt, rewritePath: rp, serviceId, servicePort });
         });
         postData.pathList = pathList;
         if (type === 'create') {
@@ -444,6 +446,7 @@ class CreateDomain extends Component {
       const initPort = hasServerInit ? pathList[k].servicePort : undefined;
       const initNetwork = hasServerInit ? pathList[k].serviceId : undefined;
       const initPath = hasServerInit ? pathList[k].path : '/';
+      const initRewritePath = hasServerInit ? pathList[k].rewritePath : '/';
       // 网络拥有的端口
       const portWithNetwork = {};
       _.forEach(network, (item) => {
@@ -484,6 +487,25 @@ class CreateDomain extends Component {
             />,
           )}
         </FormItem>
+
+        <FormItem
+          className="domain-network-item c7ncd-domain-path"
+          {...formItemLayout}
+        >
+          {getFieldDecorator(`rewritePath[${k}]`, {
+
+            initialValue: initRewritePath,
+          })(
+            <Input
+              //onChange={() => this.setState({ pathCountChange: true })}
+              //disabled={!(getFieldValue('domain'))}
+              maxLength={30}
+              label={formatMessage({ id: 'domain.column.rewritePath' })}
+              size="default"
+            />,
+          )}
+        </FormItem>
+
         <FormItem
           className="domain-network-item c7n-select_160"
           {...formItemLayout}
