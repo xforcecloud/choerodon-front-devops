@@ -728,7 +728,7 @@ class ContainerHome extends Component {
    * @param option
    */
   handleEnvSelect = (value, option) => {
-    this.setState({ page: 0, pageSize: 10, envName: option.props.children });
+    this.setState({ page: 0, pageSize: 30, envName: option.props.children });
     EnvOverviewStore.setTpEnvId(value);
     const { ContainerStore } = this.props;
     ContainerStore.setInfo({
@@ -808,8 +808,8 @@ class ContainerHome extends Component {
     envId &&
       ContainerStore.loadAppDataByEnv(projectId, envId, appId).then(data => {
         if (data) {
-          const proPageSize = 10 * pageArr[0] + 3;
-          const pubPageSize = 10 * pageArr[1] + 3;
+          const proPageSize = 30 * pageArr[0] + 3;
+          const pubPageSize = 30 * pageArr[1] + 3;
           let allItems = data;
           if (filterValue) {
             allItems = data.filter(
@@ -996,8 +996,8 @@ class ContainerHome extends Component {
     const envData = EnvOverviewStore.getEnvcard;
     const envId = EnvOverviewStore.getTpEnvId;
     const { paras } = ContainerStore.getInfo;
-    const proPageSize = 10 * selectProPage + 3;
-    const pubPageSize = 10 * selectPubPage + 3;
+    const proPageSize = 30 * selectProPage + 3;
+    const pubPageSize = 30 * selectPubPage + 3;
     const serviceData =
       ContainerStore.getAllData && ContainerStore.getAllData.slice();
     const projectName = AppState.currentMenuType.name;

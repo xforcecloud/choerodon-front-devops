@@ -80,7 +80,7 @@ class CreateTag extends Component {
           if (req && req.failed) {
             Choerodon.prompt(data.message);
           } else {
-            store.queryTagData(projectId, 0, 10);
+            store.queryTagData(projectId, 0, 30);
             this.handleCancel();
           }
           this.setState({ submitting: false });
@@ -112,8 +112,8 @@ class CreateTag extends Component {
     const { store } = this.props;
     const { id: projectId } = AppState.currentMenuType;
     const { size, filter } = this.state;
-    this.setState({ size: size + 10 });
-    store.queryBranchData({ projectId, size: size + 10, postData: { searchParam: { branchName: [filter] }, param: '' } });
+    this.setState({ size: size + 30 });
+    store.queryBranchData({ projectId, size: size + 30, postData: { searchParam: { branchName: [filter] }, param: '' } });
   };
 
   /**

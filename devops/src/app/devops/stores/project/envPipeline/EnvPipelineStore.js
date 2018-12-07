@@ -59,7 +59,7 @@ class EnvPipelineStore {
   @observable pageInfo = {
     current: 1,
     total: 0,
-    pageSize: HEIGHT <= 900 ? 10 : 15,
+    pageSize: HEIGHT <= 900 ? 30 : 30,
   };
 
   @observable Info = {
@@ -345,7 +345,7 @@ class EnvPipelineStore {
   loadPrm = (projectId,
              envId = null,
              page = 0,
-             size = 10,
+             size = 30,
              sort = { field: "", order: "desc" },
              postData = { searchParam: {}, param: "" }) => {
     this.tableLoading(true);
@@ -401,7 +401,7 @@ class EnvPipelineStore {
       }
     });
 
-  loadInstance = (projectId, envId, page = 0, size = 10, datas = { searchParam: {}, param: "" }) =>
+  loadInstance = (projectId, envId, page = 0, size = 30, datas = { searchParam: {}, param: "" }) =>
     axios.post(`devops/v1/projects/${projectId}/app_instances/list_by_options?envId=${envId}&page=${page}&size=${size}`, JSON.stringify(datas))
       .then(data => {
         if (data && data.failed) {

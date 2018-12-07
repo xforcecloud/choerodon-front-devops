@@ -40,7 +40,7 @@ class ExportChartStore {
   }
 
 
-  loadApps = ({ projectId, page = 0, size = 10, sorter = { id: 'asc' }, datas = {
+  loadApps = ({ projectId, page = 0, size = 30, sorter = { id: 'asc' }, datas = {
     searchParam: {},
     param: '',
   } }) => axios.post(`devops/v1/projects/${projectId}/apps_market/list_all?page=${page}&size=${size}`, JSON.stringify(datas))

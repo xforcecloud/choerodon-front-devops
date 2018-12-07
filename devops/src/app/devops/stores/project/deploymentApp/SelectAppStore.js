@@ -18,11 +18,11 @@ class SelectAppStore {
   @observable selectData = [];
 
   @observable localPageInfo = {
-    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15,
+    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 30 : 30,
   };
 
   @observable storePageInfo = {
-    current: 1, total: 0, pageSize: 15,
+    current: 1, total: 0, pageSize: 30,
   };
 
 

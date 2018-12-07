@@ -8,7 +8,7 @@ const HEIGHT = window.innerHeight || document.documentElement.clientHeight || do
 @store('ReportsStore')
 class ReportsStore {
   @observable pageInfo = {
-    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15,
+    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 30 : 30,
   };
 
   @observable Info = {

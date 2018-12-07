@@ -121,7 +121,7 @@ class MergeRequestStore {
     return this.assigneeCount;
   }
 
-  loadMergeRquest(appId, key = 'opened', page = 0, size = 10, projectId = AppState.currentMenuType.id) {
+  loadMergeRquest(appId, key = 'opened', page = 0, size = 30, projectId = AppState.currentMenuType.id) {
     this.setMerge([]);
     this.setLoading(true);
     const userId = this.getUserId;

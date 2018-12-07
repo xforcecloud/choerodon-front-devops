@@ -16,11 +16,11 @@ class AppReleaseStore {
 
   // 打开tab的loading
   @observable unPageInfo = {
-    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15,
+    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 30 : 30,
   };
 
   @observable pageInfo = {
-    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15,
+    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 30 : 30,
   };
 
   /**
@@ -81,7 +81,7 @@ class AppReleaseStore {
     return this.loading;
   }
 
-  loadData = ({ isRefresh = false, projectId, page = 0, size = 10, sorter = { field: 'id', order: 'desc' }, postData = { searchParam: {},
+  loadData = ({ isRefresh = false, projectId, page = 0, size = 30, sorter = { field: 'id', order: 'desc' }, postData = { searchParam: {},
     param: '' }, key = '1' }) => {
     if (isRefresh) {
       this.changeIsRefresh(true);

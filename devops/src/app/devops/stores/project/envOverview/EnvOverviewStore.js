@@ -35,7 +35,7 @@ class EnvOverviewStore {
   @observable tabKey = 'app';
 
   @observable pageInfo = {
-    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15,
+    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 30 : 30,
   };
 
   @observable Info = {
@@ -191,7 +191,7 @@ class EnvOverviewStore {
                   getAppId,
                 } = InstancesStore;
                 if (!getIsCache) {
-                  const appPageSize = Math.floor((window.innerWidth - 350) / 200) * 3;
+                  const appPageSize = 30;
                   InstancesStore.setAppPageSize(appPageSize);
                   loadAppNameByEnv(projectId, this.tpEnvId, 0, appPageSize);
                   loadInstanceAll(projectId, { envId: this.tpEnvId, appId: getAppId }).catch((err) => {

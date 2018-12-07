@@ -39,7 +39,7 @@ class BranchStore {
   @observable pageInfo = {
     current: 1,
     total: 0,
-    pageSize: HEIGHT <= 900 ? 10 : 15,
+    pageSize: HEIGHT <= 900 ? 30 : 30,
   };
 
   @action setPageInfo(page) {
@@ -201,7 +201,7 @@ class BranchStore {
     }
   };
 
-  loadTagData = (projectId, page = 0, sizes = 10, postData = { searchParam: {}, param: '' }) => axios.post(`/devops/v1/projects/${projectId}/apps/${DevPipelineStore.selectedApp}/git/tags_list_options?page=0&size=${sizes}`, JSON.stringify(postData))
+  loadTagData = (projectId, page = 0, sizes = 30, postData = { searchParam: {}, param: '' }) => axios.post(`/devops/v1/projects/${projectId}/apps/${DevPipelineStore.selectedApp}/git/tags_list_options?page=0&size=${sizes}`, JSON.stringify(postData))
     .then((data) => {
       const res = handleProptError(data);
       if (res) {

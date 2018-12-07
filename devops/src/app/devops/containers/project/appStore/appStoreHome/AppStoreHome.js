@@ -19,7 +19,7 @@ class AppStoreHome extends Component {
     super(props);
     this.state = {
       val: '',
-      pageSize: 20,
+      pageSize: 30,
     };
   }
 

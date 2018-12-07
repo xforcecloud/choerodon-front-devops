@@ -27,7 +27,7 @@ class AppReleaseHome extends Component {
         columnKey: 'id',
         order: 'descend',
       },
-      pageSize: HEIGHT <= 900 ? 10 : 15,
+      pageSize: HEIGHT <= 900 ? 30 : 30,
     };
   }
 
