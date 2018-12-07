@@ -272,6 +272,10 @@ ul {
   border: 0;
 }
 
+.c7n-region a.c7n-external-link-display {
+  display: none;
+}
+
 .c7n-region a:focus.c7n-external-link {
   outline: 0;
 }
