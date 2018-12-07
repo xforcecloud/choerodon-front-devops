@@ -638,7 +638,7 @@ class EnvOverviewHome extends Component {
                 <FormattedMessage
                   id="envoverview.description"
                 />
-                <a href={formatMessage({ id: 'envoverview.link' })} rel="nofollow me noopener noreferrer" target="_blank" className="c7n-external-link">
+                <a href={formatMessage({ id: 'envoverview.link' })} rel="nofollow me noopener noreferrer" target="_blank" className="c7n-external-link-display">
                   <span className="c7n-external-link-content">
                     <FormattedMessage id="learnmore" />
                   </span>

@@ -661,7 +661,7 @@ class Instances extends Component {
           <div className="c7n-instance-header">
             <div className="c7n-instance-title">{formatMessage({ id: 'ist.title.env' }, { name: title ? title.name : projectName })}</div>
             <div className="c7n-instance-describe">{formatMessage({ id: 'ist.description' })}
-              <a href={formatMessage({ id: 'ist.link' })}>{formatMessage({ id: 'learnmore' })}<Icon type="open_in_new" /></a>
+              <a href={formatMessage({ id: 'ist.link' })} className="c7n-external-link-display">{formatMessage({ id: 'learnmore' })}<Icon type="open_in_new" /></a>
             </div>
           </div>
           {detailDom}
