@@ -96,6 +96,7 @@ class DomainHome extends Component {
     const columns = [{
       title: formatMessage({ id: 'domain.column.name' }),
       key: 'name',
+      width: '25%',
       dataIndex: 'name',
       sorter: true,
       sortOrder: columnKey === 'name' && order,
