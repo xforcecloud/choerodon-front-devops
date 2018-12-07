@@ -10,7 +10,7 @@ class InstancesStore {
 
   @observable appNameByEnv = [];
 
-  @observable size = 10;
+  @observable size = 30;
 
   @observable istAll = [];
 
@@ -21,14 +21,14 @@ class InstancesStore {
   @observable value = null;
 
   @observable pageInfo = {
-    current: 1, total: 0, pageSize: height <= 900 ? 10 : 15,
+    current: 1, total: 0, pageSize: height <= 900 ? 30 : 30,
   };
 
   @observable appPageInfo = {};
 
   @observable appPage = 1;
 
-  @observable appPageSize = 10;
+  @observable appPageSize = 30;
 
   @observable istParams = { filters: {}, param: [] };
 

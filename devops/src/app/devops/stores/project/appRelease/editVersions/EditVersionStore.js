@@ -16,11 +16,11 @@ class EditVersionStore {
 
   // 打开tab的loading
   @observable pageInfo = {
-    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15,
+    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 30 : 30,
   };
 
   @observable unPageInfo = {
-    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15,
+    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 30 : 30,
   };
 
   /**

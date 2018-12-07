@@ -32,7 +32,7 @@ const Panel = Collapse.Panel;
 
 @observer
 class AppOverview extends Component {
-  @observable pageSize = 10;
+  @observable pageSize = 30;
 
   @observable visible = false;
 
