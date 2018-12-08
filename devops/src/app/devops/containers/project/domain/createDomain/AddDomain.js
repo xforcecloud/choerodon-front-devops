@@ -525,7 +525,7 @@ class CreateDomain extends Component {
               filter
               label={formatMessage({ id: 'domain.column.network' })}
               showSearch
-              dropdownMatchSelectWidth="false"
+              dropdownMatchSelectWidth={false}
               dropdownStyle={{width:300}}
               onSelect={this.handleSelectNetwork.bind(this, network, k)}
               size="default"
