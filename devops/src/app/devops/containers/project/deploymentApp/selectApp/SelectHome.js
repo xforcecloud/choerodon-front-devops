@@ -278,7 +278,7 @@ class DeployAppHome extends Component {
       SelectAppStore.loadOrganizationApps({
         organizationId,
         page: 0,
-        size: SelectAppStore.localPageInfo.pageSize,
+        size: SelectAppStore.organizationPageInfo.pageSize,
       })
     } else {
       SelectAppStore.loadApps({
@@ -335,7 +335,7 @@ class DeployAppHome extends Component {
         page,
         size: pagination.pageSize,
       });
-    } else if (activeTab == '2'){
+    } else if (activeTab === '2'){
       SelectAppStore.loadApps({
         projectId: organizationId,
         sort,

@@ -101,8 +101,8 @@ class AppInstance extends Component {
    */
   upgradeIst = (name, id, envId, verId, appId, projectId) => {
     const { store, intl } = this.props;
-    const projectD = parseInt(projectId, 10);
-    store.loadUpVersion(projectD, verId)
+    const projectID = parseInt(projectId, 10);
+    store.loadUpVersion(projectID, verId)
       .then((val) => {
         if (val && val.failed) {
           Choerodon.prompt(val.message);
