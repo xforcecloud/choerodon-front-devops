@@ -533,8 +533,8 @@ class Environment extends Component {
     };
     return type
       ? formatMessage({
-          id: `envPl.${msg[type]}`,
-        })
+        id: `envPl.${msg[type]}`,
+      })
       : "";
   };
 
@@ -875,11 +875,11 @@ class Environment extends Component {
 
     const rightStyle = classNames({
       "c7n-push-right-ban icon icon-navigate_next":
-        (window.innerWidth >= 1680 &&
-          window.innerWidth < 1920 &&
-          disEnvCard.length >= 5) ||
-        (window.innerWidth >= 1920 && disEnvCard.length >= 6) ||
-        (window.innerWidth < 1680 && disEnvCard.length >= 4),
+      (window.innerWidth >= 1680 &&
+        window.innerWidth < 1920 &&
+        disEnvCard.length >= 5) ||
+      (window.innerWidth >= 1920 && disEnvCard.length >= 6) ||
+      (window.innerWidth < 1680 && disEnvCard.length >= 4),
       "c7n-push-none": disEnvCard.length <= 4,
     });
 
@@ -966,10 +966,10 @@ class Environment extends Component {
                     >
                       {getCluster.length
                         ? _.map(getCluster, c => (
-                            <Option key={c.id} value={c.id}>
-                              {c.name}
-                            </Option>
-                          ))
+                          <Option key={c.id} value={c.id}>
+                            {c.name}
+                          </Option>
+                        ))
                         : null}
                     </Select>
                   )}
@@ -1050,10 +1050,10 @@ class Environment extends Component {
                     >
                       {groupData.length
                         ? _.map(groupData, g => (
-                            <Option key={g.id} value={g.id}>
-                              {g.name}
-                            </Option>
-                          ))
+                          <Option key={g.id} value={g.id}>
+                            {g.name}
+                          </Option>
+                        ))
                         : null}
                     </Select>
                   )}
@@ -1152,10 +1152,10 @@ class Environment extends Component {
                     >
                       {groupData.length
                         ? _.map(groupData, g => (
-                            <Option key={g.id} value={g.id}>
-                              {g.name}
-                            </Option>
-                          ))
+                          <Option key={g.id} value={g.id}>
+                            {g.name}
+                          </Option>
+                        ))
                         : null}
                     </Select>
                   )}
@@ -1270,15 +1270,16 @@ class Environment extends Component {
             okText={this.okText(sideType)}
             className="c7n-create-sidebar-tooltip"
           >
-            <Content
-              code={`env.${sideType}`}
-              values={{
-                name: envData ? envData.name : name,
-              }}
-              className="sidebar-content"
-            >
+            {sideType === 'edit' ? <Content className="sidebar-content">
+              <h2 className="c7n-space-first"><FormattedMessage id={'env.edit.title'} values={{ name: envData ? envData.code : '' }} /></h2>
+              <p>
+                <FormattedMessage id={'env.edit.description'} />
+              </p>
+              <br/>
               {formContent}
-            </Content>
+            </Content>: <Content code={`env.${sideType}`} value={{name: envData ? envData.name : name}} className="sidebar-content">
+              {formContent}
+            </Content>}
           </Sidebar>
           <Modal
             visible={disEnvShow}
@@ -1286,22 +1287,22 @@ class Environment extends Component {
             footer={
               enableClick
                 ? [
-                    <Button key="back" onClick={this.closeDisEnvModal}>
-                      {formatMessage({ id: "return" })}
-                    </Button>,
-                    <Button
-                      key="submit"
-                      type="primary"
-                      loading={submitting}
-                      onClick={
-                        getIst.length && disEnvConnect
-                          ? this.closeDisEnvModal
-                          : this.disableEnv
-                      }
-                    >
-                      {formatMessage({ id: "submit" })}
-                    </Button>,
-                  ]
+                  <Button key="back" onClick={this.closeDisEnvModal}>
+                    {formatMessage({ id: "return" })}
+                  </Button>,
+                  <Button
+                    key="submit"
+                    type="primary"
+                    loading={submitting}
+                    onClick={
+                      getIst.length && disEnvConnect
+                        ? this.closeDisEnvModal
+                        : this.disableEnv
+                    }
+                  >
+                    {formatMessage({ id: "submit" })}
+                  </Button>,
+                ]
                 : null
             }
             closable={false}

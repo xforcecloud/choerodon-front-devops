@@ -204,9 +204,7 @@ class Instances extends Component {
    */
   upgradeIst = (record) => {
     const { code, id, envId, appVersionId, commandVersionId, appId } = record;
-    const {
-      id: projectId,
-    } = AppState.currentMenuType;
+    const projectId = record.projectId;
     const {
       InstancesStore: {
         loadUpVersion,
@@ -657,38 +655,38 @@ class Instances extends Component {
             <FormattedMessage id="refresh" />
           </Button>
         </Header>
-        <Content className="page-content">
-          <div className="c7n-instance-header">
-            <div className="c7n-instance-title">{formatMessage({ id: 'ist.title.env' }, { name: title ? title.name : projectName })}</div>
-            <div className="c7n-instance-describe">{formatMessage({ id: 'ist.description' })}
-              <a href={formatMessage({ id: 'ist.link' })} className="c7n-external-link-display">{formatMessage({ id: 'learnmore' })}<Icon type="open_in_new" /></a>
+          <Content className="page-content">
+            <div className="c7n-instance-header">
+              <div className="c7n-instance-title">{formatMessage({ id: 'ist.title.env' }, { name: title ? title.name : projectName })}</div>
+              <div className="c7n-instance-describe">{formatMessage({ id: 'ist.description' })}
+                <a href={formatMessage({ id: 'ist.link' })} className="c7n-external-link-display">{formatMessage({ id: 'learnmore' })}<Icon type="open_in_new" /></a>
+              </div>
             </div>
-          </div>
-          {detailDom}
-          {visible && <ValueConfig
-            store={InstancesStore}
-            visible={visible}
-            name={name}
-            id={id}
-            idArr={idArr}
-            onClose={this.handleCancel}
-          />}
-          {visibleUp && <UpgradeIst
-            store={InstancesStore}
-            visible={visibleUp}
-            name={name}
-            appInstanceId={id}
-            idArr={idArr}
-            onClose={this.handleCancelUp}
-          /> }
-          <DelIst
-            open={openRemove}
-            handleCancel={this.handleClose.bind(this, id)}
-            handleConfirm={this.handleDelete.bind(this, id)}
-            confirmLoading={loading}
-            name={name}
-          />
-        </Content></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="ist.head" />} type="env" />}
+            {detailDom}
+            {visible && <ValueConfig
+              store={InstancesStore}
+              visible={visible}
+              name={name}
+              id={id}
+              idArr={idArr}
+              onClose={this.handleCancel}
+            />}
+            {visibleUp && <UpgradeIst
+              store={InstancesStore}
+              visible={visibleUp}
+              name={name}
+              appInstanceId={id}
+              idArr={idArr}
+              onClose={this.handleCancelUp}
+            /> }
+            <DelIst
+              open={openRemove}
+              handleCancel={this.handleClose.bind(this, id)}
+              handleConfirm={this.handleDelete.bind(this, id)}
+              confirmLoading={loading}
+              name={name}
+            />
+          </Content></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="ist.head" />} type="env" />}
       </Page>
     );
   }
