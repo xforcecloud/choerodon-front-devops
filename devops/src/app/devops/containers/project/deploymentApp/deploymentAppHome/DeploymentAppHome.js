@@ -166,11 +166,21 @@ class DeploymentAppHome extends Component {
           versionId: undefined,
           versionDto: null,
         });
-      } else {
+      } else if (key === '2') {
         DeploymentAppStore.loadVersion(app.appId, this.state.projectId, true);
         this.setState({
           app,
           appId: app.appId,
+          show: false,
+          is_project: false,
+          versionId: undefined,
+          versionDto: null,
+        });
+      } else {
+        DeploymentAppStore.loadVersion(app.id, this.state.projectId, '');
+        this.setState({
+          app,
+          appId: app.id,
           show: false,
           is_project: false,
           versionId: undefined,
@@ -533,7 +543,7 @@ class DeploymentAppHome extends Component {
               label={<span className="deploy-text">{formatMessage({ id: 'deploy.step.three.mode' })}</span>}
             >
               <Radio className="deploy-radio" value="new">{formatMessage({ id: 'deploy.step.three.mode.new' })}</Radio>
-              <Radio className="deploy-radio" value="replace" disabled={instances.length === 0}>{formatMessage({ id: 'deploy.step.three.mode.replace' })}
+              <Radio className="deploy-radio" value="replace" disabled={instances.length === 0 || (instances.length === 1 && (instances[0].appVersion === this.state.versionDto.version) && !this.state.changeYaml)}>{formatMessage({ id: 'deploy.step.three.mode.replace' })}
                 <i className="icon icon-error section-instance-icon" />
                 <span className="deploy-tip-text">{formatMessage({ id: 'deploy.step.three.mode.help' })}</span>
               </Radio>
@@ -541,7 +551,7 @@ class DeploymentAppHome extends Component {
             {this.state.mode === 'replace' && <Select
               onSelect={this.handleSelectInstance}
               value={this.state.instanceId
-                || (instances && instances.length === 1 && instances[0].id)}
+              || (instances && instances.length === 1 && instances[0].id)}
               label={<FormattedMessage id="deploy.step.three.mode.replace.label" />}
               className="deploy-select"
               placeholder="Select a person"
@@ -550,8 +560,8 @@ class DeploymentAppHome extends Component {
                 .toLowerCase().indexOf(input.toLowerCase()) >= 0}
               filter
             >
-              {instances.map(v => (<Option value={v.id} key={v.id}>
-                {v.code}
+              {instances.map(v => (<Option value={v.id} key={v.id} disabled={this.state.changeYaml ? false : v.appVersion === this.state.versionDto.version}>
+                {v.code}-{v.appVersion}
               </Option>))}
             </Select>}
           </div>
@@ -704,51 +714,51 @@ class DeploymentAppHome extends Component {
               </Option>))}
           </Select>
         </Header>
-        <Content className="c7n-deployApp-wrapper" code="deploy" values={{ name: projectName }}>
-          <div className="deployApp-card">
-            <Steps current={this.state.current}>
-              <Step
-                title={<span style={{ color: current === 1 ? '#3F51B5' : '', fontSize: 14 }}>{formatMessage({ id: 'deploy.step.one.title' })}</span>}
-                onClick={this.changeStep.bind(this, 1)}
-                status={this.getStatus(1)}
-              />
-              <Step
-                className={!(appId && versionId) ? 'step-disabled' : ''}
-                title={<span style={{ color: current === 2 ? '#3F51B5' : '', fontSize: 14 }}>{formatMessage({ id: 'deploy.step.two.title' })}</span>}
-                onClick={this.changeStep.bind(this, 2)}
-                status={this.getStatus(2)}
-              />
-              <Step
-                className={!(envId && data && data.errorLines === null && (this.state.errorLine === '' || this.state.errorLine === null) && (value || (data && data.yaml))) ? 'step-disabled' : ''}
-                title={<span style={{ color: current === 3 ? '#3F51B5' : '', fontSize: 14 }}>{formatMessage({ id: 'deploy.step.three.title' })}</span>}
-                onClick={this.changeStep.bind(this, 3)}
-                status={this.getStatus(3)}
-              />
-              <Step
-                className={!((mode === 'new' || (mode === 'replace' && instanceId)) && this.state.envId) ? 'step-disabled' : ''}
-                title={<span style={{ color: current === 4 ? '#3F51B5' : '', fontSize: 14 }}>{formatMessage({ id: 'deploy.step.four.title' })}</span>}
-                onClick={this.changeStep.bind(this, 4)}
-                status={this.getStatus(4)}
-              />
-            </Steps>
-            <div className="deployApp-card-content">
-              {this.state.current === 1 && this.handleRenderApp()}
+          <Content className="c7n-deployApp-wrapper" code="deploy" values={{ name: projectName }}>
+            <div className="deployApp-card">
+              <Steps current={this.state.current}>
+                <Step
+                  title={<span style={{ color: current === 1 ? '#3F51B5' : '', fontSize: 14 }}>{formatMessage({ id: 'deploy.step.one.title' })}</span>}
+                  onClick={this.changeStep.bind(this, 1)}
+                  status={this.getStatus(1)}
+                />
+                <Step
+                  className={!(appId && versionId) ? 'step-disabled' : ''}
+                  title={<span style={{ color: current === 2 ? '#3F51B5' : '', fontSize: 14 }}>{formatMessage({ id: 'deploy.step.two.title' })}</span>}
+                  onClick={this.changeStep.bind(this, 2)}
+                  status={this.getStatus(2)}
+                />
+                <Step
+                  className={!(envId && data && data.errorLines === null && (this.state.errorLine === '' || this.state.errorLine === null) && (value || (data && data.yaml))) ? 'step-disabled' : ''}
+                  title={<span style={{ color: current === 3 ? '#3F51B5' : '', fontSize: 14 }}>{formatMessage({ id: 'deploy.step.three.title' })}</span>}
+                  onClick={this.changeStep.bind(this, 3)}
+                  status={this.getStatus(3)}
+                />
+                <Step
+                  className={!((mode === 'new' || (mode === 'replace' && instanceId)) && this.state.envId) ? 'step-disabled' : ''}
+                  title={<span style={{ color: current === 4 ? '#3F51B5' : '', fontSize: 14 }}>{formatMessage({ id: 'deploy.step.four.title' })}</span>}
+                  onClick={this.changeStep.bind(this, 4)}
+                  status={this.getStatus(4)}
+                />
+              </Steps>
+              <div className="deployApp-card-content">
+                {this.state.current === 1 && this.handleRenderApp()}
 
-              {this.state.current === 2 && this.handleRenderEnv()}
+                {this.state.current === 2 && this.handleRenderEnv()}
 
-              {this.state.current === 3 && this.handleRenderMode()}
+                {this.state.current === 3 && this.handleRenderMode()}
 
-              {this.state.current === 4 && this.handleRenderReview()}
+                {this.state.current === 4 && this.handleRenderReview()}
+              </div>
             </div>
-          </div>
-          {this.state.show && <SelectApp
-            isMarket={!this.state.is_project}
-            app={this.state.app}
-            show={this.state.show}
-            handleCancel={this.handleCancel}
-            handleOk={this.handleOk}
-          />}
-        </Content></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="deploy.header.title" />} type="env" />}
+            {this.state.show && <SelectApp
+              isMarket={!this.state.is_project}
+              app={this.state.app}
+              show={this.state.show}
+              handleCancel={this.handleCancel}
+              handleOk={this.handleOk}
+            />}
+          </Content></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="deploy.header.title" />} type="env" />}
       </Page>
     );
   }
