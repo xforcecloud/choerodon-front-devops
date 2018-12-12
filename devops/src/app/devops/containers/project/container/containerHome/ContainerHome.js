@@ -62,6 +62,7 @@ class ContainerHome extends Component {
       appProLength: 0,
       appPubDom: [],
       appProDom: [],
+      appFakeDom: [],
     };
     this.timer = null;
   }
@@ -806,93 +807,93 @@ class ContainerHome extends Component {
     let pubLength = 0;
     let proLength = 0;
     envId &&
-      ContainerStore.loadAppDataByEnv(projectId, envId, appId).then(data => {
-        if (data) {
-          const proPageSize = 30 * pageArr[0] + 3;
-          const pubPageSize = 30 * pageArr[1] + 3;
-          let allItems = data;
-          if (filterValue) {
-            allItems = data.filter(
-              item =>
-                item.name.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0
-            );
-          }
-          if (allItems.length) {
-            _.map(allItems, d => {
-              if (d.projectId !== projectId) {
-                pubLength += 1;
-              } else {
-                proLength += 1;
-              }
-              if (d.projectId !== projectId && appPubDom.length < pubPageSize) {
-                appPubDom.push(
-                  <Option key={d.id} value={d.id}>
-                    <Popover
-                      placement="right"
-                      content={
-                        <div>
-                          <p>
-                            <FormattedMessage id="ist.name" />
-                            <span>{d.name}</span>
-                          </p>
-                          <p>
-                            <FormattedMessage id="ist.ctr" />
-                            <span>{d.contributor}</span>
-                          </p>
-                          <p>
-                            <FormattedMessage id="ist.des" />
-                            <span>{d.description}</span>
-                          </p>
-                        </div>
-                      }
-                    >
-                      <div className="c7n-container-option-popover">
-                        <i className="icon icon-apps c7n-container-icon-publish" />
-                        <MouserOverWrapper text={d.name} width={0.9}>
-                          {d.name}
-                        </MouserOverWrapper>
+    ContainerStore.loadAppDataByEnv(projectId, envId, appId).then(data => {
+      if (data) {
+        const proPageSize = 30 * pageArr[0] + 3;
+        const pubPageSize = 30 * pageArr[1] + 3;
+        let allItems = data;
+        if (filterValue) {
+          allItems = data.filter(
+            item =>
+              item.name.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0
+          );
+        }
+        if (allItems.length) {
+          _.map(allItems, d => {
+            if (d.projectId !== projectId) {
+              pubLength += 1;
+            } else {
+              proLength += 1;
+            }
+            if (d.projectId !== projectId && appPubDom.length < pubPageSize) {
+              appPubDom.push(
+                <Option key={d.id} value={d.id}>
+                  <Popover
+                    placement="right"
+                    content={
+                      <div>
+                        <p>
+                          <FormattedMessage id="ist.name" />
+                          <span>{d.name}</span>
+                        </p>
+                        <p>
+                          <FormattedMessage id="ist.ctr" />
+                          <span>{d.contributor}</span>
+                        </p>
+                        <p>
+                          <FormattedMessage id="ist.des" />
+                          <span>{d.description}</span>
+                        </p>
                       </div>
-                    </Popover>
-                  </Option>
-                );
-              } else if (appProDom.length < proPageSize) {
-                appProDom.push(
-                  <Option key={d.id} value={d.id}>
-                    <Popover
-                      placement="right"
-                      content={
-                        <div>
-                          <p>
-                            <FormattedMessage id="ist.name" />
-                            <span>{d.name}</span>
-                          </p>
-                          <p>
-                            <FormattedMessage id="ist.code" />
-                            <span>{d.code}</span>
-                          </p>
-                        </div>
-                      }
-                    >
-                      <div className="c7n-container-option-popover">
-                        <i className="icon icon-project c7n-container-icon-publish" />
-                        <MouserOverWrapper text={d.name} width={0.9}>
-                          {d.name}
-                        </MouserOverWrapper>
+                    }
+                  >
+                    <div className="c7n-container-option-popover">
+                      <i className="icon icon-apps c7n-container-icon-publish" />
+                      <MouserOverWrapper text={d.name} width={0.9}>
+                        {d.name}
+                      </MouserOverWrapper>
+                    </div>
+                  </Popover>
+                </Option>
+              );
+            } else if (appProDom.length < proPageSize) {
+              appProDom.push(
+                <Option key={d.id} value={d.id}>
+                  <Popover
+                    placement="right"
+                    content={
+                      <div>
+                        <p>
+                          <FormattedMessage id="ist.name" />
+                          <span>{d.name}</span>
+                        </p>
+                        <p>
+                          <FormattedMessage id="ist.code" />
+                          <span>{d.code}</span>
+                        </p>
                       </div>
-                    </Popover>
-                  </Option>
-                );
-              }
-            });
-          }
-          this.setState({
-            appPubDom,
-            appProDom,
-            appPubLength: pubLength,
-            appProLength: proLength,
+                    }
+                  >
+                    <div className="c7n-container-option-popover">
+                      <i className="icon icon-project c7n-container-icon-publish" />
+                      <MouserOverWrapper text={d.name} width={0.9}>
+                        {d.name}
+                      </MouserOverWrapper>
+                    </div>
+                  </Popover>
+                </Option>
+              );
+            }
           });
         }
-      });
+        this.setState({
+          appPubDom,
+          appProDom,
+          appPubLength: pubLength,
+          appProLength: proLength,
+        });
+      }
+    });
   };
 
   loadInitData = () => {
@@ -970,6 +971,43 @@ class ContainerHome extends Component {
     });
   };
 
+  //最近选择的应用
+  selectValue = (initAppParam,serviceDataParam,appFakeDomParam) =>{
+    if(initAppParam) {
+      if(appFakeDomParam.length > 0) {
+        appFakeDomParam.pop()
+      }
+
+      if(serviceDataParam && serviceDataParam.length){
+
+        appFakeDomParam.push(<Option key={initAppParam} value={initAppParam}>
+          <Popover
+            placement="right"
+            content={
+              <div>
+                <p>
+                  <FormattedMessage id="ist.name"/>
+                  <span>{ serviceDataParam[0].appName }</span>
+                </p>
+                <p>
+                  <FormattedMessage id="ist.appVersion"/>
+                  <span>{ serviceDataParam[0].appVersion }</span>
+                </p>
+              </div>
+            }
+          >
+            <div className="c7n-container-option-popover">
+              <i className="icon icon-touch_app c7n-container-icon-publish"/>
+              <MouserOverWrapper text={ serviceDataParam[0].appName } width={0.9}>
+                { serviceDataParam[0].appName }
+              </MouserOverWrapper>
+            </div>
+          </Popover>
+        </Option>)
+      }
+    }
+  }
+
   render() {
     const {
       ContainerStore,
@@ -992,6 +1030,7 @@ class ContainerHome extends Component {
       appPubDom,
       appProLength,
       appPubLength,
+      appFakeDom,
     } = this.state;
     const envData = EnvOverviewStore.getEnvcard;
     const envId = EnvOverviewStore.getTpEnvId;
@@ -1005,6 +1044,10 @@ class ContainerHome extends Component {
       envData && envData.length && (appProDom.length || appPubDom.length)
         ? ContainerStore.getAppId
         : undefined;
+
+    //调用最近选择封装的方法
+    this.selectValue(initApp,serviceData,appFakeDom);
+
     const contentDom =
       envData && envData.length && envId ? (
         <React.Fragment>
@@ -1014,7 +1057,7 @@ class ContainerHome extends Component {
                 envId
                   ? "c7n-header-select"
                   : "c7n-header-select c7n-select_min100"
-              }`}
+                }`}
               dropdownClassName="c7n-header-env_drop"
               dropdownMatchSelectWidth
               placeholder={formatMessage({ id: "envoverview.noEnv" })}
@@ -1063,6 +1106,11 @@ class ContainerHome extends Component {
               filter
               allowClear
             >
+
+              <OptGroup label="最近选择" key="selectedGroup">
+                {appFakeDom}
+              </OptGroup>
+
               <OptGroup label={formatMessage({ id: "project" })} key="proGroup">
                 {appProDom}
                 {proPageSize < appProLength && (
@@ -1170,7 +1218,7 @@ class ContainerHome extends Component {
                   <div
                     className={`c7n-podLog-action log-following ${
                       fullscreen ? "f-top" : ""
-                    }`}
+                      }`}
                     onClick={this.stopFollowing}
                   >
                     Stop Following
@@ -1179,7 +1227,7 @@ class ContainerHome extends Component {
                   <div
                     className={`c7n-podLog-action log-following ${
                       fullscreen ? "f-top" : ""
-                    }`}
+                      }`}
                     onClick={this.loadLog.bind(this, true)}
                   >
                     Start Following
@@ -1197,7 +1245,7 @@ class ContainerHome extends Component {
                 <div
                   className={`c7n-podLog-action log-goTop ${
                     fullscreen ? "g-top" : ""
-                  }`}
+                    }`}
                   onClick={this.goTop}
                 >
                   Go Top
