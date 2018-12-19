@@ -537,7 +537,7 @@ class DeployAppHome extends Component {
               </TabPane>
 
               <TabPane className="c7n-deploy-tabpane" tab={formatMessage({ id: 'deploy.sidebar.organization' })} key="3">
-                <Permission type={type} projectId={projectId} organizationId={orgId} service={['devops-service.application-market.org']}>
+                <Permission type="organization" projectId={projectId} organizationId={orgId} service={['devops-service.application-market.org']}>
                   {view === 'list' && this.getOrganizationTable()}
                   {view === 'card' && (
                     <React.Fragment>

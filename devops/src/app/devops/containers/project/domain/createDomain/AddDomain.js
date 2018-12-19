@@ -446,7 +446,7 @@ class CreateDomain extends Component {
       const initPort = hasServerInit ? pathList[k].servicePort : undefined;
       const initNetwork = hasServerInit ? pathList[k].serviceId : undefined;
       const initPath = hasServerInit ? pathList[k].path : '/';
-      const initRewritePath = hasServerInit ? pathList[k].rewritePath : '/';
+      const initRewritePath = hasServerInit ? pathList[k].rewritePath : '';
       // 网络拥有的端口
       const portWithNetwork = {};
       _.forEach(network, (item) => {
