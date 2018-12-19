@@ -37,6 +37,11 @@
 "cluster-management": "Cluster Management"
 "cluster-management.cluster": "Cluster"
 
+# 日志监控
+"log-monitoring": "Log Monitoring"
+"log-monitoring.warnings": "Warnings"
+"log-monitoring.event": "EventView"
+
 # 0.8废弃
 "application-market": "Application Market"
 "application-market.application-market": "Application Market"

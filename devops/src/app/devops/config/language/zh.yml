@@ -37,6 +37,11 @@
 "cluster-management": "集群管理"
 "cluster-management.cluster": "集群"
 
+# 日志监控
+"log-monitoring": "日志监控"
+"log-monitoring.warnings": "告警设置"
+"log-monitoring.event": "事件查看"
+
 # 0.8版本废弃项
 "application-market": "应用市场"
 "application-market.application-market": "应用市场"

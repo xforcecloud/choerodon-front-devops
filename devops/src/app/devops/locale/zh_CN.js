@@ -113,6 +113,16 @@ const pageDetail = {
   "template.link": `${docServer}/user-guide/application-management/application-template/`,
   "template.edit.link": `${docServer}/user-guide/application-management/application-template/`,
 
+  // warnings
+  "warnings.title": '告警设置',
+  "warnings.description":
+    "告警的配置--*v*--",
+  "warnings.create.title": '在此新增配置',
+  "warnings.create.description":
+    "新增配置模态框。",
+  "warnings.edit.title": '修改配置模态框',
+  "warnings.edit.description": "您可在此修改。",
+
   // app
   "app.title": '项目"{name}"的应用',
   "app.description":
@@ -614,6 +624,36 @@ const zhCN = {
   "envPl.envName.tip": "平台环境的显示名称。限制为10个字符。",
   "envPl.group.tip":
     "若要使用环境分组，请先创建分组；此处只能从已创建的分组中进行选择，从而将此环境放入该分组中。",
+
+  // warnings
+  "warnings.synch": "应用同步中",
+  "warnings.start": "请先启用应用",
+  "warnings.head": "告警设置",
+  "warnings.detail": "配置详情",
+  "warnings.stop": "停用",
+  "warnings.create": "新增配置",
+  "warnings.edit": "修改配置",
+  "warnings.delete": "删除配置",
+  "warnings.failed": "失败",
+  "warnings.creating": "创建中",
+  "warnings.creator": "创建者",
+  "warnings.delete.tooltip": "确定要删除该配置吗？",
+  "warnings.delete.tip": "这将会删除gitlab代码库，请确认是否删除？",
+  "warnings.active": "状态",
+  "warnings.stop": "停用",
+  "warnings.run": "启用",
+  "warnings.chooseTem": "选择应用模板",
+  "warnings.code.tooltip":
+    "应用的自定义编码，Gitlab仓库的地址将会使用应用编码作为仓库地址的一段路径，同时此编码在项目下唯一且不可修改。",
+  "warnings.chooseTem.tip":
+    "可选择系统预定义模板或组织自定义的模板块。选择模板后，可快速创建初始代码库。目前系统存在三种预定义模板，也可以不选择应用模板。",
+  "warnings.namespace": "namespace",
+  "warnings.expression": "expression",
+  "warnings.status": "status",
+  "warnings.version": "version",
+  "warnings.uid": "uid",
+  "warnings.channelId": "channelId",
+  "warnings.scopeId": "scopeId",
 
   // app
   "app.head": "应用",

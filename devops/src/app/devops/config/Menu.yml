@@ -251,6 +251,25 @@
           - 'devops-service.application-instance.pageDeployFrequencyDetail'
           - 'devops-service.devops-gitlab-pipeline.listPipelineFrequency'
           - 'devops-service.devops-gitlab-pipeline.pagePipeline'
+
+# 日志监控
+"log-monitoring":
+  icon: Development-monitoring
+  sort: 100
+  project:
+    - "warnings":
+       icon: warning
+       Routes: /devops/warnings
+       sort: 2
+       permission:
+         - 'devops-service.devops-monitoring.listMonitoring'
+         - 'devops-service.devops-monitoring.delete'
+    - "event":
+       icon: event_seat
+       Routes: /devops/event
+       sort: 1
+       permission:
+         - 'devops-service.devops-monitoring.listEvent'
 "cluster-management":
   icon: cluster
   sort: 4
