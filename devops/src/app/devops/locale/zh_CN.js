@@ -87,6 +87,11 @@ const pageDetail = {
   "release.addVersion.title": '添加应用"{name}"发布的版本',
   "release.addVersion.description": "您可在此勾选并添加需要发布的版本。",
 
+  // event
+  "event.title": '事件查看',
+  "event.description":
+    "监控事件状态--*v*--",
+
   // container
   "container.title": '项目"{name}"的容器',
   "container.description":
@@ -837,6 +842,13 @@ const zhCN = {
   "resource.name": "资源名称",
   "resource.description": "资源描述",
   "resource.type": "资源类型",
+
+  //event
+  "event.header.title": "事件查看",
+  "event.kind_name" : "kind_name",
+  "event.kind" : "kind",
+  "event.nameSpace" : "nameSpace",
+  "event.message" : "message",
 
   // container
   "container.header.title": "容器",
