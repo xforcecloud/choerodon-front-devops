@@ -32,6 +32,10 @@ class EnvOverviewStore {
 
   @observable tpEnvId = null;
 
+  @observable tpEnvCode = null;
+
+  @observable tpEnvCluster = null;
+
   @observable tabKey = 'app';
 
   @observable pageInfo = {
@@ -92,12 +96,28 @@ class EnvOverviewStore {
     this.tpEnvId = tpEnvId;
   }
 
+  @action setTpEnvCode(tpEnvCode) {
+    this.tpEnvCode = tpEnvCode;
+  }
+
+  @action setTpEnvCluster(tpEnvCluster) {
+    this.tpEnvCluster = tpEnvCluster;
+  }
+
   @action setInfo(Info) {
     this.Info = Info;
   }
 
   @computed get getTpEnvId() {
     return this.tpEnvId;
+  }
+
+  @computed get getTpEnvCode() {
+    return this.tpEnvCode;
+  }
+
+  @computed get getTpEnvCluster() {
+    return this.tpEnvCluster;
   }
 
   @action setTabKey(tabKey) {
@@ -150,6 +170,7 @@ class EnvOverviewStore {
     if (Number(this.preProId) !== Number(projectId)) {
       this.setEnvcard([]);
       this.setTpEnvId(null);
+      this.setTpEnvCode(null);
       DeploymentPipelineStore.setProRole('env', '');
     }
     this.setPreProId(projectId);
@@ -163,15 +184,106 @@ class EnvOverviewStore {
           this.setEnvcard(envSort);
           if (!this.tpEnvId && flagConnect.length) {
             const envId = flagConnect[0].id;
+            const envCode = flagConnect[0].code;
             this.setTpEnvId(envId);
+            this.setTpEnvCode(envCode);
           } else if (!this.tpEnvId && flag.length) {
             const envId = flag[0].id;
+            const envCode = flag[0].code;
             this.setTpEnvId(envId);
+            this.setTpEnvCode(envCode);
           } else if (flag.length && _.filter(flag, ['id', this.tpEnvId]).length === 0) {
             const envId = flag[0].id;
+            const envCode = flag[0].code;
             this.setTpEnvId(envId);
+            this.setTpEnvCode(envCode);
           } else if (flag.length === 0) {
             this.setTpEnvId(null);
+            this.setTpEnvCode(null);
+          }
+          if (data.length && this.tpEnvId) {
+            switch (type) {
+              case 'container':
+                const appId = ContainerStore.getappId;
+                ContainerStore.loadData(false, projectId, this.tpEnvId, appId);
+                break;
+              case 'certificate':
+                const { page, pageSize, sorter, postData } = CertificateStore.getTableFilter;
+                CertificateStore.loadCertData(projectId, page, pageSize, sorter, postData, this.tpEnvId);
+                break;
+              case 'instance':
+                const {
+                  loadAppNameByEnv,
+                  loadInstanceAll,
+                  getIsCache,
+                  getAppId,
+                } = InstancesStore;
+                if (!getIsCache) {
+                  const appPageSize = 30;
+                  InstancesStore.setAppPageSize(appPageSize);
+                  loadAppNameByEnv(projectId, this.tpEnvId, 0, appPageSize);
+                  loadInstanceAll(projectId, { envId: this.tpEnvId, appId: getAppId }).catch((err) => {
+                    InstancesStore.changeLoading(false);
+                  });
+                }
+                InstancesStore.setIsCache(false);
+                break;
+              case 'all':
+                break;
+              default:
+                break;
+            }
+          } else {
+            DeploymentPipelineStore.judgeRole();
+          }
+        }
+        this.changeLoading(false);
+        return data;
+      });
+  };
+
+  loadActiveEnvCluster = (projectId, type) => {
+    if (Number(this.preProId) !== Number(projectId)) {
+      this.setEnvcard([]);
+      this.setTpEnvId(null);
+      this.setTpEnvCode(null);
+      this.setTpEnvCluster(null);
+      DeploymentPipelineStore.setProRole('env', '');
+    }
+    this.setPreProId(projectId);
+    return axios.get(`devops/v1/projects/${projectId}/envs-ex?active=true`)
+      .then((data) => {
+        const res = handleProptError(data);
+        if (res) {
+          const envSort = _.concat(_.filter(data, ['connect', true]), _.filter(data, ['connect', false]));
+          const flag = _.filter(envSort, ['permission', true]);
+          const flagConnect = _.filter(flag, ['connect', true]);
+          this.setEnvcard(envSort);
+          if (!this.tpEnvId && flagConnect.length) {
+            const envId = flagConnect[0].id;
+            const envCode = flagConnect[0].code;
+            const envCluster = flagConnect[0].clusterId;
+            this.setTpEnvId(envId);
+            this.setTpEnvCode(envCode);
+            this.setTpEnvCluster(envCluster);
+          } else if (!this.tpEnvId && flag.length) {
+            const envId = flag[0].id;
+            const envCode = flag[0].code;
+            const envCluster = flag[0].clusterId;
+            this.setTpEnvId(envId);
+            this.setTpEnvCode(envCode);
+            this.setTpEnvCluster(envCluster);
+          } else if (flag.length && _.filter(flag, ['id', this.tpEnvId]).length === 0) {
+            const envId = flag[0].id;
+            const envCode = flag[0].code;
+            const envCluster = flag[0].clusterId;
+            this.setTpEnvId(envId);
+            this.setTpEnvCode(envCode);
+            this.setTpEnvCluster(envCluster);
+          } else if (flag.length === 0) {
+            this.setTpEnvId(null);
+            this.setTpEnvCode(null);
+            this.setTpEnvCluster(null);
           }
           if (data.length && this.tpEnvId) {
             switch (type) {

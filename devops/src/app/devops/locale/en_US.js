@@ -27,6 +27,11 @@ const enUS = {
   null: 'null',
   language: 'en_US',
 
+  // event
+  "event.title": '事件查看',
+  "event.description":
+    "监控事件状态--*v*--",
+
   // ist
   ist_create: 'Creating',
   ist_stop: 'Stopping',
@@ -102,6 +107,88 @@ const enUS = {
   'app.status': 'Status',
   'app.stage': 'Stages',
   'app.time': 'Duration',
+
+  //event
+  "event.header.title": "Event Viewer",
+  "event.kind_name" : "kind_name",
+  "event.kind" : "kind",
+  "event.message" : "message",
+  "event.reason" : "reason",
+  "event.count" : "count",
+  "event.type" : "type",
+  "event.createTime" : "createTime",
+  "event.receiveTime" : "receiveTime",
+
+  // event
+  "event.title": 'Event Viewer',
+  "event.description":
+    "Monitor event status--*v*--",
+
+  // warnings
+  "warnings.synch": "In application synchronization",
+  "warnings.start": "Please enable the application first",
+  "warnings.head": "Warnings",
+  "warnings.detail": "Configuration details",
+  "warnings.stop": "stop",
+  "warnings.create": "create",
+  "warnings.edit": "edit",
+  "warnings.delete": "delete",
+  "warnings.failed": "failed",
+  "warnings.creating": "creating",
+  "warnings.creator": "creator",
+  "warnings.delete.tooltip": "确定要删除该配置吗？",
+  "warnings.active": "status",
+  "warnings.stop": "stop",
+  "warnings.run": "start",
+  "warnings.chooseTem": "chooseEnv",
+  "warnings.namespace": "EnvCode",
+  "warnings.chooseTem.tip":
+    "Select an environment that already exists and runs。",
+  "warnings.orgId":"orgId",
+  "warnings.projectId": "projectId",
+  "warnings.uniqueName": "uniqueName",
+  "warnings.expression": "expression",
+  "warnings.type": "status",
+  "warnings.chooseDingDing.tip": "You can select the alarm pin that has been set up",
+  "warnings.chooseDingDing": "chooseDingDing",
+  "warnings.version": "version",
+  "warnings.checkExpression": "Please enter an expression in the correct format",
+
+  // warnings
+  "warnings.title": 'warnings',
+  "warnings.description":
+    "Alarm configuration--*v*--",
+  "warnings.create.title": 'create',
+  "warnings.create.description":
+    "You can add configuration information here。",
+  "warnings.edit.title": 'edit',
+  "warnings.edit.description": "You can modify the configuration information here。",
+
+  // dingDing
+  "dingDing.head": "DingDingConfig",
+  "dingDing.detail": "detail",
+  "dingDing.create": "create",
+  "dingDing.edit": "edit",
+  "dingDing.delete": "delete",
+  "dingDing.failed": "failed",
+  "dingDing.creating": "creating",
+  "dingDing.creator": "creator",
+  "dingDing.delete.tooltip": "Are you sure delete config？",
+  "dingDing.active": "active",
+  "dingDing.status": "status",
+  "dingDing.token": "token",
+  "dingDing.name": "name",
+  "dingDing.scopeId": "scopeId",
+
+  // dingDing
+  "dingDing.title": 'DingDingConfig',
+  "dingDing.description":
+    "DingDing's config--*v*--",
+  "dingDing.create.title": 'add DingDing config',
+  "dingDing.create.description":
+    "You can add DingDing config information here--*v*--",
+  "dingDing.edit.title": 'edit DingDing config',
+  "dingDing.edit.description": "You can edit DingDing config information here--*v*--",
 
   // user
   'user.password.update': 'Modify Password',

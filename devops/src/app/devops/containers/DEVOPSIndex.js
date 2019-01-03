@@ -32,6 +32,7 @@ const Reports = asyncRouter(() => import('./project/reports'));
 const DevConsole = asyncRouter(() => import('./project/devConsole'));
 const Event = asyncRouter(() => import('./project/event'));
 const Warnings = asyncRouter(() => import('./project/warnings'));
+const DingDing = asyncRouter(() => import('./project/dingDing'));
 
 @inject('AppState')
 class DEVOPSIndex extends React.Component {
@@ -66,6 +67,7 @@ class DEVOPSIndex extends React.Component {
           <Route path={`${match.url}/dev-console`} component={DevConsole} />
           <Route path={`${match.url}/event`} component={Event} />
           <Route path={`${match.url}/warnings`} component={Warnings} />
+          <Route path={`${match.url}/dingDing`} component={DingDing} />
           <Route path="*" component={nomatch} />
         </Switch>
       </IntlProviderAsync>

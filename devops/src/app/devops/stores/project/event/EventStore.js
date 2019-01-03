@@ -21,6 +21,10 @@ class EventStore {
 
   @observable dto = [];
 
+  @observable eventState = [];
+
+  @observable envCluster = [];
+
   @observable pageInfo = {
     current: 1, total: 0, pageSize: HEIGHT <= 900 ? 30 : 30,
   };
@@ -60,6 +64,16 @@ class EventStore {
   }
 
   @computed
+  get getEnvCluster() {
+    return this.envCluster.slice();
+  }
+
+  @action
+  setEnvCluster(data) {
+    this.envCluster = data;
+  }
+
+  @computed
   get getDto() {
     return this.dto.slice();
   }
@@ -70,13 +84,13 @@ class EventStore {
   }
 
   @computed
-  get getNetwork() {
-    return this.network.slice();
+  get getEventState() {
+    return this.eventState;
   }
 
   @action
-  setNetwork(data) {
-    this.network = data;
+  setEventState(data) {
+    this.eventState = data;
   }
 
   @action
@@ -108,7 +122,7 @@ class EventStore {
   }
 
   @computed
-  get getEnv() {``
+  get getEnv() {
     return this.env.slice();
   }
 
@@ -125,7 +139,7 @@ class EventStore {
     return this.Info;
   }
 
-  loadData = (isRefresh = true, proId, envId, page = this.pageInfo.current - 1, pageSize = this.pageInfo.pageSize, sort = { field: 'id', order: 'desc' }, datas = {
+  loadData = (isRefresh = true, proId, cc, page = this.pageInfo.current - 1, pageSize = this.pageInfo.pageSize, sort = { field: 'id', order: 'desc' }, datas = {
     searchParam: {},
     param: '',
   }) => {
@@ -133,7 +147,7 @@ class EventStore {
       this.changeIsRefresh(true);
     }
     this.changeLoading(true);
-    return axios.post(`/devops/v1/projects/${proId}/ingress/${envId}/listByEnv?page=${page}&size=${pageSize}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(datas))
+    return axios.post(`http://collector.xcloud.xforceplus.com/v1/collector/eventlogs/orgId/${cc[0]}/namespace/${cc[1]}?page=${page}&size=${pageSize}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(datas))
       .then((data) => {
         const res = handleProptError(data);
         if (res) {
@@ -167,40 +181,30 @@ class EventStore {
       return res;
     });
 
-  checkName = (projectId, envId, value) => axios.get(`/devops/v1/projects/${projectId}/ingress/check_name?name=${envId}&envId=${value}`)
-    .then(data => handleProptError(data));
-
-  checkPath =(projectId, domain, env, value, id = '') => axios.get(`/devops/v1/projects/${projectId}/ingress/check_domain?domain=${domain}&envId=${env}&path=${value}&id=${id}`)
-    .then(data => handleProptError(data));
-
-  updateData = (projectId, id, data) => axios.put(`/devops/v1/projects/${projectId}/ingress/${id}`, JSON.stringify(data))
-    .then(res => handleProptError(res));
-
-  addData = (projectId, data) => axios.post(`/devops/v1/projects/${projectId}/ingress`, JSON.stringify(data))
-    .then(res => handleProptError(res));
-
-  deleteData = (projectId, id) => axios.delete(`/devops/v1/projects/${projectId}/ingress/${id}`)
-    .then(data => handleProptError(data));
-
-  loadNetwork = (projectId, envId) => axios.get(`/devops/v1/projects/${projectId}/service?envId=${envId}`)
+  loadEnvCluster = projectId => axios.get(`devops/v1/projects/${projectId}/envs-ex?active=true`)
     .then((data) => {
       const res = handleProptError(data);
       if (res) {
-        this.setNetwork(data);
+        this.setEnvCluster(data);
       }
       return res;
     });
 
-  loadCertByEnv = (projectId, envId, domain) => {
-    axios.post(`/devops/v1/projects/${projectId}/certifications/active?env_id=${envId}&domain=${domain}`)
-      .then((data) => {
-        const res = handleProptError(data);
-        if (res) {
-          this.setCertificates(res);
-        }
-      })
-      .catch(err => Choerodon.handleResponseError(err));
-  };
+  loadEventState = (clusterId,namespace) => axios.get(`http://collector.xcloud.xforceplus.com/v1/collector/config/devopsCluster/${clusterId}/namespace/${namespace}`)
+    .then((data) => {
+      const res = handleProptError(data);
+      if (res) {
+        this.setEventState(data);
+      }
+      return res;
+    });
+
+  updateStatus = (data) => axios.post(`http://collector.xcloud.xforceplus.com/v1/collector/config`, JSON.stringify(data))
+    .then((datas) => {
+      const res = this.handleProptError(datas);
+      return res;
+    });
+
 }
 
 const eventStore = new EventStore();

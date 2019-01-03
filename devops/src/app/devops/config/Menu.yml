@@ -270,6 +270,16 @@
        sort: 1
        permission:
          - 'devops-service.devops-monitoring.listEvent'
+    - "dingding":
+       icon: message_notification
+       Routes: /devops/dingding
+       sort: 1
+       permission:
+         - 'devops-service.devops-monitoring.listDingDing'
+         - 'devops-service.dingDing.delete'
+         - 'devops-service.dingDing.create'
+
+
 "cluster-management":
   icon: cluster
   sort: 4

@@ -122,11 +122,22 @@ const pageDetail = {
   "warnings.title": '告警设置',
   "warnings.description":
     "告警的配置--*v*--",
-  "warnings.create.title": '在此新增配置',
+  "warnings.create.title": '新增规则配置',
   "warnings.create.description":
-    "新增配置模态框。",
-  "warnings.edit.title": '修改配置模态框',
-  "warnings.edit.description": "您可在此修改。",
+    "您可以在此新增配置信息。",
+  "warnings.edit.title": '修改规则配置',
+  "warnings.edit.description": "您可在此修改配置信息。",
+  "warnings.checkExpression": "请输入正确格式的表达式",
+
+  // dingDing
+  "dingDing.title": '钉钉配置',
+  "dingDing.description":
+    "钉钉的配置--*v*--",
+  "dingDing.create.title": '新增钉钉配置',
+  "dingDing.create.description":
+    "您可以在此新增钉钉的配置信息--*v*--",
+  "dingDing.edit.title": '修改钉钉配置',
+  "dingDing.edit.description": "您可在此修改钉钉的配置--*v*--",
 
   // app
   "app.title": '项目"{name}"的应用',
@@ -643,22 +654,39 @@ const zhCN = {
   "warnings.creating": "创建中",
   "warnings.creator": "创建者",
   "warnings.delete.tooltip": "确定要删除该配置吗？",
-  "warnings.delete.tip": "这将会删除gitlab代码库，请确认是否删除？",
   "warnings.active": "状态",
   "warnings.stop": "停用",
   "warnings.run": "启用",
-  "warnings.chooseTem": "选择应用模板",
-  "warnings.code.tooltip":
-    "应用的自定义编码，Gitlab仓库的地址将会使用应用编码作为仓库地址的一段路径，同时此编码在项目下唯一且不可修改。",
+  "warnings.chooseTem": "选择环境",
+  "warnings.namespace": "环境编码",
   "warnings.chooseTem.tip":
-    "可选择系统预定义模板或组织自定义的模板块。选择模板后，可快速创建初始代码库。目前系统存在三种预定义模板，也可以不选择应用模板。",
-  "warnings.namespace": "namespace",
-  "warnings.expression": "expression",
-  "warnings.status": "status",
-  "warnings.version": "version",
-  "warnings.uid": "uid",
-  "warnings.channelId": "channelId",
-  "warnings.scopeId": "scopeId",
+    "可选择已经存在并运行的环境。",
+  "warnings.orgId":"组织Id",
+  "warnings.projectId": "项目Id",
+  "warnings.uniqueName": "名称",
+  "warnings.expression": "表达式",
+  "warnings.type": "状态",
+  "warnings.chooseDingDing.tip": "您可以选择已经设置好的报警钉钉",
+  "warnings.chooseDingDing": "选择钉钉",
+  "warnings.version": "版本",
+
+
+  // dingDing
+  "dingDing.head": "钉钉配置",
+  "dingDing.detail": "配置详情",
+  "dingDing.create": "新增配置",
+  "dingDing.edit": "修改配置",
+  "dingDing.delete": "删除配置",
+  "dingDing.failed": "失败",
+  "dingDing.creating": "创建中",
+  "dingDing.creator": "创建者",
+  "dingDing.delete.tooltip": "确定要删除该配置吗？",
+  "dingDing.active": "状态",
+  "dingDing.status": "状态",
+  "dingDing.token": "钉钉秘钥",
+  "dingDing.name": "名称",
+  "dingDing.scopeId": "scopeId",
+
 
   // app
   "app.head": "应用",
@@ -845,10 +873,15 @@ const zhCN = {
 
   //event
   "event.header.title": "事件查看",
-  "event.kind_name" : "kind_name",
-  "event.kind" : "kind",
-  "event.nameSpace" : "nameSpace",
-  "event.message" : "message",
+  "event.kind_name" : "类型名称",
+  "event.kind" : "种类",
+  "event.message" : "消息",
+  "event.reason" : "原因",
+  "event.count" : "数量",
+  "event.type" : "类别",
+  "event.createTime" : "创建时间",
+  "event.receiveTime" : "修改时间",
+
 
   // container
   "container.header.title": "容器",

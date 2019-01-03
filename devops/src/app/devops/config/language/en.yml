@@ -41,6 +41,7 @@
 "log-monitoring": "Log Monitoring"
 "log-monitoring.warnings": "Warnings"
 "log-monitoring.event": "EventView"
+"log-monitoring.dingding": "DingDingConfig"
 
 # 0.8废弃
 "application-market": "Application Market"
