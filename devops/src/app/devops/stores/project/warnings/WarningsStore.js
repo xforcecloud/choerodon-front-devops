@@ -111,9 +111,9 @@ class WarningsStore {
     if (isRefresh) {
       this.changeIsRefresh(true);
     }
-    let url = `http://collector.xcloud.xforceplus.com/v1/collector/rule?scopeId=${projectId}&orgId=${orgId}`;
+    let url = `/collector/v1/collector/rule?scopeId=${projectId}&orgId=${orgId}`;
     if (sort.field !== '') {
-      url = `http://collector.xcloud.xforceplus.com/v1/collector/rule?scopeId=${projectId}&orgId=${orgId}`;
+      url = `/collector/v1/collector/rule?scopeId=${projectId}&orgId=${orgId}`;
     }
     this.changeLoading(true);
     return axios.get(url, JSON.stringify(postData))
@@ -150,7 +150,7 @@ class WarningsStore {
       }
     });
 
-  loadSelectDingDingData = projectId => axios.get(`http://collector.xcloud.xforceplus.com/v1/collector/ding/config/${projectId}/list`)
+  loadSelectDingDingData = projectId => axios.get(`/collector/v1/collector/ding/config/${projectId}/list`)
     .then((data) => {
       const res = this.handleProptError(data);
       if (res) {
@@ -177,13 +177,13 @@ class WarningsStore {
       return res;
     });
 
-  updateData = (projectId, data) => axios.post(`http://collector.xcloud.xforceplus.com/v1/collector/rule`, JSON.stringify([data]))
+  updateData = (projectId, data) => axios.post(`/collector/v1/collector/rule`, JSON.stringify([data]))
     .then((datas) => {
       const res = this.handleProptError(datas);
       return res;
     });
 
-  addData = (projectId, data) => axios.post(`http://collector.xcloud.xforceplus.com/v1/collector/rule`, JSON.stringify([data]))
+  addData = (projectId, data) => axios.post(`/collector/v1/collector/rule`, JSON.stringify([data]))
     .then((datas) => {
       const res = this.handleProptError(datas);
       return res;

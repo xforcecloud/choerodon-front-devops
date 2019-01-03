@@ -91,7 +91,7 @@ class DingDingStore {
     if (isRefresh) {
       this.changeIsRefresh(true);
     }
-    let url = `http://collector.xcloud.xforceplus.com/v1/collector/ding/config/${projectId}/list`;
+    let url = `/collector/v1/collector/ding/config/${projectId}/list`;
     this.changeLoading(true);
     return axios.get(url, JSON.stringify(postData))
       .then((data) => {
@@ -138,13 +138,13 @@ class DingDingStore {
       return res;
     });
 
-  addData = (projectId, data) => axios.post(`http://collector.xcloud.xforceplus.com/v1/collector/ding/config`, JSON.stringify(data))
+  addData = (projectId, data) => axios.post(`/collector/v1/collector/ding/config`, JSON.stringify(data))
     .then((datas) => {
       const res = this.handleProptError(datas);
       return res;
     });
 
-  deleteApps = (projectId, dingDing) => axios.post(`http://collector.xcloud.xforceplus.com/v1/collector/ding/config/drop`, JSON.stringify(dingDing))
+  deleteApps = (projectId, dingDing) => axios.post(`/collector/v1/collector/ding/config/drop`, JSON.stringify(dingDing))
     .then((datas) => {
       const res = this.handleProptError(datas);
       return res;

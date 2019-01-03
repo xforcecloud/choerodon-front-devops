@@ -147,7 +147,7 @@ class EventStore {
       this.changeIsRefresh(true);
     }
     this.changeLoading(true);
-    return axios.post(`http://collector.xcloud.xforceplus.com/v1/collector/eventlogs/orgId/${cc[0]}/namespace/${cc[1]}?page=${page}&size=${pageSize}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(datas))
+    return axios.post(`/collector/v1/collector/eventlogs/orgId/${cc[0]}/namespace/${cc[1]}?page=${page}&size=${pageSize}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(datas))
       .then((data) => {
         const res = handleProptError(data);
         if (res) {
@@ -190,7 +190,7 @@ class EventStore {
       return res;
     });
 
-  loadEventState = (clusterId,namespace) => axios.get(`http://collector.xcloud.xforceplus.com/v1/collector/config/devopsCluster/${clusterId}/namespace/${namespace}`)
+  loadEventState = (clusterId,namespace) => axios.get(`/collector/v1/collector/config/devopsCluster/${clusterId}/namespace/${namespace}`)
     .then((data) => {
       const res = handleProptError(data);
       if (res) {
@@ -199,7 +199,7 @@ class EventStore {
       return res;
     });
 
-  updateStatus = (data) => axios.post(`http://collector.xcloud.xforceplus.com/v1/collector/config`, JSON.stringify(data))
+  updateStatus = (data) => axios.post(`/collector/v1/collector/config`, JSON.stringify(data))
     .then((datas) => {
       const res = this.handleProptError(datas);
       return res;
