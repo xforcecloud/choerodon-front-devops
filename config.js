@@ -28,7 +28,7 @@ const config = {
   entryName: 'index',
   root: '/',
   routes: null, // by default, routes use main in package.json
-  server: 'http://api.staging.saas.hand-china.com', // api server
+  server: 'http://api.staging.saas.hand-china.com', // api server e
   // server: 'http://api.alpha.saas.hand-china.com',
   clientid: 'localhost',
   fileServer: 'http://minio.staging.saas.hand-china.com',
