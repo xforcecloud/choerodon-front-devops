@@ -36,6 +36,12 @@
 # 集群管理
 "cluster-management": "集群管理"
 "cluster-management.cluster": "集群"
+"cluster-management.apply-cluster": "集群申请"
+
+# 平台管理员集群管理
+"admin-cluster-management": "集群管理"
+"admin-cluster-management.admin-cluster": "集群"
+"admin-cluster-management.apply-management": "申请管理"
 
 # 日志监控
 "log-monitoring": "日志监控"

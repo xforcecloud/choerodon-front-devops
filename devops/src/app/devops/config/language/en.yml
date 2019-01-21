@@ -32,10 +32,17 @@
 # 报表
 "platform-reports": "Reports"
 "platform-reports.reports": "DevOps Report"
+"admin-cluster-management.apply-management": "Apply Management"
 
 # 集群管理
 "cluster-management": "Cluster Management"
 "cluster-management.cluster": "Cluster"
+"cluster-management.apply-cluster": "Apply Cluster"
+
+# 平台管理员集群管理
+"admin-cluster-management": "Cluster Management"
+"admin-cluster-management.admin-cluster": "Cluster"
+"admin-cluster-management.apply-management": "Apply Management"
 
 # 日志监控
 "log-monitoring": "Log Monitoring"

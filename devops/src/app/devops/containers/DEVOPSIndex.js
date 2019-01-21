@@ -6,9 +6,14 @@ import {
 import { inject } from 'mobx-react';
 import { asyncRouter, nomatch, asyncLocaleProvider } from 'choerodon-front-boot';
 
+// admin
+const AdminCluster = asyncRouter(() => import('./admin/adminCluster'));
+const Apply = asyncRouter(() => import('./admin/apply'));
+
 // organization
 const Template = asyncRouter(() => import('./organization/template'));
 const Cluster = asyncRouter(() => import('./organization/cluster'));
+const UserCluster = asyncRouter(() => import('./organization/userCluster'));
 // project
 const EnvPipelineIndex = asyncRouter(() => import('./project/envPipeline'));
 const CiPipelineManageIndex = asyncRouter(() => import('./project/ciPipelineManage'));
@@ -68,6 +73,9 @@ class DEVOPSIndex extends React.Component {
           <Route path={`${match.url}/event`} component={Event} />
           <Route path={`${match.url}/warnings`} component={Warnings} />
           <Route path={`${match.url}/dingDing`} component={DingDing} />
+          <Route path={`${match.url}/admin-cluster`} component={AdminCluster} />
+          <Route path={`${match.url}/apply-management`} component={Apply} />
+          <Route path={`${match.url}/apply-cluster`} component={UserCluster} />
           <Route path="*" component={nomatch} />
         </Switch>
       </IntlProviderAsync>

@@ -312,6 +312,42 @@ const pageDetail = {
   "devCs.title": '应用"{name}"的开发控制台',
 
   // 集群
+  "user.cluster.description":
+    "Kubernetes集群是一个用于运行Kubernetes的托管群组。如下是您申请的集群以及当前状态。",
+  "user.cluster.title": '组织"{name}"的Kubernetes集群申请',
+  "user.cluster.create.title": '组织"{clsName}"申请集群',
+  "user.cluster.create.description":
+    "请在下面展示的可用集群列表中选择您要申请的集群,并输入申请缘由。",
+  "user.cluster.key.title": '申请情况',
+  "user.cluster.key.description": "您的集群申请已经提交,请耐心等候-*v*-。",
+  "user.cluster.token.title": '申请情况',
+  "user.cluster.token.description": "您的集群申请已经提交,请耐心等候-*v*-。",
+  "user.cluster.edit.title": '对集群"{clsName}"进行修改',
+  "user.cluster.edit.description":
+    "您可在此修改集群的名称、描述以及集群的公开范围。",
+
+  // 平台管理员集群
+  "admin.cluster.description":
+    "Kubernetes集群是一个用于运行Kubernetes的托管群组。您可在下方对各个集群进行管理。",
+  "admin.cluster.title": '平台管理员下的Kubernetes集群',
+  "admin.cluster.link": `${docServer}/user-guide/cluster-management/cluster`,
+  "admin.cluster.create.title": '创建集群',
+  "admin.cluster.create.description":
+    "请在下面输入集群编码、名称、描述，用以创建新集群。同时，您可以选择为所创集群配置公开范围，配置后，只有被勾选项目下的环境才能连接到该集群。",
+  "admin.cluster.create.link": `${docServer}/user-guide/cluster-management/cluster`,
+  "admin.cluster.key.title": '创建集群"{clsName}"的结果',
+  "admin.cluster.key.description": "结果显示",
+  "admin.cluster.key.link": `${docServer}/user-guide/cluster-management/cluster/`,
+  "admin.cluster.token.title": '创建集群"{clsName}"的结果',
+  "admin.cluster.token.description": "结果显示",
+  "admin.cluster.token.link": `${docServer}/user-guide/cluster-management/cluster/`,
+  "admin.cluster.edit.title": '对集群"{clsName}"进行修改',
+  "admin.cluster.edit.description":
+    "您可在此修改集群的名称、描述以及集群的公开范围。",
+  "admin.cluster.edit.link": `${docServer}/user-guide/cluster-management/cluster/`,
+  "admin.cluster.is_active": "是否开通",
+
+  // 集群
   "cluster.description":
     "Kubernetes集群是一个用于运行Kubernetes的托管群组。您可在下方对各个集群进行管理。",
   "cluster.title": '组织"{name}"的Kubernetes集群',
@@ -350,6 +386,8 @@ const zhCN = {
   JavaLib: "Java 库",
   create: "创建",
   running: "运行中",
+  user: "可用",
+  noUser: "不可用",
   operating: "处理中",
   stopping: "停止中",
   deleting: "删除中",
@@ -1225,6 +1263,78 @@ const zhCN = {
   "empty.member.noApp": "当前项目下无应用，请联系项目所有者进行创建。",
   "depPl.more": "了解更多",
 
+
+  //userCluster
+  "user.cluster.reApply": "重新申请",
+  "user.revoke.title": '是否确认撤销集群申请?',
+  "user.noApply": "您还没有申请集群哦,请您先申请集群...",
+  "user.cluster.del": "撤销",
+  "user.applying": "申请中",
+  "user.pass": "已通过",
+  "user.reject": "已驳回",
+  "user.cluster.create": "申请集群",
+  "user.cluster.selected": "已选择准备申请的集群",
+  "user.apply.reason": "申请理由",
+  "user.input.reason": "请输入申请理由:",
+  "user.cluster.edit": "编辑集群",
+  "user.cluster.active": "申请情况",
+  "user.cluster.apply": "点击申请",
+  "user.cluster.head": "申请集群",
+  "user.cluster.del.confirm": "确认撤销",
+  "user.cluster.del.title": '删除集群"{clsName}"',
+  "user.head": "集群",
+  "user.cluster.name": "集群名称",
+  "user.cluster.code": "集群编码",
+  "user.cluster.des": "集群描述",
+  "user.user.cluster.active": "激活集群",
+  "user.user.cluster.del": "删除集群",
+  "user.cluster.public": "集群公开范围",
+  "user.cluster.project.all": "组织下所有项目",
+  "user.cluster.project.part": "组织下特定项目",
+  "user.cluster.authority": "集群权限分配",
+  "user.cluster.authority.project": "已分配权限项目",
+  ...pageDetail,
+
+  // Apply
+  "confirm.reject": "确认驳回该集群申请吗?",
+  "reject.reason.input": "请输入驳回理由",
+  "reject.reason": "驳回理由",
+  "confirm.pass": "确认通过该集群申请吗?",
+  "pass": "通过",
+  "reject": "驳回",
+  "apply.cluster.operation": "操作",
+  "apply.cluster.orgName": "租户名称",
+  "apply.cluster.reason": "申请缘由",
+  "apply.cluster.name": "集群名称",
+  "apply.cluster.code": "集群编码",
+  "apply.cluster.description": "集群描述",
+  "apply.cluster.status": "状态",
+  "apply.untreated": "未处理",
+  "apply.pass": "已通过",
+  "apply.reject": "已驳回",
+  "apply.head": "申请管理",
+  "apply.title": "申请管理",
+  "apply.description": "此处是显示未处理、已通过和已驳回的集群信息,您可以再次进行管理--*v*--",
+
+  // 集群
+  "admin.open":"默认开通",
+  "admin.noOpen":"未开通",
+  "admin.cluster.checkName": "集群名称只能以N,P,T,F字符开头",
+  "admin.cluster.open": "是否默认开通",
+  "admin.cluster.user": "是否可用",
+  "admin.cluster.head": "集群",
+  "admin.cluster.create": "创建集群",
+  "admin.cluster.edit": "编辑集群",
+  "admin.cluster.name": "集群名称",
+  "admin.cluster.code": "集群编码",
+  "admin.cluster.des": "集群描述",
+  "admin.cluster.active": "创建结果",
+  "admin.cluster.del": "删除集群",
+  "admin.cluster.del.confirm": "确认删除",
+  "admin.cluster.del.title": '删除集群"{clsName}"',
+
+  ...pageDetail,
+
   // 集群
   "cluster.head": "集群",
   "cluster.create": "创建集群",
@@ -1256,7 +1366,6 @@ const zhCN = {
   "cluster.noData.text2": "1. 点击下方按钮进入创建集群页面，填写相关信息；",
   "cluster.noData.text3":
     "2. 点击创建后，会生成创建agent的脚本，复制至对应的k8s平台运行，即可成功激活此集群，进而激活此集群关联项目下的环境。",
-
   ...pageDetail,
 };
 

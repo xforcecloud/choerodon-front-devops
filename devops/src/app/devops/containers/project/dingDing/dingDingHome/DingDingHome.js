@@ -292,9 +292,6 @@ class DingDingHome extends Component {
           />,
         )}
       </FormItem>
-
-
-
     </Form>);
 
     return (
