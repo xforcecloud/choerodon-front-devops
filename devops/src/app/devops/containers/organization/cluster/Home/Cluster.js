@@ -756,7 +756,19 @@ class Cluster extends Component {
         className="c7n-region"
       >
         <Header title={<FormattedMessage id="cluster.head" />}>
-
+          <Permission
+            service={['devops-service.devops-cluster.create']}
+            type={type}
+            organizationId={organizationId}
+          >
+            <Button
+              icon="playlist_add"
+              funcType="flat"
+              onClick={this.showSideBar.bind(this, 'create')}
+            >
+              <FormattedMessage id="cluster.create" />
+            </Button>
+          </Permission>
           <Permission
             service={['devops-service.devops-cluster.listCluster']}
             type={type}
