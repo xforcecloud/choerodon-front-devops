@@ -295,10 +295,10 @@ class AdminCluster extends Component {
             </div>
             {c.isDefault ?
               <div>
-                <div className="c7n-cls-card-head-state">
+                <div className="c7n-cls-card-head-state2">
                   {formatMessage({id: 'admin.open'})}
                 </div>
-                <i className="c7n-cls-card-head-state_after"/>
+                <i className="c7n-cls-card-head-state_after2"/>
               </div>
             :<div>
                 <div className="c7n-cls-card-head-state-no">

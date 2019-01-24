@@ -17,7 +17,7 @@ $hui:#A9A9A9;
   margin-right: -24px;
 }
 
-.c7n-cls-card1 {
+.c7n-cls-card {
   margin-right: 20px;
   margin-bottom: 20px;
   cursor: pointer;
@@ -31,6 +31,17 @@ $hui:#A9A9A9;
     height: 24px;
     background-color: $lowHui;
 
+    .c7n-cls-card-head-state2 {
+      font-weight: 500;
+      font-size: 12px;
+      color: #fff;
+      line-height: 24px;
+      display: inline-block;
+      width: 65px;
+      background-color: $suc;
+      padding-left: 10px;
+    }
+
     .c7n-cls-card-head-state {
       font-weight: 500;
       font-size: 12px;
@@ -39,7 +50,7 @@ $hui:#A9A9A9;
       display: inline-block;
       width: 65px;
       background-color: $hui;
-      padding-left: 8px;
+      padding-left: 10px;
     }
 
     .c7n-cls-card-head-state_after {
@@ -47,6 +58,14 @@ $hui:#A9A9A9;
       width: 4px;
       height: 0;
       border-top: 24px solid $hui;
+      border-right: 4px solid transparent;
+    }
+
+    .c7n-cls-card-head-state_after2 {
+      position: absolute;
+      width: 4px;
+      height: 0;
+      border-top: 24px solid $suc;
       border-right: 4px solid transparent;
     }
 
@@ -141,7 +160,7 @@ $hui:#A9A9A9;
   }
 }
 
-.c7n-cls-card-connect1 {
+.c7n-cls-card-connect {
   border-bottom: 4px solid $suc;
 
   .c7n-cls-card-head {
