@@ -92,19 +92,6 @@ class Apply extends Component {
     const { ApplyStore, intl: { formatMessage },form: { getFieldDecorator } } = this.props;
     const { type, id: projectId, organizationId: orgId } = AppState.currentMenuType;
     const { filters, sort: { columnKey, order } } = ApplyStore.getInfo;
-    const formContent = (<Form layout="vertical" className="c7n-sidebar-form">
-      <FormItem
-        {...formItemLayout}
-      >
-        {getFieldDecorator('reason')(
-          <TextArea
-            autosize={{ minRows: 3 }}
-            maxLength={30}
-            label={<FormattedMessage id="reject.reason" />}
-          />,
-        )}
-      </FormItem>
-    </Form>);
     return [{
       title: <FormattedMessage id="apply.cluster.orgName" />,
       dataIndex: 'organizationName',
@@ -183,17 +170,6 @@ class Apply extends Component {
             </Popconfirm>
             </Tooltip> : null}
             </Fragment>
-          <Modal
-            title={<FormattedMessage id="reject.reason.input" />}
-            visible={this.state.visible}
-            onOk={this.handleOk}
-            onCancel={this.handleCancel}
-            width={550}
-          >
-            <Content className="sidebar-content">
-              {formContent}
-            </Content>
-          </Modal>
         </Fragment>
       ),
     }];
@@ -344,7 +320,19 @@ class Apply extends Component {
       form: { getFieldDecorator },
     } = this.props;
     const { type: modeType, show, submitting, openRemove, name: appName, id,record} = this.state;
-
+    const formContent = (<Form layout="vertical" className="c7n-sidebar-form">
+      <FormItem
+        {...formItemLayout}
+      >
+        {getFieldDecorator('reason')(
+          <TextArea
+            autosize={{ minRows: 3 }}
+            maxLength={30}
+            label={<FormattedMessage id="reject.reason" />}
+          />,
+        )}
+      </FormItem>
+    </Form>);
     return (
       <Page
         className="c7n-region c7n-app-wrapper"
@@ -382,6 +370,18 @@ class Apply extends Component {
             />
           </Content>
         </Fragment>}
+
+        <Modal
+          title={<FormattedMessage id="reject.reason.input" />}
+          visible={this.state.visible}
+          onOk={this.handleOk}
+          onCancel={this.handleCancel}
+          width={550}
+        >
+          <Content className="sidebar-content">
+            {formContent}
+          </Content>
+        </Modal>
       </Page>
     );
   }
