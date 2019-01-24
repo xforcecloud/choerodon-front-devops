@@ -377,7 +377,7 @@ class Apply extends Component {
               onChange={this.tableChange1}
               columns={this.getColumn()}
               dataSource={serviceData.slice()}
-              rowKey={record => record.organizationId+record.clusterId}
+              rowKey={record => record.organizationId+""+record.clusterId}
               filters={paras.slice()}
             />
           </Content>

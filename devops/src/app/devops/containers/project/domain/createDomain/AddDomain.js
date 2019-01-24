@@ -697,7 +697,7 @@ class CreateDomain extends Component {
                     type="text"
                     label={formatMessage({ id: 'domain.form.domain' })}
                     size="default"
-                    onBlur={this.loadCertByDomain}
+                    onClick={this.loadCertByDomain}
                   />,
                 )}
               </FormItem>
