@@ -285,7 +285,7 @@ class AdminCluster extends Component {
     const clusters = AdminClusterStore.getData;
     return _.map(clusters, c => (
       <Tooltip key={c.id} placement="bottom" title={c.upgrade ? <FormattedMessage id="cluster.status.update" /> : null}>
-        <div className={`c7n-cls-card1 ${c.isActive ? 'c7n-cls-card-connect1' : ''}`}>
+        <div className={`c7n-cls-card ${c.isActive ? 'c7n-cls-card-connect' : ''}`}>
           <div className="c7n-cls-card-head">
             <div>
               <div className="c7n-cls-card-head-state">
@@ -300,7 +300,7 @@ class AdminCluster extends Component {
                 </div>
                 <i className="c7n-cls-card-head-state_after2"/>
               </div>
-            :<div>
+              :<div>
                 <div className="c7n-cls-card-head-state-no">
                   {formatMessage({id: 'admin.noOpen'})}
                 </div>
@@ -435,26 +435,26 @@ class AdminCluster extends Component {
               )}
             </FormItem>
             <div>
-            <FormItem
-            >
-              {getFieldDecorator('name', {
-                rules: [{
-                  required: true,
-                  message: formatMessage({ id: 'required' }),
-                }, {
-                  pattern: /^N|P|T|F/,
-                  message: formatMessage({ id: `admin.cluster.checkName` }),
-                }, {
-                  validator: this.checkName,
-                }],
-              })(
+              <FormItem
+              >
+                {getFieldDecorator('name', {
+                  rules: [{
+                    required: true,
+                    message: formatMessage({ id: 'required' }),
+                  }, {
+                    pattern: /^N|P|T|F/,
+                    message: formatMessage({ id: `admin.cluster.checkName` }),
+                  }, {
+                    validator: this.checkName,
+                  }],
+                })(
                   <Input
                     before={selectBefore}
                     maxLength={10}
                     label={<FormattedMessage id="admin.cluster.name" />}
                   />,
-              )}
-            </FormItem>
+                )}
+              </FormItem>
             </div>
             <FormItem
               {...formItemLayout}

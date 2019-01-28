@@ -92,6 +92,7 @@ class Apply extends Component {
     const { ApplyStore, intl: { formatMessage },form: { getFieldDecorator } } = this.props;
     const { type, id: projectId, organizationId: orgId } = AppState.currentMenuType;
     const { filters, sort: { columnKey, order } } = ApplyStore.getInfo;
+
     return [{
       title: <FormattedMessage id="apply.cluster.orgName" />,
       dataIndex: 'organizationName',
@@ -148,12 +149,12 @@ class Apply extends Component {
           <Fragment>
             {record.isConnected == 0 ? <Tooltip placement="bottom" title={<FormattedMessage id="reject" />}>
               <Popconfirm title={<FormattedMessage id="confirm.reject" />} onConfirm={() => this.handleReject(record)}>
-              <Button
-                type="danger"
-                icon="cancel"
-                shape="circle"
-                size="small"
-              />
+                <Button
+                  type="danger"
+                  icon="cancel"
+                  shape="circle"
+                  size="small"
+                />
               </Popconfirm>
             </Tooltip> : null}
             {record.isConnected == 0 ? <Tooltip
@@ -161,15 +162,15 @@ class Apply extends Component {
               title={<Fragment> <FormattedMessage id="pass" /></Fragment>}
             ><Popconfirm title={<FormattedMessage id="confirm.pass" />} onConfirm={() => this.handlePass(record)}>
               <Button
-                  type="primary"
-                  icon="finished"
-                  shape="circle"
-                  size="small"
-                  >
+                type="primary"
+                icon="finished"
+                shape="circle"
+                size="small"
+              >
               </Button>
             </Popconfirm>
             </Tooltip> : null}
-            </Fragment>
+          </Fragment>
         </Fragment>
       ),
     }];
@@ -208,13 +209,13 @@ class Apply extends Component {
   onChange = (value) => {
     if (value.target.value == 1){
       this.setState({check:"1"});
-      this.loadAllData(value.target.value,this.state.page);
+      this.loadAllData(value.target.value);
     } else if(value.target.value == 2){
       this.setState({check:"2"});
-      this.loadAllData(value.target.value,this.state.page);
+      this.loadAllData(value.target.value);
     }else{
       this.setState({check:"0"});
-      this.loadAllData(value.target.value,this.state.page);
+      this.loadAllData(value.target.value);
     }
 
   }
@@ -337,11 +338,22 @@ class Apply extends Component {
       <Page
         className="c7n-region c7n-app-wrapper"
         service={[
-                  'devops-service.apply-management.listCluster',
-                  'devops-service.apply-management.reject',
-                  'devops-service.apply-management.pass',
+          'devops-service.apply-management.listCluster',
+          'devops-service.apply-management.reject',
+          'devops-service.apply-management.pass',
         ]}
       >
+        <Modal
+          title={<FormattedMessage id="reject.reason.input" />}
+          visible={this.state.visible}
+          onOk={this.handleOk}
+          onCancel={this.handleCancel}
+          width={550}
+        >
+          <Content className="sidebar-content">
+            {formContent}
+          </Content>
+        </Modal>
         { isRefresh ? <LoadingBar display /> : <Fragment>
           <Header title={<FormattedMessage id="apply.head" />}>
             <div>
@@ -370,18 +382,6 @@ class Apply extends Component {
             />
           </Content>
         </Fragment>}
-
-        <Modal
-          title={<FormattedMessage id="reject.reason.input" />}
-          visible={this.state.visible}
-          onOk={this.handleOk}
-          onCancel={this.handleCancel}
-          width={550}
-        >
-          <Content className="sidebar-content">
-            {formContent}
-          </Content>
-        </Modal>
       </Page>
     );
   }
