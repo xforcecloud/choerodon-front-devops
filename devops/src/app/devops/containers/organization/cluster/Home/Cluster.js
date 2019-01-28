@@ -280,7 +280,21 @@ class Cluster extends Component {
               <i className="c7n-cls-card-head-state_after" />
             </div>
             <div className="c7n-cls-card-head-action">
-
+              {c.connect ? null : <Permission
+                service={['devops-service.devops-cluster.queryShell']}
+                type={type}
+                organizationId={organizationId}
+              >
+                <Tooltip title={<FormattedMessage id="cluster.active" />}>
+                  <Button
+                    funcType="flat"
+                    shape="circle"
+                    onClick={this.showSideBar.bind(this, 'key', c.id, c.name)}
+                  >
+                    <Icon type="vpn_key" />
+                  </Button>
+                </Tooltip>
+              </Permission>}
               <Permission
                 service={['devops-service.devops-cluster.update']}
                 type={type}
@@ -296,7 +310,21 @@ class Cluster extends Component {
                   </Button>
                 </Tooltip>
               </Permission>
-
+              {c.connect ? null : <Permission
+                service={['devops-service.devops-cluster.deleteCluster']}
+                type={type}
+                organizationId={organizationId}
+              >
+                <Tooltip title={<FormattedMessage id="cluster.del" />}>
+                  <Button
+                    funcType="flat"
+                    shape="circle"
+                    onClick={this.delClusterShow.bind(this, c.id, c.name)}
+                  >
+                    <Icon type="delete_forever" />
+                  </Button>
+                </Tooltip>
+              </Permission>}
             </div>
           </div>
           <div className="c7n-cls-card-content">
