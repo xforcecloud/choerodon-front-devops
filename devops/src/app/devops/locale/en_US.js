@@ -27,6 +27,11 @@ const enUS = {
   null: 'null',
   language: 'en_US',
 
+  // event
+  "event.title": '事件查看',
+  "event.description":
+    "监控事件状态--*v*--",
+
   // ist
   ist_create: 'Creating',
   ist_stop: 'Stopping',
@@ -102,6 +107,88 @@ const enUS = {
   'app.status': 'Status',
   'app.stage': 'Stages',
   'app.time': 'Duration',
+
+  //event
+  "event.header.title": "Event Viewer",
+  "event.kind_name" : "kind_name",
+  "event.kind" : "kind",
+  "event.message" : "message",
+  "event.reason" : "reason",
+  "event.count" : "count",
+  "event.type" : "type",
+  "event.createTime" : "createTime",
+  "event.receiveTime" : "receiveTime",
+
+  // event
+  "event.title": 'Event Viewer',
+  "event.description":
+    "Monitor event status--*v*--",
+
+  // warnings
+  "warnings.synch": "In application synchronization",
+  "warnings.start": "Please enable the application first",
+  "warnings.head": "Warnings",
+  "warnings.detail": "Configuration details",
+  "warnings.stop": "stop",
+  "warnings.create": "create",
+  "warnings.edit": "edit",
+  "warnings.delete": "delete",
+  "warnings.failed": "failed",
+  "warnings.creating": "creating",
+  "warnings.creator": "creator",
+  "warnings.delete.tooltip": "确定要删除该配置吗？",
+  "warnings.active": "status",
+  "warnings.stop": "stop",
+  "warnings.run": "start",
+  "warnings.chooseTem": "chooseEnv",
+  "warnings.namespace": "EnvCode",
+  "warnings.chooseTem.tip":
+    "Select an environment that already exists and runs。",
+  "warnings.orgId":"orgId",
+  "warnings.projectId": "projectId",
+  "warnings.uniqueName": "uniqueName",
+  "warnings.expression": "expression",
+  "warnings.type": "status",
+  "warnings.chooseDingDing.tip": "You can select the alarm pin that has been set up",
+  "warnings.chooseDingDing": "chooseDingDing",
+  "warnings.version": "version",
+  "warnings.checkExpression": "Please enter an expression in the correct format",
+
+  // warnings
+  "warnings.title": 'warnings',
+  "warnings.description":
+    "Alarm configuration--*v*--",
+  "warnings.create.title": 'create',
+  "warnings.create.description":
+    "You can add configuration information here。",
+  "warnings.edit.title": 'edit',
+  "warnings.edit.description": "You can modify the configuration information here。",
+
+  // dingDing
+  "dingDing.head": "DingDingConfig",
+  "dingDing.detail": "detail",
+  "dingDing.create": "create",
+  "dingDing.edit": "edit",
+  "dingDing.delete": "delete",
+  "dingDing.failed": "failed",
+  "dingDing.creating": "creating",
+  "dingDing.creator": "creator",
+  "dingDing.delete.tooltip": "Are you sure delete config？",
+  "dingDing.active": "active",
+  "dingDing.status": "status",
+  "dingDing.token": "token",
+  "dingDing.name": "name",
+  "dingDing.scopeId": "scopeId",
+
+  // dingDing
+  "dingDing.title": 'DingDingConfig',
+  "dingDing.description":
+    "DingDing's config--*v*--",
+  "dingDing.create.title": 'add DingDing config',
+  "dingDing.create.description":
+    "You can add DingDing config information here--*v*--",
+  "dingDing.edit.title": 'edit DingDing config',
+  "dingDing.edit.description": "You can edit DingDing config information here--*v*--",
 
   // user
   'user.password.update': 'Modify Password',
@@ -230,6 +317,76 @@ const enUS = {
   'apptag.head': '',
   'apptag.link': '',
   'apptag.table': 'Tag list',
+
+
+  //userCluster
+  "user.cluster.reApply": "reApply",
+  "user.revoke.title": 'Confirm whether to revoke the cluster request?',
+  "user.noApply": "You have not applied for cluster, please apply for cluster first...",
+  "user.cluster.del": "revoke",
+  "user.applying": "applying",
+  "user.pass": "passed",
+  "user.reject": "rejected",
+  "user.cluster.create": "Apply Cluster",
+  "user.cluster.selected": "The cluster to be applied has been selected",
+  "user.apply.reason": "Apply Reason",
+  "user.input.reason": "Please enter your reasons for application:",
+  "user.cluster.edit": "edit",
+  "user.cluster.active": "Apply Information",
+  "user.cluster.apply": "Click Apply",
+  "user.cluster.head": "Apply cluster",
+  "user.cluster.del.confirm": "Confirm Revoke",
+  "user.cluster.del.title": 'Delete Cluster"{clsName}"',
+  "user.head": "Cluster",
+  "user.cluster.name": "name",
+  "user.cluster.code": "code",
+  "user.cluster.des": "description",
+  "user.user.cluster.active": "Active Cluster",
+  "user.user.cluster.del": "Delete Cluster",
+  "user.cluster.public": "Cluster public scope",
+  "user.cluster.project.all": "组织下所有项目",
+  "user.cluster.project.part": "Organize all projects",
+  "user.cluster.authority": "Cluster permission allocation",
+  "user.cluster.authority.project": "Permission items have been assigned",
+  ...pageDetail,
+
+  // Apply
+  "confirm.reject": "Are you sure to reject the cluster application?",
+  "reject.reason.input": "Please enter your reasons for rejection",
+  "reject.reason": "reject reason",
+  "confirm.pass": "Are you sure you can apply through this cluster?",
+  "pass": "pass",
+  "reject": "reject",
+  "apply.cluster.operation": "operation",
+  "apply.cluster.orgName": "orgName",
+  "apply.cluster.reason": "reason",
+  "apply.cluster.name": "name",
+  "apply.cluster.code": "code",
+  "apply.cluster.description": "description",
+  "apply.cluster.status": "status",
+  "apply.untreated": "untreated",
+  "apply.pass": "passed",
+  "apply.reject": "rejected",
+  "apply.head": "Apply Management",
+  "apply.title": "Apply Management",
+  "apply.description": "Here is the display of pending, passed, and rejected cluster information that you can manage again--*v*--",
+
+  // 集群
+  "admin.open":"Open by default",
+  "admin.noOpen":"noOpen",
+  "admin.cluster.checkName": "Cluster names can only begin with N,P,T,F characters",
+  "admin.cluster.open": "Open by default",
+  "admin.cluster.user": "available or not",
+  "admin.cluster.head": "cluster",
+  "admin.cluster.create": "create",
+  "admin.cluster.edit": "edit",
+  "admin.cluster.name": "name",
+  "admin.cluster.code": "code",
+  "admin.cluster.des": "description",
+  "admin.cluster.active": "result",
+  "admin.cluster.del": "delete",
+  "admin.cluster.del.confirm": "confirm delete",
+  "admin.cluster.del.title": 'delete cluster"{clsName}"',
 
 };
 export default enUS;

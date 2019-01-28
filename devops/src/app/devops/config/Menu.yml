@@ -270,6 +270,14 @@
        sort: 1
        permission:
          - 'devops-service.devops-monitoring.listEvent'
+    - "dingding":
+       icon: message_notification
+       Routes: /devops/dingding
+       sort: 1
+       permission:
+         - 'devops-service.devops-monitoring.listDingDing'
+         - 'devops-service.dingDing.delete'
+         - 'devops-service.dingDing.create'
 "cluster-management":
   icon: cluster
   sort: 4
@@ -280,6 +288,33 @@
         sort: 1
         permission:
           - 'devops-service.devops-cluster.listCluster'
+    - "apply-cluster":
+        icon: kubernetes_cluster
+        Routes: /devops/apply-cluster
+        sort: 2
+        permission:
+        - 'devops-service.apply-cluster.listCluster'
+
+# 平台管理员集群管理
+"admin-cluster-management":
+  icon: cluster
+  sort: 7
+  site:
+    - "admin-cluster":
+        icon: kubernetes_cluster
+        Routes: /devops/admin-cluster
+        sort: 1
+        permission:
+        - 'devops-service.admin-cluster.listCluster'
+        - 'devops-service.admin-cluster.createCluster'
+        - 'devops-service.admin-cluster.updateCluster'
+        - 'devops-service.admin-cluster.deleteCluster'
+    - "apply-management":
+            icon: manage_project
+            Routes: /devops/apply-management
+            sort: 1
+            permission:
+            - 'devops-service.apply-management.listCluster'
 
 # 要删除的菜单
 "application-market":

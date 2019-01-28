@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { Table, Button, Input, Form, Modal, Tooltip, Select, Icon, Popover } from 'choerodon-ui';
+import { Table, Button, Input, Form, Modal, Tooltip, Select, Icon, Popover,Switch ,Radio } from 'choerodon-ui';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Content, Header, Page, Permission, stores } from 'choerodon-front-boot';
@@ -18,6 +18,7 @@ import { getSelectTip } from '../../../../utils';
 const { AppState } = stores;
 const { Sidebar } = Modal;
 const { Option } = Select;
+const RadioGroup = Radio.Group;
 const FormItem = Form.Item;
 const formItemLayout = {
   labelCol: {
@@ -33,6 +34,40 @@ const formItemLayout = {
 @commonComponent('WarningsStore')
 @observer
 class WarningsHome extends Component {
+  postName =_.debounce((projectId, value, callback) => {
+    const { WarningsStore, intl } = this.props;
+    WarningsStore.checkName(projectId, value)
+      .then((data) => {
+        if (data) {
+          callback();
+        } else {
+          callback(intl.formatMessage({ id: 'template.checkName' }));
+        }
+      });
+  }, 600);
+
+  /**
+   * 校验应用编码规则
+   * @param rule
+   * @param value
+   * @param callback
+   */
+  checkCode =_.debounce((rule, value, callback) => {
+    const { WarningsStore, intl: { formatMessage } } = this.props;
+    const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
+    if (value && pa.test(value)) {
+      WarningsStore.checkCode(this.state.projectId, value)
+        .then((data) => {
+          if (data) {
+            callback();
+          } else {
+            callback(formatMessage({ id: 'template.checkCode' }));
+          }
+        });
+    } else {
+      callback(formatMessage({ id: 'template.checkCodeReg' }));
+    }
+  }, 600);
 
   constructor(props) {
     const menu = AppState.currentMenuType;
@@ -42,17 +77,17 @@ class WarningsHome extends Component {
       page: 0,
       id: '',
       projectId: menu.id,
+      orgId: AppState.currentMenuType.organizationId,
       show: state && state.show,
       type: state && state.modeType,
       submitting: false,
-      openRemove:state && state.openRemove,
     };
   }
 
   componentDidMount() {
     const { projectId } = AppState.currentMenuType;
     AppVersionStore.queryAppData(projectId);
-    this.loadAllData(this.state.page);
+    this.loadAllData(this.state.orgId,this.state.page);
   }
 
   getColumn = () => {
@@ -61,44 +96,46 @@ class WarningsHome extends Component {
     const { filters, sort: { columnKey, order } } = WarningsStore.getInfo;
     return [{
       title: <FormattedMessage id="warnings.namespace" />,
-      dataIndex: 'name',
-      key: 'name',
+      dataIndex: 'namespace',
+      key: 'namespace',
       sorter: true,
-      sortOrder: columnKey === 'name' && order,
+      sortOrder: columnKey === 'namespace' && order,
       filters: [],
-      filteredValue: filters.name || [],
+      filteredValue: filters.namespace || [],
       render: text => (<MouserOverWrapper text={text} width={0.2}>
         {text}
       </MouserOverWrapper>),
     }, {
       title: <FormattedMessage id="warnings.expression" />,
-      dataIndex: 'code',
-      key: 'code',
+      dataIndex: 'expression',
+      key: 'expression',
       sorter: true,
-      sortOrder: columnKey === 'code' && order,
+      sortOrder: columnKey === 'expression' && order,
       filters: [],
-      filteredValue: filters.code || [],
+      filteredValue: filters.expression || [],
+    }, {
+      title: <FormattedMessage id="warnings.version" />,
+      dataIndex: 'version',
+      key: 'version',
+      sorter: true,
+      sortOrder: columnKey === 'version' && order,
+      filters: [],
+      filteredValue: filters.version || [],
       render: text => (<MouserOverWrapper text={text} width={0.25}>
         {text}
       </MouserOverWrapper>),
-    }, {
-      title: <FormattedMessage id="warnings.status" />,
-      dataIndex: 'active',
-      key: 'active',
+    },{
+      title: <FormattedMessage id="warnings.type" />,
+      dataIndex: 'status',
+      key: 'status',
       filters: [{
-        text: formatMessage({ id: 'app.stop' }),
+        text: formatMessage({ id: 'warnings.stop' }),
         value: 0,
       }, {
-        text: formatMessage({ id: 'app.run' }),
+        text: formatMessage({ id: 'warnings.run' }),
         value: 1,
-      }, {
-        text: formatMessage({ id: 'app.failed' }),
-        value: -1,
-      }, {
-        text: formatMessage({ id: 'app.creating' }),
-        value: 2,
       }],
-      filteredValue: filters.active || [],
+      filteredValue: filters.status || [],
       render: this.getAppStatus,
     }, {
       align: 'right',
@@ -106,32 +143,28 @@ class WarningsHome extends Component {
       key: 'action',
       render: record => (
         <Fragment>
-           <Fragment><Permission type={type} projectId={projectId} organizationId={orgId} service={['devops-service.application.update']}>
-              <Tooltip placement="bottom" title={<div>{!record.synchro ? <FormattedMessage id="app.synch" /> : <Fragment>{record.active ? <FormattedMessage id="edit" /> : <FormattedMessage id="app.start" />}</Fragment>}</div>}>
-                {record.active && record.synchro
-                  ? <Button
+          <Fragment><Permission type={type} projectId={projectId} organizationId={orgId} service={['devops-service.application.update']}>
+              <Tooltip placement="bottom" title={<FormattedMessage id="edit" />}>
+                <Button
                     icon="mode_edit"
                     shape="circle"
                     size="small"
-                    onClick={this.showSideBar.bind(this, 'edit', record.id)}
+                    onClick={this.showSideBar.bind(this, 'edit', record,record.id)}
                   />
-                  : <Icon type="mode_edit" className="c7n-app-icon-disabled" /> }
               </Tooltip>
             </Permission>
-             </Fragment>
-             <Permission type={type} projectId={projectId} organizationId={orgId} service={['devops-service.application.deleteByAppId']}>
-              <Tooltip
-                placement="bottom"
-                title={<FormattedMessage id="delete" />}
-              >
-                <Button
-                  icon="delete_forever"
-                  shape="circle"
-                  size="small"
-                  onClick={this.openRemove.bind(this, record.id, record.name)}
-                />
-              </Tooltip>
-            </Permission>
+              <Permission type={type} projectId={projectId} organizationId={orgId} service={['devops-service.application.queryByAppIdAndActive']}>
+                <Tooltip
+                  placement="bottom"
+                  title={<Fragment>{record.status ? <FormattedMessage id="warnings.stop" /> : <FormattedMessage id="warnings.run" />}</Fragment>}
+                >
+                   <Button shape="circle" size="small" onClick={this.changeStatus.bind(this, record)}>
+                      {record.status
+                        ? <Icon type="remove_circle_outline" />
+                        : <Icon type="finished" />}
+                    </Button>
+                </Tooltip>
+              </Permission></Fragment>
         </Fragment>
       ),
     }];
@@ -151,41 +184,48 @@ class WarningsHome extends Component {
     let icon = '';
     let msg = '';
     let color = '';
-    if (record.fail) {
-      icon = 'cancel';
-      msg = 'failed';
-      color = '#f44336';
-    } else if (record.synchro && text) {
+    if (text) {
       icon = 'check_circle';
       msg = 'run';
       color = '#00bf96';
-    } else if (text) {
-      icon = 'timelapse';
-      msg = 'creating';
-      color = '#4d90fe';
     } else {
       icon = 'remove_circle';
       msg = 'stop';
-      color = '#d3d3d3';
+      color = '#f44336';
     }
-    return (<span><Icon style={{ color, ...style }} type={icon} /><FormattedMessage id={`app.${msg}`} /></span>);
+    return (<span><Icon style={{ color, ...style }} type={icon} /><FormattedMessage id={`warnings.${msg}`} /></span>);
   };
 
-
   /**
-   * 切换应用id
-   * @param id 应用id
-   * @param status 状态
+   * 改变配置状态
    */
-  changeAppStatus = (id, status) => {
+  changeStatus = (record) => {
     const { WarningsStore } = this.props;
-    const { projectId } = this.state;
-    WarningsStore.changeAppStatus(projectId, id, !status)
-      .then((data) => {
-        if (data) {
-          this.loadAllData(this.state.page);
-        }
-      });
+    const { projectId, id, type, page, copyFrom } = this.state;
+    WarningsStore.setInfo({ filters: {}, sort: { columnKey: 'id', order: 'descend' }, paras: [] });
+    record.channelId = record.channelid;
+    record.orgId = record.orgid;
+    record.scopeId = record.scopeid;
+    record.id = id;
+    record.uniqueName = record.uid;
+    if(record.status === 0){
+      record.type = 1;
+    }else if(record.status === 1){
+      record.type = 0;
+    }
+        this.setState({
+          submitting: true,
+        });
+        WarningsStore.updateData(projectId, record)
+          .then((res) => {
+            if (res) {
+              this.loadAllData(this.state.orgId,this.state.page);
+              this.setState({ show: false });
+            }
+            this.setState({
+              submitting: false,
+            });
+        });
   };
 
   /**
@@ -198,28 +238,12 @@ class WarningsHome extends Component {
     this.setState({ submitting: true });
     WarningsStore.deleteApps(projectId, id)
       .then(() => {
-        this.loadAllData(this.state.page);
+        this.loadAllData(this.state.orgId,this.state.page);
         this.setState({
           submitting: false,
           openRemove: false,
         });
       });
-  };
-
-  /**
-   * 校验应用的唯一性
-   * @param rule
-   * @param value
-   * @param callback
-   */
-  checkName = (rule, value, callback) => {
-    const { WarningsStore } = this.props;
-    const singleData = WarningsStore.singleData;
-    if ((singleData && value !== singleData.name) || !singleData) {
-      this.postName(this.state.projectId, value, callback);
-    } else {
-      callback();
-    }
   };
 
   /**
@@ -234,15 +258,21 @@ class WarningsHome extends Component {
     if (type === 'create') {
       this.props.form.validateFieldsAndScroll((err, data) => {
         if (!err) {
+          if(data.type){
+           data.type = 1;
+          }else{
+           data.type = 0;
+          }
+          data.uniqueName = data.uniqueName + "-" + (((1+Math.random())*0x10000)|0).toString(16).substring(1);
           const postData = data;
-          postData.projectId = projectId;
+          //postData.projectId = projectId;
           this.setState({
             submitting: true,
           });
           WarningsStore.addData(projectId, postData)
             .then((res) => {
               if (res) {
-                this.loadAllData(page);
+                this.loadAllData(this.state.orgId,page);
                 this.setState({ type: false, show: false });
               }
               this.setState({
@@ -267,7 +297,7 @@ class WarningsHome extends Component {
           WarningsStore.updateData(projectId, formData)
             .then((res) => {
               if (res) {
-                this.loadAllData(this.state.page);
+                this.loadAllData(this.state.orgId,this.state.page);
                 this.setState({ show: false });
               }
               this.setState({
@@ -287,6 +317,56 @@ class WarningsHome extends Component {
   };
 
   /**
+   * 处理刷新函数
+   */
+  handleRefresh1 = () => {
+    const { projectId } = AppState.currentMenuType;
+    AppVersionStore.queryAppData(projectId);
+    this.loadAllData(this.state.orgId,this.state.page);
+  };
+
+  /**
+   * table 操作
+   * @param pagination
+   * @param filters
+   * @param sorter
+   * @param paras
+   */
+  tableChange1 = (pagination, filters, sorter, paras) => {
+    const { WarningsStore } = this.props;
+    const { id } = AppState.currentMenuType;
+    WarningsStore.setInfo({ filters, sort: sorter, paras });
+    const sort = { field: "", order: "desc" };
+    if (sorter.column) {
+      sort.field = sorter.field || sorter.columnKey;
+      if (sorter.order === "ascend") {
+        sort.order = "asc";
+      } else if (sorter.order === "descend") {
+        sort.order = "desc";
+      }
+    }
+    let searchParam = {};
+    const page = pagination.current - 1;
+    if (Object.keys(filters).length) {
+      searchParam = filters;
+    }
+    const postData = {
+      searchParam,
+      param: paras.toString(),
+    };
+    const organizationId = AppState.currentMenuType.organizationId;
+    WarningsStore.loadData(
+      false,
+      id,
+      organizationId,
+      page,
+      pagination.pageSize,
+      sort,
+      postData
+    );
+  };
+
+  /**
    * 关闭操作框
    */
   hideSidebar = () => {
@@ -301,19 +381,30 @@ class WarningsHome extends Component {
    * @param type 操作类型
    * @param id 操作应用
    */
-  showSideBar =(type, id = '') => {
+  showSideBar =(type, record = {},id = "") => {
     this.props.form.resetFields();
     const { WarningsStore } = this.props;
     const { projectId } = this.state;
     if (type === 'create') {
-      WarningsStore.setSingleData(null);
-      WarningsStore.loadSelectData(projectId);
-      this.setState({ show: true, type });
+      const record = {};
+      WarningsStore.loadSelectNamespaceData(projectId);
+      WarningsStore.loadSelectDingDingData(projectId);
+      this.setState({ show: true, type ,record});
     } else {
-      WarningsStore.loadDataById(projectId, id);
-      this.setState({ show: true, type, id });
+      WarningsStore.loadSelectNamespaceData(projectId);
+      WarningsStore.loadSelectDingDingData(projectId)
+      this.setState({ show: true, type, id,record });
     }
   };
+
+  selectNamespace =(value, option) => {
+    this.setState({ copyFrom: option.key });
+  };
+
+  selectDingDing =(value, option) => {
+    this.setState({ copyFrom: option.key });
+  };
+
 
 
   render() {
@@ -322,6 +413,8 @@ class WarningsHome extends Component {
       WarningsStore: {
         singleData,
         selectData,
+        selectNamespaceData,
+        selectDingDingData,
         getAllData: serviceData,
         getInfo: { paras },
         isRefresh,
@@ -331,108 +424,206 @@ class WarningsHome extends Component {
       intl: { formatMessage },
       form: { getFieldDecorator },
     } = this.props;
-    const { type: modeType, show, submitting, openRemove, name: appName, id } = this.state;
+    const { intl } = this.props
+    const { type: modeType, show, submitting, openRemove, name: appName, id,record} = this.state;
     const { app } = DeploymentPipelineStore.getProRole;
     const appData = AppVersionStore.getAppData;
     const formContent = (<Form layout="vertical" className="c7n-sidebar-form">
-      <FormItem
+      <div className="c7ncd-sidebar-select">
+        <FormItem
+          {...formItemLayout}
+        >
+          {getFieldDecorator('namespace', {
+            rules: [{
+              message: formatMessage({ id: 'required' }),
+              transform: (value) => {
+                if (value) {
+                  return value.toString();
+                }
+                return value;
+              },
+            }],
+            initialValue:record?record.namespace:"",
+          })(<Select
+              key="service"
+              allowClear
+              label={<FormattedMessage id="warnings.chooseTem" />}
+              filter
+              dropdownMatchSelectWidth
+              onSelect={this.selectNamespace}
+              size="default"
+              optionFilterProp="children"
+              filterOption={
+                (input, option) => option.props.children.props.children.props.children
+                  .toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {selectNamespaceData && selectNamespaceData.length > 0 && selectNamespaceData.map(s => (
+                <Option
+                  value={s.code}
+                  key={s.code}
+                >
+                  <Tooltip
+                    placement="right"
+                    trigger="hover"
+                    title={<p>{s.code}</p>}
+                  >
+                    <span style={{ display: 'inline-block', width: '100%' }}>{s.name}</span>
+                  </Tooltip>
+                </Option>
+              ))}
+            </Select>
+          )}
+        </FormItem>
+        {getSelectTip('warnings.chooseTem.tip')}
+      </div>
+      <FormItem style={{display:'none'}}
         {...formItemLayout}
       >
-        {getFieldDecorator('name', {
-          rules: [{
-            required: true,
-            whitespace: true,
-            message: formatMessage({ id: 'required' }),
-          }],
-          initialValue: singleData ? singleData.name : '',
+        {getFieldDecorator('orgId', {
+          initialValue:orgId,
         })(
           <Input
-            maxLength={20}
-            label={<FormattedMessage id="warnings.namespace" />}
+            maxLength={30}
+            label={<FormattedMessage id="warnings.orgId" />}
             size="default"
           />,
         )}
       </FormItem>
-      <FormItem
+
+      <FormItem style={{display:'none'}}
         {...formItemLayout}
       >
-        {getFieldDecorator('code', {
+        {getFieldDecorator('scopeId', {
+          initialValue:projectId,
+        })(
+          <Input
+            maxLength={10}
+            label={<FormattedMessage id="warnings.projectId" />}
+            size="default"
+          />,
+        )}
+      </FormItem>
+
+      {modeType === 'create' && <FormItem
+        {...formItemLayout}
+      >
+        {getFieldDecorator('uniqueName', {
           rules: [{
             required: true,
             whitespace: true,
             max: 47,
-            message: formatMessage({ id: 'required' }),
           }],
-          initialValue: singleData ? singleData.code : '',
+          initialValue: record ? record.uid : '',
         })(
           <Input
             maxLength={30}
+            label={<FormattedMessage id="warnings.uniqueName" />}
+            size="default"
+          />,
+        )}
+      </FormItem>}
+      {modeType === 'edit' && <FormItem
+        {...formItemLayout}
+      >
+        {getFieldDecorator('uniqueName', {
+          rules: [{
+            required: true,
+            whitespace: true,
+            max: 47,
+          }],
+          initialValue: record ? record.uid : '',
+        })(
+          <Input
+            disabled={true}
+            maxLength={30}
+            label={<FormattedMessage id="warnings.uniqueName" />}
+            size="default"
+          />,
+        )}
+      </FormItem>}
+      <FormItem
+        {...formItemLayout}
+      >
+        {getFieldDecorator('expression', {
+          rules: [{
+            required: true,
+            whitespace: true,
+            message: formatMessage({ id: 'required' }),
+          },{
+            pattern: /^(\w+)\[(\S+)\]/,
+            message: intl.formatMessage({ id: `warnings.checkExpression` }),
+          }],
+          initialValue: record ? record.expression : '',
+        })(
+          <Input
+            maxLength={100}
             label={<FormattedMessage id="warnings.expression" />}
             size="default"
           />,
         )}
       </FormItem>
 
+     <div className="c7ncd-sidebar-select">
+        <FormItem
+          {...formItemLayout}
+        >
+          {getFieldDecorator('channelId', {
+            rules: [{
+              message: formatMessage({ id: 'required' }),
+              transform: (value) => {
+                if (value) {
+                  return value.toString();
+                }
+                return value;
+              },
+            }],
+            initialValue:record ? record.channelid : "",
+          })(<Select
+              key="service"
+              allowClear
+              label={<FormattedMessage id="warnings.chooseDingDing" />}
+              filter
+              dropdownMatchSelectWidth
+              onSelect={this.selectDingDing}
+              size="default"
+              optionFilterProp="children"
+              filterOption={
+                (input, option) => option.props.children.props.children.props.children
+                  .toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {selectDingDingData && selectDingDingData.length > 0 && selectDingDingData.map(s => (
+                <Option
+                  value={s.id}
+                  key={s.id}
+                >
+                  <Tooltip
+                    placement="right"
+                    trigger="hover"
+                    title={<p>{s.name}</p>}
+                  >
+                    <span style={{ display: 'inline-block', width: '100%' }}>{s.name}</span>
+                  </Tooltip>
+                </Option>
+              ))}
+            </Select>
+          )}
+        </FormItem>
+        {getSelectTip('warnings.chooseDingDing.tip')}
+      </div>
       <FormItem
         {...formItemLayout}
       >
-        {getFieldDecorator('code', {
-          rules: [{
-            required: true,
-            whitespace: true,
-            max: 47,
-            message: formatMessage({ id: 'required' }),
-          }],
-          initialValue: singleData ? singleData.code : '',
+        {getFieldDecorator('type', {
+          initialValue: record ? record.status : "",
         })(
-          <Input
-            maxLength={30}
-            label={<FormattedMessage id="warnings.version" />}
-            size="default"
-          />,
+          <RadioGroup >
+            <Radio value={1}>启用</Radio>
+            <Radio value={0}>禁用</Radio>
+          </RadioGroup>
         )}
       </FormItem>
-
-      <FormItem
-        {...formItemLayout}
-      >
-        {getFieldDecorator('code', {
-          rules: [{
-            required: true,
-            whitespace: true,
-            max: 47,
-            message: formatMessage({ id: 'required' }),
-          }],
-          initialValue: singleData ? singleData.code : '',
-        })(
-          <Input
-            maxLength={30}
-            label={<FormattedMessage id="warnings.uid" />}
-            size="default"
-          />,
-        )}
-      </FormItem>
-
-      <FormItem
-        {...formItemLayout}
-      >
-        {getFieldDecorator('code', {
-          rules: [{
-            required: true,
-            whitespace: true,
-            max: 47,
-            message: formatMessage({ id: 'required' }),
-          }],
-          initialValue: singleData ? singleData.code : '',
-        })(
-          <Input
-            maxLength={30}
-            label={<FormattedMessage id="warnings.channelId" />}
-            size="default"
-          />,
-        )}
-      </FormItem>
-
     </Form>);
 
     return (
@@ -466,7 +657,7 @@ class WarningsHome extends Component {
             </Permission>
             <Button
               icon="refresh"
-              onClick={this.handleRefresh}
+              onClick={this.handleRefresh1}
             >
               <FormattedMessage id="refresh" />
             </Button>
@@ -488,20 +679,19 @@ class WarningsHome extends Component {
             </Sidebar>}
             <Table
               filterBarPlaceholder={formatMessage({ id: 'filter' })}
-              pagination={getPageInfo}
               loading={loading}
-              onChange={this.tableChange}
+              onChange={this.tableChange1}
               columns={this.getColumn()}
-              dataSource={serviceData}
+              dataSource={serviceData.slice()}
               rowKey={record => record.id}
               filters={paras.slice()}
             />
           </Content>
-        </Fragment> : <DepPipelineEmpty title={<FormattedMessage id="warnings.head" />} type="warnings" />)}
+        </Fragment> : <DepPipelineEmpty title={<FormattedMessage id="app.head" />} type="app" />)}
         <Modal
           confirmLoading={submitting}
           visible={openRemove}
-          title={`${formatMessage({ id: 'warnings.delete' })}“${appName}”`}
+          title={`${formatMessage({ id: 'app.delete' })}“${appName}”`}
           closable={false}
           footer={[
             <Button key="back" onClick={this.closeRemove} disabled={submitting}>{<FormattedMessage id="cancel" />}</Button>,
@@ -510,7 +700,7 @@ class WarningsHome extends Component {
             </Button>,
           ]}
         >
-          <p>{formatMessage({ id: 'warnings.delete.tooltip' })}</p>
+          <p>{formatMessage({ id: 'app.delete.tooltip' })}</p>
         </Modal>
       </Page>
     );

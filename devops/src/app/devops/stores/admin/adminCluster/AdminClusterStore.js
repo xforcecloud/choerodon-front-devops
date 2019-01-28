@@ -4,8 +4,8 @@ import _ from 'lodash';
 import { handleProptError } from '../../../utils/index';
 
 const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-@store('ClusterStore')
-class ClusterStore {
+@store('AdminClusterStore')
+class AdminClusterStore {
   @observable clusterData = [];
 
   @observable loading = false;
@@ -57,7 +57,7 @@ class ClusterStore {
   }
 
   @computed get getData() {
-    return this.clusterData.slice();
+    return this.clusterData;
   }
 
   @action setData(data) {
@@ -154,7 +154,7 @@ class ClusterStore {
     param: '',
   }) => {
     this.changeLoading(true);
-    return axios.post(`/devops/v1/organizations/${orgId}/clusters/page_cluster?page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(postData))
+    return axios.post(`/x-devops/v1/admin-cluster/query?page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(postData))
       .then((data) => {
         const res = handleProptError(data);
         if (res) {
@@ -167,9 +167,10 @@ class ClusterStore {
       });
   };
 
+
   loadPro = (orgId, clusterId, page = this.pageInfo.current - 1, size = this.pageInfo.pageSize, sort = { field: 'id', order: 'desc' }, postData = []) => {
     this.tableLoading(true);
-    const url = clusterId ? `/devops/v1/organizations/${orgId}/clusters/pageProjects?clusterId=${clusterId}&page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}` : `/devops/v1/organizations/${orgId}/clusters/pageProjects?page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}`;
+    const url = clusterId ? `/devops/v1/organizations/2/clusters/pageProjects?clusterId=${clusterId}&page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}` : `/devops/v1/organizations/2/clusters/pageProjects?page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}`;
     return axios.post(url, JSON.stringify(postData)).then((data) => {
       if (data && data.failed) {
         Choerodon.prompt(data.message);
@@ -190,7 +191,7 @@ class ClusterStore {
   };
 
   loadClsById(orgId, id) {
-    return axios.get(`/devops/v1/organizations/${orgId}/clusters/${id}`)
+    return axios.get(`/x-devops/v1/admin-cluster/${id}`)
       .then((data) => {
         if (data && data.failed) {
           Choerodon.prompt(data.message);
@@ -201,7 +202,7 @@ class ClusterStore {
       });
   }
 
-  loadTagKeys = (orgId, id) => axios.get(`/devops/v1/organizations/${orgId}/clusters/list_cluster_projects/${id}`).then((data) => {
+  loadTagKeys = (orgId, id) => axios.get(`/devops/v1/organizations/2/clusters/list_cluster_projects/${id}`).then((data) => {
     if (data && data.failed) {
       Choerodon.prompt(data.message);
     } else {
@@ -210,15 +211,15 @@ class ClusterStore {
   });
 
   createCluster(orgId, data) {
-    return axios.post(`/devops/v1/organizations/${orgId}/clusters`, JSON.stringify(data));
+    return axios.post(`/x-devops/v1/admin-cluster/add`, JSON.stringify(data));
   }
 
   updateCluster(orgId, id, data) {
-    return axios.put(`/devops/v1/organizations/${orgId}/clusters?clusterId=${id}`, JSON.stringify(data));
+    return axios.put(`/x-devops/v1/admin-cluster/update?clusterId=${id}`, JSON.stringify(data));
   }
 
   delCluster(orgId, id) {
-    return axios.delete(`/devops/v1/organizations/${orgId}/clusters/${id}`);
+    return axios.delete(`/x-devops/v1/admin-cluster/delete/${id}`);
   }
 
   loadShell = (orgId, id) => axios.get(`/devops/v1/organizations/${orgId}/clusters/query_shell/${id}`).then((data) => {
@@ -229,13 +230,13 @@ class ClusterStore {
   });
 
   checkCode(orgId, code) {
-    return axios.get(`/devops/v1/organizations/${orgId}/clusters/checkCode?code=${code}`);
+   return axios.get(`/devops/v1/organizations/2/clusters/checkCode?code=${code}`);
   }
 
   checkName(orgId, name){
-    return axios.get(`/devops/v1/organizations/${orgId}/clusters/checkName?name=${name}`);
+    return axios.get(`/devops/v1/organizations/2/clusters/checkName?name=${name}`);
   }
 }
 
-const clusterStore = new ClusterStore();
-export default clusterStore;
+const adminClusterStore = new AdminClusterStore();
+export default adminClusterStore;

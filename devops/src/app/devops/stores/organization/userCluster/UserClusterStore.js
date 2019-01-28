@@ -4,9 +4,11 @@ import _ from 'lodash';
 import { handleProptError } from '../../../utils/index';
 
 const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-@store('ClusterStore')
-class ClusterStore {
+@store('UserClusterStore')
+class UserClusterStore {
   @observable clusterData = [];
+
+  @observable activeClusterData = [];
 
   @observable loading = false;
 
@@ -19,6 +21,8 @@ class ClusterStore {
   @observable shell = '';
 
   @observable clsData = null;
+
+  @observable clusterName = "";
 
   @observable selectedRowKeys = [];
 
@@ -57,11 +61,19 @@ class ClusterStore {
   }
 
   @computed get getData() {
-    return this.clusterData.slice();
+    return this.clusterData;
   }
 
   @action setData(data) {
     this.clusterData = data;
+  }
+
+  @computed get getActiveClusterData() {
+    return this.activeClusterData.slice();
+  }
+
+  @action setActiveClusterData(data) {
+    this.activeClusterData = data;
   }
 
   @action changeLoading(flag) {
@@ -122,6 +134,15 @@ class ClusterStore {
     return this.shell;
   }
 
+  @action
+  setClusterName(clusterName) {
+    this.clusterName = clusterName;
+  }
+
+  @computed
+  get getClusterName() {
+    return this.clusterName;
+  }
 
   @action
   setSideType(data) {
@@ -154,15 +175,33 @@ class ClusterStore {
     param: '',
   }) => {
     this.changeLoading(true);
-    return axios.post(`/devops/v1/organizations/${orgId}/clusters/page_cluster?page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(postData))
+    return axios.post(`/x-devops/v1/cluster/type/${orgId}`, JSON.stringify(postData))
       .then((data) => {
         const res = handleProptError(data);
         if (res) {
-          this.setData(res.content);
+          this.setData(res);
           const { number, size, totalElements } = data;
           const page = { number, size, totalElements };
           this.setClsPageInfo(page);
           this.changeLoading(false);
+        }
+      });
+  };
+
+  loadActiveCluster = (orgId, page = this.clsPageInfo.current - 1, size = this.clsPageInfo.pageSize, sort = { field: 'id', order: 'desc' }, postData = {
+    searchParam: {},
+    param: '',
+  }) => {
+    this.changeLoading(true);
+    return axios.post(`/x-devops/v1/admin-cluster/queryIsActive/${orgId}?page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(postData))
+      .then((data) => {
+        const res = handleProptError(data);
+        if (res) {
+          this.setActiveClusterData(res.content);
+          const { number, size, totalElements } = data;
+          const page = { number, size, totalElements };
+          this.setClsPageInfo(page);
+          this.tableLoading(false);
         }
       });
   };
@@ -210,15 +249,15 @@ class ClusterStore {
   });
 
   createCluster(orgId, data) {
-    return axios.post(`/devops/v1/organizations/${orgId}/clusters`, JSON.stringify(data));
+    return axios.post(`/x-devops/v1/cluster/open`, JSON.stringify(data));
   }
 
-  updateCluster(orgId, id, data) {
-    return axios.put(`/devops/v1/organizations/${orgId}/clusters?clusterId=${id}`, JSON.stringify(data));
+  updateCluster(data) {
+    return axios.post(`/x-devops/v1/cluster/type`, JSON.stringify(data));
   }
 
-  delCluster(orgId, id) {
-    return axios.delete(`/devops/v1/organizations/${orgId}/clusters/${id}`);
+  revoke(orgId, data) {
+    return axios.post(`/x-devops/v1/cluster/revoke`, JSON.stringify(data));
   }
 
   loadShell = (orgId, id) => axios.get(`/devops/v1/organizations/${orgId}/clusters/query_shell/${id}`).then((data) => {
@@ -228,8 +267,13 @@ class ClusterStore {
     }
   });
 
+  loadClusterById = (id) => axios.get(`/x-devops/v1/admin-cluster/${id}`).then((data) => {
+    this.setClusterName(data.name);
+    return data.name;
+  });
+
   checkCode(orgId, code) {
-    return axios.get(`/devops/v1/organizations/${orgId}/clusters/checkCode?code=${code}`);
+   return axios.get(`/devops/v1/organizations/${orgId}/clusters/checkCode?code=${code}`);
   }
 
   checkName(orgId, name){
@@ -237,5 +281,5 @@ class ClusterStore {
   }
 }
 
-const clusterStore = new ClusterStore();
-export default clusterStore;
+const userClusterStore = new UserClusterStore();
+export default userClusterStore;
