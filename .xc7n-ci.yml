@@ -32,7 +32,9 @@ docker_build:
     fi
     source .auto_devops.sh
     function node_module(){
-        cd ${1} && npm install -registry https://nexus.choerodon.com.cn/repository/choerodon-npm/ --sass-binary-site=http://npm.taobao.org/mirrors/node-sass && cd ..
+        cd ${1} && npm install -registry http://172.18.10.176:4873 --sass-binary-site=http://npm.taobao.org/mirrors/node-sass && cd ..
+        python ./devops/node_modules/choerodon-front-boot/structure/configAuto.py devops
+        python ./devops/node_modules/choerodon-front-boot/structure/sql.py -i rm-bp1yn3d99akiwiqbe570.mysql.rds.aliyuncs.com -p 3306 -u xforcecloud -s niVXQxl1RkHkYkFHHYbNnaA48z5zD_
         mkdir -p /cache/${CI_PROJECT_NAME}-${CI_PROJECT_ID}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
         python ./${1}/node_modules/choerodon-front-boot/structure/menu/__init__.py -o yml -m ${1}
         cp -r menu.yml /cache/${CI_PROJECT_NAME}-${CI_PROJECT_ID}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}/
