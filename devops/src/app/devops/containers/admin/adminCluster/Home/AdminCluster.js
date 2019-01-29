@@ -285,7 +285,7 @@ class AdminCluster extends Component {
     const clusters = AdminClusterStore.getData;
     return _.map(clusters, c => (
       <Tooltip key={c.id} placement="bottom" title={c.upgrade ? <FormattedMessage id="cluster.status.update" /> : null}>
-        <div className={`c7n-cls-card ${c.isActive ? 'c7n-cls-card-connect' : ''}`}>
+        <div className={`c7n-cls-card1 ${c.isActive ? 'c7n-cls-card-connect1' : ''}`}>
           <div className="c7n-cls-card-head">
             <div>
               <div className="c7n-cls-card-head-state">
