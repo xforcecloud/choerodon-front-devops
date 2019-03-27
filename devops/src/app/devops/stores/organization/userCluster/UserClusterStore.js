@@ -249,15 +249,15 @@ class UserClusterStore {
   });
 
   createCluster(orgId, data) {
-    return axios.post(`/x-devops/v1/cluster/open`, JSON.stringify(data));
+    return axios.post(`/x-devops/v1/cluster/open/${orgId}`, JSON.stringify(data));
   }
 
-  updateCluster(data) {
-    return axios.post(`/x-devops/v1/cluster/type`, JSON.stringify(data));
+  updateCluster(orgId,data) {
+    return axios.post(`/x-devops/v1/cluster/type/update/${orgId}`, JSON.stringify(data));
   }
 
   revoke(orgId, data) {
-    return axios.post(`/x-devops/v1/cluster/revoke`, JSON.stringify(data));
+    return axios.post(`/x-devops/v1/cluster/revoke/${orgId}`, JSON.stringify(data));
   }
 
   loadShell = (orgId, id) => axios.get(`/devops/v1/organizations/${orgId}/clusters/query_shell/${id}`).then((data) => {

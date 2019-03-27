@@ -159,6 +159,7 @@ class Environment extends Component {
       selected: [],
       createSelectedTemp: [],
       cluster: null,
+      clusterName: '',
     };
   }
 
@@ -404,13 +405,15 @@ class Environment extends Component {
    * 选择集群
    * @param id
    */
-  handleCluster = id => {
+  handleCluster = (id,option) => {
+    const cName = option.props.children;
     const {
       form: { validateFields, getFieldValue },
     } = this.props;
     this.setState(
       {
         cluster: id,
+        clusterName:cName,
       },
       () => {
         getFieldValue("code") && validateFields(["code"], { force: true });
@@ -436,6 +439,8 @@ class Environment extends Component {
       this.props.form.validateFieldsAndScroll((err, data) => {
         if (!err) {
           data.userIds = this.state.createSelectedRowKeys;
+          const cName = this.state.clusterName;
+          data.name = cName.substr(0,cName.indexOf('-')+1).toLocaleLowerCase() + data.name;
           EnvPipelineStore.createEnv(projectId, data).then(res => {
             if (res && res.failed) {
               this.setState({

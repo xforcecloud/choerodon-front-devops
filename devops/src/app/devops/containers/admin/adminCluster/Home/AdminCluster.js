@@ -442,7 +442,7 @@ class AdminCluster extends Component {
                     required: true,
                     message: formatMessage({ id: 'required' }),
                   }, {
-                    pattern: /^N|P|T|F/,
+                    pattern: /^([a-zA-Z])\d{2}\-/,
                     message: formatMessage({ id: `admin.cluster.checkName` }),
                   }, {
                     validator: this.checkName,

@@ -1319,7 +1319,7 @@ const zhCN = {
   // 集群
   "admin.open":"默认开通",
   "admin.noOpen":"未开通",
-  "admin.cluster.checkName": "集群名称只能以N,P,T,F字符开头",
+  "admin.cluster.checkName": "集群名称只能以字母加两位编号并后缀'-'开头，例如'N01-xxx'",
   "admin.cluster.open": "是否默认开通",
   "admin.cluster.user": "是否可用",
   "admin.cluster.head": "集群",
