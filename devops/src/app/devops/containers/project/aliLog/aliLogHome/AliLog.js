@@ -20,7 +20,7 @@ class AliLog extends Component {
     super(props);
     const menu = AppState.currentMenuType;
     this.state = {
-      projectId: menu.id
+      projectId: menu.id,
     };
   }
 
@@ -41,16 +41,16 @@ class AliLog extends Component {
   render() {
     const { type, id: projectId, organizationId: orgId, name } = AppState.currentMenuType;
     const {
-      AliLogStore
+      AliLogStore,
     } = this.props;
     const {
       getLoading: loading,
-      getSignInUrl: signInUrl
+      getSignInUrl: signInUrl,
     } = AliLogStore;
     return (
       <Page
         service={[
-          'x-devops-service.aliyun-sls.createSignInUrl'
+          'x-devops-service.aliyun-sls.createSignInUrl',
         ]}
         className="c7n-region"
       >
