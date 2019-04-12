@@ -38,6 +38,7 @@ const DevConsole = asyncRouter(() => import('./project/devConsole'));
 const Event = asyncRouter(() => import('./project/event'));
 const Warnings = asyncRouter(() => import('./project/warnings'));
 const DingDing = asyncRouter(() => import('./project/dingDing'));
+const AliLog = asyncRouter(() => import('./project/aliLog'));
 
 @inject('AppState')
 class DEVOPSIndex extends React.Component {
@@ -76,6 +77,7 @@ class DEVOPSIndex extends React.Component {
           <Route path={`${match.url}/admin-cluster`} component={AdminCluster} />
           <Route path={`${match.url}/apply-management`} component={Apply} />
           <Route path={`${match.url}/apply-cluster`} component={UserCluster} />
+          <Route path={`${match.url}/ali-log`} component={AliLog} />
           <Route path="*" component={nomatch} />
         </Switch>
       </IntlProviderAsync>
