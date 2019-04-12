@@ -48,6 +48,7 @@
 "log-monitoring.warnings": "告警设置"
 "log-monitoring.event": "事件查看"
 "log-monitoring.dingding": "钉钉配置"
+"log-monitoring.ali-log": "阿里云日志"
 
 # 0.8版本废弃项
 "application-market": "应用市场"

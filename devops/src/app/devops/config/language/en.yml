@@ -49,6 +49,7 @@
 "log-monitoring.warnings": "Warnings"
 "log-monitoring.event": "EventView"
 "log-monitoring.dingding": "DingDingConfig"
+"log-monitoring.ali-log": "Aliyun Log"
 
 # 0.8废弃
 "application-market": "Application Market"

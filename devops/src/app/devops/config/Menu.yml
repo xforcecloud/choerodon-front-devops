@@ -278,6 +278,13 @@
          - 'devops-service.devops-monitoring.listDingDing'
          - 'devops-service.dingDing.delete'
          - 'devops-service.dingDing.create'
+    - "ali-log":
+       icon: message_notification
+       Routes: /devops/ali-log
+       sort: 3
+       permission:
+         - 'x-devops-service.aliyun-sls.createSignInUrl'
+
 "cluster-management":
   icon: cluster
   sort: 4
