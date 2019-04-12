@@ -388,5 +388,8 @@ const enUS = {
   "admin.cluster.del.confirm": "confirm delete",
   "admin.cluster.del.title": 'delete cluster"{clsName}"',
 
+  //log
+  "ali-log.head": "Aliyun Log",
+
 };
 export default enUS;

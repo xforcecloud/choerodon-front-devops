@@ -1366,6 +1366,13 @@ const zhCN = {
   "cluster.noData.text2": "1. 点击下方按钮进入创建集群页面，填写相关信息；",
   "cluster.noData.text3":
     "2. 点击创建后，会生成创建agent的脚本，复制至对应的k8s平台运行，即可成功激活此集群，进而激活此集群关联项目下的环境。",
+
+
+  //log
+  "ali-log.head": "阿里云日志",
+  "ali-log.title": '阿里云日志',
+  "ali-log.description": '阿里云日志-嵌入页面',
+
   ...pageDetail,
 };
 
