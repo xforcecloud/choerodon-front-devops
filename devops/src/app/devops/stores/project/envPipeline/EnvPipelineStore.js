@@ -48,6 +48,16 @@ class EnvPipelineStore {
 
   @observable cluster = [];
 
+  @observable clsData = null;
+
+  @computed get getClsData() {
+    return this.clsData;
+  }
+
+  @action setClsData(data) {
+    this.clsData = data;
+  }
+
   @action setCluster(data) {
     this.cluster = data;
   }
@@ -320,7 +330,19 @@ class EnvPipelineStore {
       } else {
         this.setEnvData(data);
       }
+      return data;
     });
+
+  loadClsById(orgId, id) {
+    return axios.get(`/devops/v1/organizations/${orgId}/clusters/${id}`)
+      .then((data) => {
+        if (data && data.failed) {
+          Choerodon.prompt(data.message);
+        } else {
+          this.setClsData(data);
+        }
+      });
+  }
 
   loadTags = (projectId, id) =>
     axios

@@ -636,6 +636,7 @@ const zhCN = {
   "envPl.edit": "修改环境",
   "envPl.update": "修改环境",
   "envPl.form.cluster": "选择集群",
+  "envPl.form.cluster": "选择集群",
   "envPl.form.name": "环境名称",
   "envPl.form.code": "环境编码",
   "envPl.form.description": "环境描述",
