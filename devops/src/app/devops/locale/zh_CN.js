@@ -635,6 +635,7 @@ const zhCN = {
     "删除该环境后，与该环境相关的所有对象均会被永久删除，不可恢复！确定要删除吗？",
   "envPl.edit": "修改环境",
   "envPl.update": "修改环境",
+  "envPl.form.clusterName": "环境所属集群",
   "envPl.form.cluster": "选择集群",
   "envPl.form.cluster": "选择集群",
   "envPl.form.name": "环境名称",
