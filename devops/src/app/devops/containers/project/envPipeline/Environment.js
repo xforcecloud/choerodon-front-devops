@@ -440,7 +440,11 @@ class Environment extends Component {
         if (!err) {
           data.userIds = this.state.createSelectedRowKeys;
           const cName = this.state.clusterName;
-          data.code = cName.substr(0,cName.indexOf('-')+1).toLocaleLowerCase() + data.code;
+          if (/^([a-zA-Z])\d{2}\-/gi.test(cName)){
+            data.code = cName.substr(0,cName.indexOf('-')+1).toLocaleLowerCase() + data.code;
+          } else if(/^([a-zA-Z])\d{2}/gi.test(cName)){
+            data.code = cName.substr(0,3).toLocaleLowerCase() + '-' + data.code;
+          }
           EnvPipelineStore.createEnv(projectId, data).then(res => {
             if (res && res.failed) {
               this.setState({
@@ -1174,7 +1178,7 @@ class Environment extends Component {
                   initialValue: clsData ? clsData.name : "",
                 })(
                   <Input
-                    maxLength={10}
+                    maxLength={30}
                     label={<FormattedMessage id="envPl.form.clusterName" />}
                     disabled={true}
                   />

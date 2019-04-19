@@ -87,15 +87,13 @@ class EnvCard extends Component {
     });
 
     const aa = function (envCode) {
-      const i = envCode.indexOf('-');
-      const a = envCode.substr(0,i);
-      const b = envCode.substr(i+1,envCode.length);
-      const j = b.indexOf('-');
-      const c = b.substr(0,j);
-      if (c){
-        return a + '-' + c;
+      if (/^([a-zA-Z])\d{2}/gi.test(envCode)){
+        return envCode.substr(0,3);
+      } else if(/^\d+\-/gi.test(envCode)){
+        return envCode.substr(0,envCode.indexOf('-'));
       }
-      return a;
+      const k = AppState.currentMenuType.id;
+      return k;
     }
 
     return connectDragSource(
