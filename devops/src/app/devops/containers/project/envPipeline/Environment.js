@@ -440,7 +440,11 @@ class Environment extends Component {
         if (!err) {
           data.userIds = this.state.createSelectedRowKeys;
           const cName = this.state.clusterName;
-          data.name = cName.substr(0,cName.indexOf('-')+1).toLocaleLowerCase() + data.name;
+          if (/^([a-zA-Z])\d{2}\-/gi.test(cName)){
+            data.code = cName.substr(0,cName.indexOf('-')+1).toLocaleLowerCase() + data.code;
+          } else if(/^([a-zA-Z])\d{2}/gi.test(cName)){
+            data.code = cName.substr(0,3).toLocaleLowerCase() + '-' + data.code;
+          }
           EnvPipelineStore.createEnv(projectId, data).then(res => {
             if (res && res.failed) {
               this.setState({
@@ -454,6 +458,7 @@ class Environment extends Component {
                 submitting: false,
                 createSelectedRowKeys: [],
                 createSelected: [],
+                clusterName: '',
               });
             }
           });
@@ -767,6 +772,7 @@ class Environment extends Component {
       getTagKeys: tagKeys,
       getSelectedRk,
       getEnvData: envData,
+      getClsData: clsData,
       getIst,
       getShow,
       getShowGroup: showGroup,
@@ -1167,6 +1173,17 @@ class Environment extends Component {
                 </FormItem>
                 {getSelectTip("envPl.group.tip")}
               </div>
+              <FormItem {...formItemLayout}>
+                {getFieldDecorator("clusterName", {
+                  initialValue: clsData ? clsData.name : "",
+                })(
+                  <Input
+                    maxLength={30}
+                    label={<FormattedMessage id="envPl.form.clusterName" />}
+                    disabled={true}
+                  />
+                )}
+              </FormItem>
             </Form>
           </div>
         );

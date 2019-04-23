@@ -4,10 +4,12 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { DragSource } from 'react-dnd';
-import { Button, Tooltip, Icon } from 'choerodon-ui';
-import { Permission } from 'choerodon-front-boot';
+import { Button, Tooltip, Icon, Tag } from 'choerodon-ui';
+import { Permission,stores } from 'choerodon-front-boot';
 import '../EnvPipeLineHome.scss';
 import EnvPipelineStore from '../../../../stores/project/envPipeline';
+
+const { AppState } = stores;
 
 const ItemTypes = {
   ENVCARD: 'envCard',
@@ -36,7 +38,13 @@ class EnvCard extends Component {
   editEnv = (id) => {
     const { projectId } = this.props;
     EnvPipelineStore.setSideType('edit');
-    EnvPipelineStore.loadEnvById(projectId, id);
+    EnvPipelineStore.loadEnvById(projectId, id).then((data) => {
+      if (data && data.failed) {
+        Choerodon.prompt(data.message);
+      } else {
+        EnvPipelineStore.loadClsById(AppState.currentMenuType.organizationId,data.clusterId)
+      }
+    });
     EnvPipelineStore.setShow(true);
   };
 
@@ -45,7 +53,13 @@ class EnvCard extends Component {
     EnvPipelineStore.setSideType('permission');
     EnvPipelineStore.loadPrm(projectId, id, 0, 10);
     EnvPipelineStore.loadTags(projectId, id);
-    EnvPipelineStore.loadEnvById(projectId, id);
+    EnvPipelineStore.loadEnvById(projectId, id).then((data) => {
+      if (data && data.failed) {
+        Choerodon.prompt(data.message);
+      } else {
+        EnvPipelineStore.loadClsById(AppState.currentMenuType.organizationId,data.clusterId)
+      }
+    });
     EnvPipelineStore.setShow(true);
   };
 
@@ -71,13 +85,24 @@ class EnvCard extends Component {
       'c7n-env-state': cardData.connect,
       'c7n-env-state-pending': !cardData.connect,
     });
+
+    const aa = function (envCode) {
+      if (/^([a-zA-Z])\d{2}/gi.test(envCode)){
+        return envCode.substr(0,3);
+      } else if(/^\d+\-/gi.test(envCode)){
+        return envCode.substr(0,envCode.indexOf('-'));
+      }
+      const k = AppState.currentMenuType.id;
+      return k;
+    }
+
     return connectDragSource(
       <div className={envCardStyle}>
         <Tooltip placement="bottom" title={cardData.update ? <FormattedMessage id="envPl.status.update" /> : null}>
           <div className="c7n-env-card-header">
             {cardData
               ? (<React.Fragment>
-                <span>{cardData.name}</span>
+                <span><Tag>{aa(cardData.code)}</Tag>{cardData.name}</span>
                 <div className="c7n-env-card-action">
                   <Permission
                     service={['devops-service.devops-environment.updateEnvUserPermission']}
