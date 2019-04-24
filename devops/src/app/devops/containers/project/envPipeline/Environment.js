@@ -22,6 +22,7 @@ import {
   Page,
   Permission,
   stores,
+  axios,
 } from "choerodon-front-boot";
 import _ from "lodash";
 import classNames from "classnames";
