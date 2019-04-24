@@ -209,8 +209,8 @@ class Environment extends Component {
           });
 
           instance.post(baseURL+'/login', {
-            user: 'admin',
-            password: 'admin',
+            user: username,
+            password: password,
             email:''
           })
             .then(function (response) {
