@@ -34,7 +34,7 @@ import "../../main.scss";
 import "./EnvPipeLineHome.scss";
 import EnvPipelineStore from "../../../stores/project/envPipeline";
 import { getSelectTip } from "../../../utils";
-import { host, port } from '../../../config/grafana';
+import { host, port, domainName } from '../../../config/grafana';
 
 /**
  * 分页查询单页size
@@ -199,7 +199,8 @@ class Environment extends Component {
           const username = orgId + '-' + proCode + '-' + 'viewer';
           const password = orgId + '-' + proCode + '-' + 'viewer';
           const baseURL = '';
-          console.log(host,port);
+          console.log(host,port,domainName);
+          document.domain=domainName;
           var instance = axios.create({
             baseURL: "http://"+host+":"+port,
             timeout: 1000,
