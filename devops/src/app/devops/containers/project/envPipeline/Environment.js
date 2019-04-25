@@ -22,6 +22,7 @@ import {
   Page,
   Permission,
   stores,
+  axios,
 } from "choerodon-front-boot";
 import _ from "lodash";
 import classNames from "classnames";
@@ -33,6 +34,7 @@ import "../../main.scss";
 import "./EnvPipeLineHome.scss";
 import EnvPipelineStore from "../../../stores/project/envPipeline";
 import { getSelectTip } from "../../../utils";
+import { host, port } from '../../../config/grafana';
 
 /**
  * 分页查询单页size
@@ -159,6 +161,7 @@ class Environment extends Component {
       selected: [],
       createSelectedTemp: [],
       cluster: null,
+      clusterName: '',
     };
   }
 
@@ -179,6 +182,44 @@ class Environment extends Component {
   reload = () => {
     this.loadEnvs();
     this.loadEnvGroups();
+  };
+
+  jiankong = () => {
+    const proId= AppState.currentMenuType.id;
+    const orgId = AppState.currentMenuType.organizationId;
+    console.log(proId);
+
+    axios.get(`/iam/v1/projects/${proId}`)
+      .then((data) => {
+        if (data && data.failed) {
+          Choerodon.prompt(data.message);
+        } else {
+
+          const proCode = data.code;
+          const username = orgId + '-' + proCode + '-' + 'viewer';
+          const password = orgId + '-' + proCode + '-' + 'viewer';
+          const baseURL = '';
+          var instance = axios.create({
+            baseURL: "http://"+host+":"+port,
+            timeout: 1000,
+            headers: {'Content-Type': 'application/json;charset=UTF-8'},
+            withCredentials: true
+
+          });
+
+          instance.post(baseURL+'/login', {
+            user: username,
+            password: password,
+            email:''
+          })
+            .then(function (response) {
+              window.open("http://grafana-xcloud.xforceplus.com:80/dashboards");
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        }
+      });
   };
 
   /**
@@ -404,13 +445,15 @@ class Environment extends Component {
    * 选择集群
    * @param id
    */
-  handleCluster = id => {
+  handleCluster = (id,option) => {
+    const cName = option.props.children;
     const {
       form: { validateFields, getFieldValue },
     } = this.props;
     this.setState(
       {
         cluster: id,
+        clusterName:cName,
       },
       () => {
         getFieldValue("code") && validateFields(["code"], { force: true });
@@ -436,6 +479,12 @@ class Environment extends Component {
       this.props.form.validateFieldsAndScroll((err, data) => {
         if (!err) {
           data.userIds = this.state.createSelectedRowKeys;
+          const cName = this.state.clusterName;
+          if (/^([a-zA-Z])\d{2}\-/gi.test(cName)){
+            data.code = cName.substr(0,cName.indexOf('-')+1).toLocaleLowerCase() + data.code;
+          } else if(/^([a-zA-Z])\d{2}/gi.test(cName)){
+            data.code = cName.substr(0,3).toLocaleLowerCase() + '-' + data.code;
+          }
           EnvPipelineStore.createEnv(projectId, data).then(res => {
             if (res && res.failed) {
               this.setState({
@@ -449,6 +498,7 @@ class Environment extends Component {
                 submitting: false,
                 createSelectedRowKeys: [],
                 createSelected: [],
+                clusterName: '',
               });
             }
           });
@@ -762,6 +812,7 @@ class Environment extends Component {
       getTagKeys: tagKeys,
       getSelectedRk,
       getEnvData: envData,
+      getClsData: clsData,
       getIst,
       getShow,
       getShowGroup: showGroup,
@@ -1162,6 +1213,17 @@ class Environment extends Component {
                 </FormItem>
                 {getSelectTip("envPl.group.tip")}
               </div>
+              <FormItem {...formItemLayout}>
+                {getFieldDecorator("clusterName", {
+                  initialValue: clsData ? clsData.name : "",
+                })(
+                  <Input
+                    maxLength={30}
+                    label={<FormattedMessage id="envPl.form.clusterName" />}
+                    disabled={true}
+                  />
+                )}
+              </FormItem>
             </Form>
           </div>
         );
@@ -1252,6 +1314,13 @@ class Environment extends Component {
           <Button funcType="flat" onClick={this.reload}>
             <i className="icon-refresh icon" />
             <FormattedMessage id="refresh" />
+          </Button>
+          <Button
+            funcType="flat"
+            onClick={this.jiankong}
+          >
+            <Icon type="sync" spin />
+            <FormattedMessage id="jiankong" />
           </Button>
         </Header>
         <Content

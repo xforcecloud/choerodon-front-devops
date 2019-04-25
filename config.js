@@ -34,8 +34,9 @@ const config = {
   fileServer: 'http://minio.staging.saas.hand-china.com',
   titlename: 'XforceCloud', // html title
   favicon: 'favicon.ico', // page favicon
-  theme: { // less/sass modify vars
-    'primary-color': '#3f51b5',
+  theme: { // less/sass modify var
+    //'primary-color': '#3f51b5',
+    'primary-color': '#00896C',
     'icon-font-size-base': '16px',
   },
   dashboard: {

@@ -3,6 +3,8 @@
 const docServer = "http://v0-10.choerodon.io/zh/docs";
 // 界面标题描述统一管理
 const pageDetail = {
+
+  "jiankong": "监控中心",
   // network
   "network.title": '项目"{name}"的网络',
   "network.description":
@@ -635,6 +637,8 @@ const zhCN = {
     "删除该环境后，与该环境相关的所有对象均会被永久删除，不可恢复！确定要删除吗？",
   "envPl.edit": "修改环境",
   "envPl.update": "修改环境",
+  "envPl.form.clusterName": "环境所属集群",
+  "envPl.form.cluster": "选择集群",
   "envPl.form.cluster": "选择集群",
   "envPl.form.name": "环境名称",
   "envPl.form.code": "环境编码",
@@ -1319,7 +1323,7 @@ const zhCN = {
   // 集群
   "admin.open":"默认开通",
   "admin.noOpen":"未开通",
-  "admin.cluster.checkName": "集群名称只能以N,P,T,F字符开头",
+  "admin.cluster.checkName": "集群名称只能以字母加两位编号并后缀'-'开头，例如'N01-xxx'",
   "admin.cluster.open": "是否默认开通",
   "admin.cluster.user": "是否可用",
   "admin.cluster.head": "集群",
@@ -1366,6 +1370,13 @@ const zhCN = {
   "cluster.noData.text2": "1. 点击下方按钮进入创建集群页面，填写相关信息；",
   "cluster.noData.text3":
     "2. 点击创建后，会生成创建agent的脚本，复制至对应的k8s平台运行，即可成功激活此集群，进而激活此集群关联项目下的环境。",
+
+
+  //log
+  "ali-log.head": "阿里云日志",
+  "ali-log.title": '阿里云日志',
+  "ali-log.description": '阿里云日志-嵌入页面',
+
   ...pageDetail,
 };
 

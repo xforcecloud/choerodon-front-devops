@@ -492,7 +492,7 @@ class UserCluster extends Component {
       clusterDescription:this.state.clusterDescription1,
       isConnected:0,
     }
-    UserClusterStore.updateCluster(data).then((data) => {
+    UserClusterStore.updateCluster(orgId,data).then((data) => {
       if (data && data.failed) {
         Choerodon.prompt(data.message);
         this.setState({
