@@ -34,7 +34,7 @@ import "../../main.scss";
 import "./EnvPipeLineHome.scss";
 import EnvPipelineStore from "../../../stores/project/envPipeline";
 import { getSelectTip } from "../../../utils";
-import { host, port, domainName } from '../../../config/grafana';
+import { host, port } from '../../../config/grafana';
 
 /**
  * 分页查询单页size
@@ -199,12 +199,10 @@ class Environment extends Component {
           const username = orgId + '-' + proCode + '-' + 'viewer';
           const password = orgId + '-' + proCode + '-' + 'viewer';
           const baseURL = '';
-          console.log(host,port,domainName);
-          document.domain=domainName;
           var instance = axios.create({
             baseURL: "http://"+host+":"+port,
             timeout: 1000,
-            headers: {'Content-Type': 'application/json;charset=UTF-8','Cookie': 'redirect_to=%252F%253ForgId%253D2'},
+            headers: {'Content-Type': 'application/json;charset=UTF-8'},
             withCredentials: true
 
           });
@@ -215,7 +213,7 @@ class Environment extends Component {
             email:''
           })
             .then(function (response) {
-              window.location.href='http://grafana-xcloud.xforceplus.com:80/dashboards';
+              window.open("http://grafana-xcloud.xforceplus.com:80/dashboards");
             })
             .catch(function (error) {
               console.log(error);
