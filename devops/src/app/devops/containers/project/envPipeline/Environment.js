@@ -22,6 +22,7 @@ import {
   Page,
   Permission,
   stores,
+  axios,
 } from "choerodon-front-boot";
 import _ from "lodash";
 import classNames from "classnames";
@@ -33,6 +34,7 @@ import "../../main.scss";
 import "./EnvPipeLineHome.scss";
 import EnvPipelineStore from "../../../stores/project/envPipeline";
 import { getSelectTip } from "../../../utils";
+import { host, port } from '../../../config/grafana';
 
 /**
  * 分页查询单页size
@@ -180,6 +182,44 @@ class Environment extends Component {
   reload = () => {
     this.loadEnvs();
     this.loadEnvGroups();
+  };
+
+  jiankong = () => {
+    const proId= AppState.currentMenuType.id;
+    const orgId = AppState.currentMenuType.organizationId;
+    console.log(proId);
+
+    axios.get(`/iam/v1/projects/${proId}`)
+      .then((data) => {
+        if (data && data.failed) {
+          Choerodon.prompt(data.message);
+        } else {
+
+          const proCode = data.code;
+          const username = orgId + '-' + proCode + '-' + 'viewer';
+          const password = orgId + '-' + proCode + '-' + 'viewer';
+          const baseURL = '';
+          var instance = axios.create({
+            baseURL: "http://"+host+":"+port,
+            timeout: 1000,
+            headers: {'Content-Type': 'application/json;charset=UTF-8'},
+            withCredentials: true
+
+          });
+
+          instance.post(baseURL+'/login', {
+            user: username,
+            password: password,
+            email:''
+          })
+            .then(function (response) {
+              window.open("http://grafana-xcloud.xforceplus.com:80/dashboards");
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        }
+      });
   };
 
   /**
@@ -1274,6 +1314,13 @@ class Environment extends Component {
           <Button funcType="flat" onClick={this.reload}>
             <i className="icon-refresh icon" />
             <FormattedMessage id="refresh" />
+          </Button>
+          <Button
+            funcType="flat"
+            onClick={this.jiankong}
+          >
+            <Icon type="sync" spin />
+            <FormattedMessage id="jiankong" />
           </Button>
         </Header>
         <Content

@@ -3,6 +3,8 @@
 const docServer = "http://v0-10.choerodon.io/zh/docs";
 // 界面标题描述统一管理
 const pageDetail = {
+
+  "jiankong": "监控中心",
   // network
   "network.title": '项目"{name}"的网络',
   "network.description":
