@@ -1372,8 +1372,8 @@ const zhCN = {
 
   //log
   "ali-log.head": "阿里云日志",
-  "ali-log.title": '阿里云日志',
-  "ali-log.description": '阿里云日志-嵌入页面',
+  "ali-log.title": '',
+  "ali-log.description": '',
 
   ...pageDetail,
 };

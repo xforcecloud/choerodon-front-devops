@@ -125,9 +125,9 @@ class AliLog extends Component {
             </Button>
           </Permission>
         </Header>
-        <Content code="ali-log" values={{ name }}>
+        <Content>
           { loading ? (<LoadingBar display />):
-            signInUrl ? (<iframe id="logsearch" frameBorder={0} style={{width:'100%', height:'80%', overflow:'visible'}} src={signInUrl}/>):<Tooltip>无日志</Tooltip>
+            signInUrl ? (<iframe id="logsearch" frameBorder={0} style={{width:'100%', height:'100%', overflow:'visible'}} src={signInUrl}/>):<Tooltip>找不到日志</Tooltip>
           }
         </Content>
       </Page>
