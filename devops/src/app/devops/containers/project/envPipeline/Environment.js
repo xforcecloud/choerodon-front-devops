@@ -213,7 +213,7 @@ class Environment extends Component {
             email:''
           })
             .then(function (response) {
-              window.open("http://grafana-xcloud.xforceplus.com:80/dashboards");
+              window.open("http://"+host+":"+port+"/dashboards");
             })
             .catch(function (error) {
               console.log(error);
