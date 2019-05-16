@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Content, stores } from 'choerodon-front-boot';
@@ -7,7 +7,7 @@ import _ from 'lodash';
 import MdEditor from '../../../../components/MdEditor';
 import '../../../main.scss';
 import './CreateTag.scss';
-import { getSelectTip } from '../../../../utils';
+import Tips from "../../../../components/Tips/Tips";
 
 const { AppState } = stores;
 const { Option, OptGroup } = Select;
@@ -34,7 +34,8 @@ class CreateTag extends Component {
     const { store, intl: { formatMessage } } = this.props;
     const { id: projectId } = AppState.currentMenuType;
     const pa = /^\d+(\.\d+){2}$/;
-    if (value && pa.test(value)) {
+    const SemanticVersion = /^\d+(\.\d+){2}-[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*$/;
+    if (value && (pa.test(value) || SemanticVersion.test(value))) {
       store.checkTagName(projectId, value)
         .then((data) => {
           if (data) {
@@ -149,7 +150,6 @@ class CreateTag extends Component {
       cancelText={<FormattedMessage id="cancel" />}
       confirmLoading={submitting}
       onCancel={this.handleCancel}
-      className="c7n-create-sidebar-tooltip"
     >
       <Content code="apptag.create" values={{ name }} className="c7n-tag-create sidebar-content">
         <Form layout="vertical" className="c7n-sidebar-form">
@@ -171,11 +171,13 @@ class CreateTag extends Component {
                   autoFocus
                   label={<FormattedMessage id="apptag.name" />}
                   size="default"
+                  suffix={<Tips type="form" data="apptag.name.tip" />}
+                  maxLength="20"
                 />,
               )}
             </FormItem>
           </div>
-          <div className="apptag-formitem">
+          <div className="apptag-formitem c7ncd-sidebar-select">
             <Icon type="wrap_text" className="c7n-apptag-icon" />
             <FormItem
               {...formItemLayout}
@@ -215,10 +217,10 @@ class CreateTag extends Component {
                 </Select>
               )}
             </FormItem>
-            {getSelectTip('apptag.tip')}
+            <Tips type="form" data="apptag.tip" />
           </div>
         </Form>
-        <div className="c7n-apptag-release-title">{formatMessage({ id: 'apptag.release.title' })}</div>
+        <div className="c7n-creation-title"><FormattedMessage id='apptag.release.title' /></div>
         <MdEditor
           value={release}
           onChange={this.handleNoteChange}

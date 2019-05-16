@@ -250,11 +250,13 @@ class BranchStore {
       return res;
     });
 
-  deleteData = (proId = AppState.currentMenuType.id, appId, name) => axios.delete(`/devops/v1/projects/${proId}/apps/${appId}/git/branch?branchName=${name}`)
+  deleteData = (proId = AppState.currentMenuType.id, appId, name) => axios.delete(`/devops/v1/projects/${proId}/apps/${appId}/git/branch?branch_name=${name}`)
     .then((datas) => {
       const res = handleProptError(datas);
       return res;
     });
+
+  checkName = (projectId = AppState.currentMenuType.projectId, appId, name) => axios.get(`/devops/v1/projects/${projectId}/apps/${appId}/git/check_name?branch_name=${name}`)
 }
 
 const branchStore = new BranchStore();

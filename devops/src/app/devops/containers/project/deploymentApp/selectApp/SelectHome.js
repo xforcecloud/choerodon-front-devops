@@ -39,6 +39,7 @@ class DeployAppHome extends Component {
     SelectAppStore.setAllData([]);
     SelectAppStore.setStoreData([]);
     SelectAppStore.setOrganizationData([]);
+    this.clearInputValue();
   }
 
   /**

@@ -59,8 +59,9 @@ class BuildNumber extends Component {
     }
     const { id } = AppState.currentMenuType;
     ReportsStore.loadAllApps(id).then((data) => {
-      if (data && data.length) {
-        let selectApp = data[0].id;
+      const appData = data && data.length ? _.filter(data, ['permission', true]) : [];
+      if (appData.length) {
+        let selectApp = appData[0].id;
         if (historyAppId) {
           selectApp = historyAppId;
         }
@@ -149,7 +150,7 @@ class BuildNumber extends Component {
       </div>
       <BuildChart echartsLoading={echartsLoading} height="400px" top="15%" languageType="report" />
       <BuildTable loading={loading} dataSource={allData} pagination={pageInfo} loadDatas={this.loadDatas} />
-    </React.Fragment> : <NoChart title={formatMessage({ id: 'report.no-app' })} des={formatMessage({ id: 'report.no-app-des' })} />);
+    </React.Fragment> : <NoChart type="app" />);
 
     return (<Page
       className="c7n-region c7n-ciPipeline"

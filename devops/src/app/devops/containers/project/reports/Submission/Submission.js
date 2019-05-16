@@ -155,8 +155,9 @@ class Submission extends Component {
       .split("T")[0]
       .replace(/-/g, "/");
     loadAllApps(projectId).then(data => {
-      if (data && data.length) {
-        let selectApp = appId || _.map(data, item => item.id);
+      const appData = data && data.length ? _.filter(data, ['permission', true]) : [];
+      if (appData.length) {
+        let selectApp = appId || _.map(appData, item => item.id);
         if (!appId) {
           if (repoAppId.length) {
             selectApp = repoAppId;
@@ -277,10 +278,7 @@ class Submission extends Component {
         <div className="c7n-report-submission-wrap clearfix">{personChart}</div>
       </Fragment>
     ) : (
-      <NoChart
-        title={formatMessage({ id: "report.no-app" })}
-        des={formatMessage({ id: "report.no-app-des" })}
-      />
+      <NoChart type="app" />
     );
 
     return (

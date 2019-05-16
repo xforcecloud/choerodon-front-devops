@@ -13,6 +13,7 @@ const Apply = asyncRouter(() => import('./admin/apply'));
 // organization
 const Template = asyncRouter(() => import('./organization/template'));
 const Cluster = asyncRouter(() => import('./organization/cluster'));
+const CertificateManage = asyncRouter(() => import('./organization/certificate'));
 const UserCluster = asyncRouter(() => import('./organization/userCluster'));
 // project
 const EnvPipelineIndex = asyncRouter(() => import('./project/envPipeline'));
@@ -35,6 +36,8 @@ const DeployOverview = asyncRouter(() => import('./project/deployOverview'));
 const Certificate = asyncRouter(() => import('./project/certificate'));
 const Reports = asyncRouter(() => import('./project/reports'));
 const DevConsole = asyncRouter(() => import('./project/devConsole'));
+const ConfigMap = asyncRouter(() => import('./project/configMap'));
+const Secret = asyncRouter(() => import('./project/secret'));
 const Event = asyncRouter(() => import('./project/event'));
 const Warnings = asyncRouter(() => import('./project/warnings'));
 const DingDing = asyncRouter(() => import('./project/dingDing'));
@@ -71,6 +74,9 @@ class DEVOPSIndex extends React.Component {
           <Route path={`${match.url}/certificate`} component={Certificate} />
           <Route path={`${match.url}/reports`} component={Reports} />
           <Route path={`${match.url}/dev-console`} component={DevConsole} />
+          <Route path={`${match.url}/config-map`} component={ConfigMap} />
+          <Route path={`${match.url}/secret`} component={Secret} />
+          <Route path={`${match.url}/certificate-manage`} component={CertificateManage} />
           <Route path={`${match.url}/event`} component={Event} />
           <Route path={`${match.url}/warnings`} component={Warnings} />
           <Route path={`${match.url}/dingDing`} component={DingDing} />

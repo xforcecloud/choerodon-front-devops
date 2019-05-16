@@ -100,7 +100,8 @@ class DeployTimes extends Component {
       historyEnvsId = state.envIds;
     }
     ContainerStore.loadActiveEnv(projectId)
-      .then((env) => {
+      .then((data) => {
+        const env = data && data.length ? _.filter(data, ['permission', true]) : [];
         if (env.length) {
           let selectEnv = this.envIds.length ? this.envIds : [env[0].id];
           if (historyEnvsId) {
@@ -136,6 +137,8 @@ class DeployTimes extends Component {
           }
           this.app = app;
           this.appId = selectApp;
+        } else {
+          ReportsStore.judgeRole();
         }
       });
   };
@@ -469,7 +472,7 @@ class DeployTimes extends Component {
       <div className="c7n-report-table">
         {this.renderTable()}
       </div>
-    </React.Fragment> : <NoChart title={formatMessage({ id: 'report.no-app' })} des={formatMessage({ id: 'report.no-app-des' })} />);
+    </React.Fragment> : <NoChart type="app" />);
 
     return (<Page
       className="c7n-region"

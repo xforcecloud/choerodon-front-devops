@@ -16,7 +16,7 @@ const START = moment().subtract(6, 'days').format().split('T')[0].replace(/-/g, 
 const END = moment().format().split('T')[0].replace(/-/g, '/');
 
 function findDataIndex(collection, value) {
-  return collection&&value ? collection.findIndex(
+  return collection && value ? collection.findIndex(
     ({ id, projectId }) => id === value.id && (
       (!projectId && !value.projectId)
       || projectId === value.projectId
@@ -119,10 +119,12 @@ class DevPipelineStore {
     this.setPreProId(projectId);
     axios.get(`/devops/v1/projects/${projectId}/apps`)
       .then((data) => {
-        const result = handleProptError(data);
-        if (result) {
-          this.setAppData(result);
-          if (result.length) {
+        const res = handleProptError(data);
+        if (res) {
+          const appSort = _.concat(_.filter(res, ['permission', true]), _.filter(res, ['permission', false]));
+          const result = _.filter(appSort, ['permission', true]);
+          this.setAppData(appSort);
+          if (result && result.length) {
             if (apps) {
               this.setSelectApp(apps);
             } else if (this.selectedApp) {
@@ -144,7 +146,7 @@ class DevPipelineStore {
                 MergeRequestStore.loadUrl(projectId, this.selectedApp);
                 break;
               case 'ci':
-                CiPipelineStore.loadPipelines(this.selectedApp);
+                CiPipelineStore.loadPipelines(true, this.selectedApp);
                 break;
               case 'all':
                 DevConsoleStore.loadBranchList(projectId, this.selectedApp);

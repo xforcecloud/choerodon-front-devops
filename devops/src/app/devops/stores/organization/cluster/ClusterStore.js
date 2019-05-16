@@ -1,10 +1,13 @@
-import { observable, action, computed } from 'mobx';
-import { axios, store } from 'choerodon-front-boot';
-import _ from 'lodash';
-import { handleProptError } from '../../../utils/index';
+import { observable, action, computed } from "mobx";
+import { axios, store } from "choerodon-front-boot";
+import _ from "lodash";
+import { handleProptError } from "../../../utils/index";
 
-const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-@store('ClusterStore')
+const HEIGHT =
+  window.innerHeight ||
+  document.documentElement.clientHeight ||
+  document.body.clientHeight;
+@store("ClusterStore")
 class ClusterStore {
   @observable clusterData = [];
 
@@ -14,26 +17,28 @@ class ClusterStore {
 
   @observable proData = [];
 
-  @observable prmProData = [];
-
   @observable shell = '';
 
   @observable clsData = null;
 
-  @observable selectedRowKeys = [];
-
   @observable tagKeys = [];
 
   @observable pageInfo = {
-    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15,
+    current: 1,
+    total: 0,
+    pageSize: HEIGHT <= 900 ? 10 : 15,
   };
 
   @observable clsPageInfo = {
-    current: 1, total: 0, pageSize: HEIGHT <= 900 ? 12 : 18,
+    current: 1,
+    total: 0,
+    pageSize: HEIGHT <= 900 ? 12 : 18,
   };
 
   @observable Info = {
-    filters: {}, sort: { columnKey: 'id', order: 'descend' }, paras: [],
+    filters: {},
+    sort: { columnKey: "id", order: "descend" },
+    paras: [],
   };
 
   @action setPageInfo(page) {
@@ -88,14 +93,6 @@ class ClusterStore {
     return this.proData.slice();
   }
 
-  @action setPrmPro(data) {
-    this.prmProData = data;
-  }
-
-  @computed get getPrmPro() {
-    return this.prmProData.slice();
-  }
-
   @computed get getClsData() {
     return this.clsData;
   }
@@ -122,7 +119,6 @@ class ClusterStore {
     return this.shell;
   }
 
-
   @action
   setSideType(data) {
     this.sideType = data;
@@ -133,14 +129,6 @@ class ClusterStore {
     return this.sideType;
   }
 
-  @action setSelectedRk(selectedRowKeys) {
-    this.selectedRowKeys = selectedRowKeys;
-  }
-
-  @computed get getSelectedRk() {
-    return this.selectedRowKeys.slice();
-  }
-
   @action setTagKeys(tagKeys) {
     this.tagKeys = tagKeys;
   }
@@ -149,13 +137,24 @@ class ClusterStore {
     return this.tagKeys.slice();
   }
 
-  loadCluster = (orgId, page = this.clsPageInfo.current - 1, size = this.clsPageInfo.pageSize, sort = { field: 'id', order: 'desc' }, postData = {
-    searchParam: {},
-    param: '',
-  }) => {
+  loadCluster = (
+    orgId,
+    page = this.clsPageInfo.current - 1,
+    size = this.clsPageInfo.pageSize,
+    sort = { field: "id", order: "desc" },
+    postData = {
+      searchParam: {},
+      param: "",
+    }
+  ) => {
     this.changeLoading(true);
-    return axios.post(`/devops/v1/organizations/${orgId}/clusters/page_cluster?page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(postData))
-      .then((data) => {
+    return axios
+      .post(
+        `/devops/v1/organizations/${orgId}/clusters/page_cluster?page=${page}&size=${size}&sort=${sort.field ||
+          "id"},${sort.order}`,
+        JSON.stringify(postData)
+      )
+      .then(data => {
         const res = handleProptError(data);
         if (res) {
           this.setData(res.content);
@@ -167,18 +166,23 @@ class ClusterStore {
       });
   };
 
-  loadPro = (orgId, clusterId, page = this.pageInfo.current - 1, size = this.pageInfo.pageSize, sort = { field: 'id', order: 'desc' }, postData = []) => {
+  loadPro = (
+    orgId,
+    clusterId,
+    page = this.pageInfo.current - 1,
+    size = this.pageInfo.pageSize,
+    sort = { field: "id", order: "desc" },
+    postData = []
+  ) => {
     this.tableLoading(true);
-    const url = clusterId ? `/devops/v1/organizations/${orgId}/clusters/pageProjects?clusterId=${clusterId}&page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}` : `/devops/v1/organizations/${orgId}/clusters/pageProjects?page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}`;
-    return axios.post(url, JSON.stringify(postData)).then((data) => {
+    const url = clusterId
+      ? `/devops/v1/organizations/${orgId}/clusters/page_projects?clusterId=${clusterId}&page=${page}&size=${size}&sort=${sort.field ||
+          "id"},${sort.order}`
+      : `/devops/v1/organizations/${orgId}/clusters/page_projects?page=${page}&size=${size}&sort=${sort.field ||
+          "id"},${sort.order}`;
+    return axios.post(url, JSON.stringify(postData)).then(data => {
       if (data && data.failed) {
         Choerodon.prompt(data.message);
-      } else if(clusterId) {
-        this.setPrmPro(data.content);
-        this.setSelectedRk(_.map(_.filter(data.content, 'permission'), k => k.id));
-        const { number, size, totalElements } = data;
-        const page = { number, size, totalElements };
-        this.setPageInfo(page);
       } else {
         this.setProData(data.content);
         const { number, size, totalElements } = data;
@@ -190,8 +194,9 @@ class ClusterStore {
   };
 
   loadClsById(orgId, id) {
-    return axios.get(`/devops/v1/organizations/${orgId}/clusters/${id}`)
-      .then((data) => {
+    return axios
+      .get(`/devops/v1/organizations/${orgId}/clusters/${id}`)
+      .then(data => {
         if (data && data.failed) {
           Choerodon.prompt(data.message);
         } else {
@@ -201,39 +206,53 @@ class ClusterStore {
       });
   }
 
-  loadTagKeys = (orgId, id) => axios.get(`/devops/v1/organizations/${orgId}/clusters/list_cluster_projects/${id}`).then((data) => {
-    if (data && data.failed) {
-      Choerodon.prompt(data.message);
-    } else {
-      this.setTagKeys(data);
-    }
-  });
+  loadTagKeys = (orgId, id) =>
+    axios
+      .get(
+        `/devops/v1/organizations/${orgId}/clusters/list_cluster_projects/${id}`
+      )
+      .then(data => {
+        if (data && data.failed) {
+          Choerodon.prompt(data.message);
+        } else {
+          this.setTagKeys(data);
+        }
+      });
 
   createCluster(orgId, data) {
-    return axios.post(`/devops/v1/organizations/${orgId}/clusters`, JSON.stringify(data));
+    return axios.post(
+      `/devops/v1/organizations/${orgId}/clusters`,
+      JSON.stringify(data)
+    );
   }
 
   updateCluster(orgId, id, data) {
-    return axios.put(`/devops/v1/organizations/${orgId}/clusters?clusterId=${id}`, JSON.stringify(data));
+    return axios.put(
+      `/devops/v1/organizations/${orgId}/clusters?clusterId=${id}`,
+      JSON.stringify(data)
+    );
   }
 
   delCluster(orgId, id) {
     return axios.delete(`/devops/v1/organizations/${orgId}/clusters/${id}`);
   }
 
-  loadShell = (orgId, id) => axios.get(`/devops/v1/organizations/${orgId}/clusters/query_shell/${id}`).then((data) => {
-    const res = handleProptError(data);
-    if (res) {
-      this.setShell(res);
-    }
-  });
+  loadShell = (orgId, id) =>
+    axios
+      .get(`/devops/v1/organizations/${orgId}/clusters/query_shell/${id}`)
+      .then(data => {
+        const res = handleProptError(data);
+        if (res) {
+          this.setShell(res);
+        }
+      });
 
   checkCode(orgId, code) {
-    return axios.get(`/devops/v1/organizations/${orgId}/clusters/checkCode?code=${code}`);
+   return axios.get(`/devops/v1/organizations/${orgId}/clusters/check_code?code=${code}`);
   }
 
   checkName(orgId, name){
-    return axios.get(`/devops/v1/organizations/${orgId}/clusters/checkName?name=${name}`);
+    return axios.get(`/devops/v1/organizations/${orgId}/clusters/check_name?name=${name}`);
   }
 }
 

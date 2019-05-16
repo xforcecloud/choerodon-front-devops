@@ -91,7 +91,7 @@ class ValueConfig extends Component {
       values: val,
       appInstanceId: id,
       environmentId: idArr[0],
-      appVerisonId: idArr[1],
+      appVersionId: idArr[1],
       appId: idArr[2],
       type: "update",
       isNotChange: disabled,
@@ -138,6 +138,13 @@ class ValueConfig extends Component {
     if (errorLine !== undefined) {
       error = errorLine;
     }
+    const codeOptions = {
+      theme: "neat",
+      mode: "text/x-yaml",
+      readOnly: false,
+      lineNumbers: true,
+      lineWrapping: false,
+    };
     const sideDom = (
       <div className="c7n-region">
         <Content code="ist.edit" values={{ name }} className="sidebar-content">
@@ -151,6 +158,7 @@ class ValueConfig extends Component {
                     errorLines={error}
                     totalLine={data.totalLine}
                     value={data.yaml}
+                    options={codeOptions}
                     highlightMarkers={
                       data.highlightMarkers && data.highlightMarkers.slice()
                     }
@@ -190,6 +198,7 @@ class ValueConfig extends Component {
                 className="ant-modal-btn-cancel"
                 key="back"
                 onClick={this.onClose.bind(this, false)}
+                disabled={loading}
               >
                 {intl.formatMessage({ id: "cancel" })}
               </Button>

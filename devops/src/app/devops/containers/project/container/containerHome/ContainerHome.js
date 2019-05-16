@@ -29,6 +29,7 @@ import TimePopover from "../../../../components/timePopover";
 import LoadingBar from "../../../../components/loadingBar";
 import MouserOverWrapper from "../../../../components/MouseOverWrapper";
 import StatusTags from "../../../../components/StatusTags";
+import AppName from "../../../../components/appName";
 import "../../../main.scss";
 import "./ContainerHome.scss";
 import "./Term.scss";
@@ -343,18 +344,12 @@ class ContainerHome extends Component {
         render: (text, record) => (
           <div>
             <div className="c7n-container-col-inside">
-              {record.projectId === projectId ? (
-                <Tooltip title={<FormattedMessage id="project" />}>
-                  <i className="icon icon-project c7n-container-icon-publish" />
-                </Tooltip>
-              ) : (
-                <Tooltip title={<FormattedMessage id="market" />}>
-                  <i className="icon icon-apps c7n-container-icon-publish" />
-                </Tooltip>
-              )}
-              <MouserOverWrapper text={record.appName} width={0.18}>
-                {record.appName}
-              </MouserOverWrapper>
+              <AppName
+                name={record.appName}
+                showIcon={!!record.projectId}
+                self={record.projectId === projectId}
+                width={0.18}
+              />
             </div>
             <div>
               <MouserOverWrapper text={record.appVersion} width={0.2}>
@@ -374,11 +369,11 @@ class ContainerHome extends Component {
             <div className="c7n-deploy-col-inside">
               {record.connect ? (
                 <Tooltip title={<FormattedMessage id="connect" />}>
-                  <span className="c7n-ist-status_on" />
+                  <span className="c7ncd-status c7ncd-status-success" />
                 </Tooltip>
               ) : (
                 <Tooltip title={<FormattedMessage id="disconnect" />}>
-                  <span className="c7n-ist-status_off" />
+                  <span className="c7ncd-status c7ncd-status-disconnect" />
                 </Tooltip>
               )}
               <span>{record.envName}</span>
@@ -807,93 +802,93 @@ class ContainerHome extends Component {
     let pubLength = 0;
     let proLength = 0;
     envId &&
-    ContainerStore.loadAppDataByEnv(projectId, envId, appId).then(data => {
-      if (data) {
-        const proPageSize = 30 * pageArr[0] + 3;
-        const pubPageSize = 30 * pageArr[1] + 3;
-        let allItems = data;
-        if (filterValue) {
-          allItems = data.filter(
-            item =>
-              item.name.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0
-          );
-        }
-        if (allItems.length) {
-          _.map(allItems, d => {
-            if (d.projectId !== projectId) {
-              pubLength += 1;
-            } else {
-              proLength += 1;
-            }
-            if (d.projectId !== projectId && appPubDom.length < pubPageSize) {
-              appPubDom.push(
-                <Option key={d.id} value={d.id}>
-                  <Popover
-                    placement="right"
-                    content={
-                      <div>
-                        <p>
-                          <FormattedMessage id="ist.name" />
-                          <span>{d.name}</span>
-                        </p>
-                        <p>
-                          <FormattedMessage id="ist.ctr" />
-                          <span>{d.contributor}</span>
-                        </p>
-                        <p>
-                          <FormattedMessage id="ist.des" />
-                          <span>{d.description}</span>
-                        </p>
+      ContainerStore.loadAppDataByEnv(projectId, envId, appId).then(data => {
+        if (data) {
+          const proPageSize = 30 * pageArr[0] + 3;
+          const pubPageSize = 30 * pageArr[1] + 3;
+          let allItems = data;
+          if (filterValue) {
+            allItems = data.filter(
+              item =>
+                item.name.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0
+            );
+          }
+          if (allItems.length) {
+            _.map(allItems, d => {
+              if (d.projectId !== projectId) {
+                pubLength += 1;
+              } else {
+                proLength += 1;
+              }
+              if (d.projectId !== projectId && appPubDom.length < pubPageSize) {
+                appPubDom.push(
+                  <Option key={d.id} value={d.id}>
+                    <Popover
+                      placement="right"
+                      content={
+                        <div>
+                          <p>
+                            <FormattedMessage id="ist.name" />
+                            <span>{d.name}</span>
+                          </p>
+                          <p>
+                            <FormattedMessage id="ist.ctr" />
+                            <span>{d.contributor}</span>
+                          </p>
+                          <p>
+                            <FormattedMessage id="ist.des" />
+                            <span>{d.description}</span>
+                          </p>
+                        </div>
+                      }
+                    >
+                      <div className="c7n-container-option-popover">
+                        <i className="icon icon-apps c7n-container-icon-publish" />
+                        <MouserOverWrapper text={d.name} width={0.9}>
+                          {d.name}
+                        </MouserOverWrapper>
                       </div>
-                    }
-                  >
-                    <div className="c7n-container-option-popover">
-                      <i className="icon icon-apps c7n-container-icon-publish" />
-                      <MouserOverWrapper text={d.name} width={0.9}>
-                        {d.name}
-                      </MouserOverWrapper>
-                    </div>
-                  </Popover>
-                </Option>
-              );
-            } else if (appProDom.length < proPageSize) {
-              appProDom.push(
-                <Option key={d.id} value={d.id}>
-                  <Popover
-                    placement="right"
-                    content={
-                      <div>
-                        <p>
-                          <FormattedMessage id="ist.name" />
-                          <span>{d.name}</span>
-                        </p>
-                        <p>
-                          <FormattedMessage id="ist.code" />
-                          <span>{d.code}</span>
-                        </p>
+                    </Popover>
+                  </Option>
+                );
+              } else if (appProDom.length < proPageSize) {
+                appProDom.push(
+                  <Option key={d.id} value={d.id}>
+                    <Popover
+                      placement="right"
+                      content={
+                        <div>
+                          <p>
+                            <FormattedMessage id="ist.name" />
+                            <span>{d.name}</span>
+                          </p>
+                          <p>
+                            <FormattedMessage id="ist.code" />
+                            <span>{d.code}</span>
+                          </p>
+                        </div>
+                      }
+                    >
+                      <div className="c7n-container-option-popover">
+                        <i className="icon icon-project c7n-container-icon-publish" />
+                        <MouserOverWrapper text={d.name} width={0.9}>
+                          {d.name}
+                        </MouserOverWrapper>
                       </div>
-                    }
-                  >
-                    <div className="c7n-container-option-popover">
-                      <i className="icon icon-project c7n-container-icon-publish" />
-                      <MouserOverWrapper text={d.name} width={0.9}>
-                        {d.name}
-                      </MouserOverWrapper>
-                    </div>
-                  </Popover>
-                </Option>
-              );
-            }
+                    </Popover>
+                  </Option>
+                );
+              }
+            });
+          }
+          this.setState({
+            appPubDom,
+            appProDom,
+            appPubLength: pubLength,
+            appProLength: proLength,
           });
         }
-        this.setState({
-          appPubDom,
-          appProDom,
-          appPubLength: pubLength,
-          appProLength: proLength,
-        });
-      }
-    });
+      });
   };
 
   loadInitData = () => {
@@ -1044,10 +1039,8 @@ class ContainerHome extends Component {
       envData && envData.length && (appProDom.length || appPubDom.length)
         ? ContainerStore.getAppId
         : undefined;
-
     //调用最近选择封装的方法
     this.selectValue(initApp,serviceData,appFakeDom);
-
     const contentDom =
       envData && envData.length && envId ? (
         <React.Fragment>
@@ -1057,7 +1050,7 @@ class ContainerHome extends Component {
                 envId
                   ? "c7n-header-select"
                   : "c7n-header-select c7n-select_min100"
-                }`}
+              }`}
               dropdownClassName="c7n-header-env_drop"
               dropdownMatchSelectWidth
               placeholder={formatMessage({ id: "envoverview.noEnv" })}
@@ -1075,9 +1068,9 @@ class ContainerHome extends Component {
                   <Tooltip placement="right" title={e.name}>
                     <span className="c7n-ib-width_100">
                       {e.connect ? (
-                        <span className="c7n-ist-status_on" />
+                        <span className="c7ncd-status c7ncd-status-success" />
                       ) : (
-                        <span className="c7n-ist-status_off" />
+                        <span className="c7ncd-status c7ncd-status-disconnect" />
                       )}
                       {e.name}
                     </span>
@@ -1106,11 +1099,9 @@ class ContainerHome extends Component {
               filter
               allowClear
             >
-
               <OptGroup label="最近选择" key="selectedGroup">
                 {appFakeDom}
               </OptGroup>
-
               <OptGroup label={formatMessage({ id: "project" })} key="proGroup">
                 {appProDom}
                 {proPageSize < appProLength && (
@@ -1218,7 +1209,7 @@ class ContainerHome extends Component {
                   <div
                     className={`c7n-podLog-action log-following ${
                       fullscreen ? "f-top" : ""
-                      }`}
+                    }`}
                     onClick={this.stopFollowing}
                   >
                     Stop Following
@@ -1227,7 +1218,7 @@ class ContainerHome extends Component {
                   <div
                     className={`c7n-podLog-action log-following ${
                       fullscreen ? "f-top" : ""
-                      }`}
+                    }`}
                     onClick={this.loadLog.bind(this, true)}
                   >
                     Start Following
@@ -1245,7 +1236,7 @@ class ContainerHome extends Component {
                 <div
                   className={`c7n-podLog-action log-goTop ${
                     fullscreen ? "g-top" : ""
-                    }`}
+                  }`}
                   onClick={this.goTop}
                 >
                   Go Top

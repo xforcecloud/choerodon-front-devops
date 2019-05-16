@@ -4,14 +4,17 @@
     vertical-align: middle;
     max-width: 95% ! important;
   }
+
   .network-expend-icon {
     line-height: 20px;
     font-size: 18px;
     font-weight: 600;
     color: #3f51b5;
   }
+
   .network-column-target {
     display: flex;
+
     .network-column-instance {
       background: rgba(0, 0, 0, 0.08);
       border-radius: 10px;
@@ -20,21 +23,24 @@
       line-height: 20px;
       font-size: 12px;
       margin-bottom: 8px;
+
       &:last-child {
         margin-bottom: 0;
       }
     }
 
-    & > .network-column-instance {
+    &>.network-column-instance {
       margin-bottom: 0;
     }
 
     .network-column-entry {
       display: flex;
       margin-bottom: 4px;
+
       &:last-child {
         margin-bottom: 0;
       }
+
       span {
         flex: 1;
         white-space: nowrap;
@@ -42,25 +48,31 @@
       }
     }
 
-    & > .network-column-entry {
+    &>.network-column-entry {
       margin-bottom: 0;
     }
   }
+
   .network-column-config {
     display: flex;
+
     .network-config-type {
       line-height: 20px;
       width: 58px;
     }
+
     .network-config-item {
       margin-bottom: 6px;
       white-space: nowrap;
+
       &:last-child {
         margin-bottom: 0;
       }
     }
+
     .network-config-wrap {
       display: flex;
+
       .network-type-title {
         flex: none;
         margin-right: 16px;
@@ -141,16 +153,6 @@
     width: 512px;
   }
 
-  .env-status-wrap {
-    line-height: 18px;
-  }
-
-  .status-error {
-    padding-right: 2px;
-    color: #d50000;
-    vertical-align: middle;
-  }
-
   .c7n-app-icon-disabled {
     font-size: 16px;
     color: rgba(0, 0, 0, 0.36);
@@ -160,6 +162,7 @@
     text-align: center;
     display: inline-block;
   }
+
   .c7n-network-status-failed {
     color: #d50000;
     background: rgba(244, 67, 54, 0.3) !important;

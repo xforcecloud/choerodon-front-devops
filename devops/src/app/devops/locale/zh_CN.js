@@ -1,6 +1,6 @@
 // zh_CN.js
 // 文档地址前缀
-const docServer = "http://v0-10.choerodon.io/zh/docs";
+const docServer = "http://v0-12.choerodon.io/zh/docs";
 // 界面标题描述统一管理
 const pageDetail = {
 
@@ -26,11 +26,10 @@ const pageDetail = {
   "env.link": `${docServer}/user-guide/deployment-pipeline/environment-pipeline/`,
   "env.create.title": '在项目"{name}"中创建环境',
   "env.create.description":
-    "请在下面输入环境编码、名称、描述，来创建新环境，同时您还需要为此环境配置特定的操作人员，配置后，只有被勾选的项目成员才有权限在该环境下进行部署操作。新环境会默认新增在环境流水线的最后一个节点。",
+    "请在下面选择集群，输入环境编码、名称、描述，来创建新环境；同时您还需要为此环境配置特定的操作人员，配置后，只有被勾选的项目成员才有权限在该环境下进行部署操作。新环境会默认新增在环境流水线的最后一个节点。",
   "env.create.link": `${docServer}/user-guide/deployment-pipeline/environment-pipeline/`,
   "env.edit.title": '对环境"{name}"进行修改',
-  "env.edit.description":
-    "您可在此修改环境名称及描述，也可以复制指令至Kubernetes运行，与平台建立连接。",
+  "env.edit.description": "您可在此修改环境名称、描述以及分组。",
   "env.edit.link": `${docServer}/user-guide/deployment-pipeline/environment-pipeline/`,
   "env.token.title": '复制环境"{name}"的指令',
   "env.token.description": "复制下文代码至Kubernetes运行，与平台建立链接。",
@@ -144,12 +143,13 @@ const pageDetail = {
   // app
   "app.title": '项目"{name}"的应用',
   "app.description":
-    "应用是满足用户某些需求的程序代码的集合，可以是某个解耦的微服务或是某个单体应用。您可在此创建应用、修改应用名称、停用应用、启用应用及分支管理。",
+    "应用是满足用户某些需求的程序代码的集合。您可在此创建应用、停用应用、启用应用、配置应用权限以及修改应用名称。",
   "app.create.title": '在项目"{name}"中创建应用',
   "app.create.description":
-    "请在下面输入应用编码及名称，也可以选择某个应用模板，快速创建应用。平台会为您自动创建对应的git库以便管理该应用代码。",
+    "请在下面输入应用编码及名称，也可以选择某个应用模板，快速创建应用。平台会为您自动创建对应的git库以便管理该应用代码。同时，您可为所创应用分配特定的开发操作人员。",
   "app.edit.title": '对应用"{name}"进行修改',
-  "app.edit.description": "您可在此修改应用名称。",
+  "app.edit.description":
+    "您可在此修改应用名称，同时也可对此应用的权限进行管理。",
   "app.link": `${docServer}/user-guide/application-management/application/`,
   "app.create.link": `${docServer}/user-guide/application-management/application/`,
   "app.edit.link": `${docServer}/user-guide/application-management/application/`,
@@ -180,7 +180,7 @@ const pageDetail = {
   "ist.edit.description": "对实例配置信息进行修改后重新部署。",
   "ist.upgrade.title": '对"{name}"进行修改',
   "ist.upgrade.description": "选择新版本，并对实例配置信息进行修改后升级实例。",
-  "ist.detail.title": '查看应用"{name}"的实例详情',
+  "ist.detail.title": '查看实例"{name}"的详情',
   "ist.detail.description":
     "您可在此查看该实例的运行详情及部署详情。运行详情包括各资源对象的基本信息；部署详情包括配置信息及部署阶段及日志。",
   "ist.link": `${docServer}/user-guide/deployment-pipeline/instance/`,
@@ -368,11 +368,61 @@ const pageDetail = {
   "cluster.edit.description":
     "您可在此修改集群的名称、描述以及集群的公开范围。",
   "cluster.edit.link": `${docServer}/user-guide/cluster-management/cluster/`,
+
+  // 日志右侧弹窗
+  "log.title": '查看"{sidebarName}"的日志',
+  "log.description": "您可在此查看该job的日志进行错误定位和状态监控。",
+  "log.link": `${docServer}/user-guide/deployment-pipeline/application-deployment/`,
+
+  // 部署详情右侧弹窗
+  "deployInfo.title": '查看实例"{sidebarName}"的部署配置信息',
+  "deployInfo.description": "您可在此查看该实例详细的配置信息。",
+  "deployInfo.link": `${docServer}/user-guide/deployment-pipeline/application-deployment/`,
+
+  // 配置映射
+  "configMap.title": '环境"{name}"的配置映射',
+  "configMap.create.title": '在环境"{name}"中创建配置映射',
+  "configMap.edit.title": '对映射配置"{name}"进行修改',
+  "configMap.edit.description": "您可在此编辑配置映射的描述以及键值对的内容。",
+  "configMap.create.description":
+    "您可以在此处选择环境，填写配置映射名称及描述，添加配置映射。",
+  "configMap.description":
+    "配置映射是用来存储配置文件的Kubernetes资源对象，其中存储的键值对可以在pods中使用。",
+  "configMap.link": `${docServer}/user-guide/deployment-pipeline/config-map/`,
+  "configMap.create.link": `${docServer}/user-guide/deployment-pipeline/config-map/`,
+  "configMap.help.tooltip":
+    "您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对。",
+
+  // 密文
+  "secret.title": '环境"{name}"的密文',
+  "secret.create.title": '在环境"{name}"中创建密文',
+  "secret.edit.title": '对密文"{name}"进行修改',
+  "secret.edit.description": "您可在此编辑密文的描述以及键值对的内容。",
+  "secret.create.description":
+    "您可以在此处选择环境，填写密文名称及描述，在该环境下添加密文。",
+  "secret.description":
+    "密文是用来保存小片敏感数据的Kubernetes资源对象，例如密码，token，或者密钥等。",
+  "secret.link": `${docServer}/user-guide/deployment-pipeline/secret/`,
+  "secret.create.link": `${docServer}/user-guide/deployment-pipeline/secret/`,
+  "secret.help.tooltip":
+    "您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对。",
+
+  // 组织层证书
+  "certificate.title": '组织"{name}"的证书',
+  "certificate.description":
+    "域名证书是受法律认可的证书文件，确定了域名注册者对域名的拥有权与拥有时限。",
+  "certificate.link": `${docServer}/user-guide/devops-management/certificate`,
+  "certificate.create.title": '在组织"{name}"中创建证书',
+  "certificate.create.description":
+    "请在下方输入证书名称，并上传相应的证书文件来创建证书。同时，您可以选择为所创证书配置公开范围，配置后，只有在被勾选的项目下创建证书时，才能选择此证书。",
+  "certificate.create.link": `${docServer}/user-guide/devops-management/certificate`,
+  "certificate.edit.title": '对证书"{name}"进行修改',
+  "certificate.edit.description": "您可在此修改证书的公开范围。",
+  "certificate.edit.link": `${docServer}/user-guide/devops-management/certificate`,
 };
 
 const zhCN = {
   // public
-  refresh: "刷新",
   detail: "详情",
   operate: "操作",
   save: "保存",
@@ -426,7 +476,7 @@ const zhCN = {
   write: "编辑",
   preview: "预览",
   expand: "展开",
-  shrink: "收缩",
+  shrink: "收起",
   validDate: "有效期",
   noContent: "没有内容",
   notActive: "未生效",
@@ -444,6 +494,16 @@ const zhCN = {
   recent: "最近",
   return: "返回",
   submit: "确认",
+  key: "键",
+  value: "值",
+  detailMore: "更多详情",
+
+  // 刷新
+  refresh: "刷新",
+  "refresh.manual": "手动刷新",
+  "refresh.auto": "自动刷新",
+  "refresh.auto.open": "自动刷新已打开",
+  "refresh.auto.close": "自动刷新已关闭",
 
   "chart.change": "切换报表",
   "confirm.delete": "确认删除吗？",
@@ -498,10 +558,13 @@ const zhCN = {
   "ist.more": "展开更多",
   "ist.yamlErr": "请先修改yaml格式错误",
   "ist.delDes": "删除实例将不可恢复，其配置网络同时失效，确定要删除该实例吗？",
+  "ist.stopDes": "确定停用该实例吗？",
+  "ist.startDes": "确定重启该实例吗？",
+  "ist.reDeployDes": "确定重新部署该实例吗？",
   "ist.expand.name": "名称",
   "ist.expand.empty": "暂无部署详细信息",
   "ist.expand.link": "点击查看详情",
-  "ist.expand.date": "创建时间",
+  "ist.expand.date": "更新时间",
   "ist.version.upload": "升级至版本 “{text}”",
   "ist.version.deploy": "部署版本 “{text}”",
   "ist.version.failed": "升级至版本 “{text}” 失败",
@@ -509,6 +572,74 @@ const zhCN = {
   "ist.deploy.failed": "部署失败",
   "ist.deploy.upload": "部署中",
   "ist.deploy.delete": "处理中",
+  "ist.deploy.result": "部署结果",
+  "ist.deploy.mbr": "操作人员",
+  "ist.log": "查看日志详情",
+  "ist.deployInfo": "查看部署配置信息",
+  "ist.deploy.detail": "查看实例Deployment详情",
+  "ist.deploy.title": "查看实例“{name}”的Deployment详情",
+  "ist.deploy.description": "您可在此查看各个实例Deployment的详情。",
+  "ist.deploy.link": `${docServer}/user-guide/deployment-pipeline/instance/`,
+  "ist.deploy.container": "容器名称：",
+  "ist.deploy.key": "键",
+  "ist.deploy.value": "值",
+  "ist.deploy.none": "无",
+  "ist.deploy.ports": "端口",
+  "ist.deploy.ports.map": "端口映射",
+  "ist.deploy.ports.empty": "当前容器没有端口映射",
+  "ist.deploy.ports.describe": "容器监听端口到主机公用IP地址端口的映射关系。",
+  "ist.deploy.ports.name": "名称",
+  "ist.deploy.ports.containerPort": "端口号",
+  "ist.deploy.ports.protocol": "协议",
+  "ist.deploy.ports.hostPort": "监听端口号",
+  "ist.deploy.volume": "数据卷",
+  "ist.deploy.volume.empty": "没有获取到数据卷信息",
+  "ist.deploy.volume.describe": "持久化及共享数据并与独立容器的生命周期分离。",
+  "ist.deploy.volume.mountPath": "容器路径",
+  "ist.deploy.volume.subPath": "子路径",
+  "ist.deploy.volume.defaultMode": "默认模式",
+  "ist.deploy.volume.optional": "可选",
+  "ist.deploy.volume.claimName": "名称",
+  "ist.deploy.volume.readOnly": "只读",
+  "ist.deploy.volume.path": "主机路径",
+  "ist.deploy.volume.type": "类型",
+  "ist.deploy.volume.name": "卷名",
+  "ist.deploy.volume.volume.type": "卷类型",
+  "ist.deploy.volume.item": "项目",
+  "ist.deploy.volume.config.key": "键",
+  "ist.deploy.volume.config.mode": "模式",
+  "ist.deploy.volume.config.path": "路径",
+  "ist.deploy.health": "健康检查",
+  "ist.deploy.health.describe":
+    "周期性向容器发出请求，以检测其健康状态。默认设置下，readiness 和 liveness 使用相同的配置参数。对于应用初始化较长的容器，需要增加就绪检测时间。",
+  "ist.deploy.health.readiness": "就绪状态检查(readiness)",
+  "ist.deploy.health.liveness": "活跃状态检查(liveness)",
+  "ist.deploy.health.failureThreshold": "失败阈值",
+  "ist.deploy.health.initialDelaySeconds": "探针启动延时",
+  "ist.deploy.health.periodSeconds": "间隔时长(秒)",
+  "ist.deploy.health.successThreshold": "成功阈值",
+  "ist.deploy.health.timeoutSeconds": "超时时间(秒)",
+  "ist.deploy.security": "安全/主机设置",
+  "ist.deploy.security.describe":
+    "容器监听端口到主机公用IP地址端口的映射关系。",
+
+  "ist.deploy.security.imagePullPolicy": "镜像拉取",
+  "ist.deploy.security.privileged": "特权模式",
+  "ist.deploy.security.allowPrivilegeEscalation": "提升特权",
+  "ist.deploy.security.runAsNonRoot": "以非root用户身份运行",
+  "ist.deploy.security.readOnlyRootFilesystem": "只读根文件系统",
+  "ist.deploy.security.hostIPC": "使用主机的网络",
+  "ist.deploy.security.hostNetwork": "使用主机的IPC命名空间",
+  "ist.deploy.security.capabilities.add": "增加内核能力",
+  "ist.deploy.security.capabilities.drop": "移除内核能力",
+
+  "ist.deploy.label": "标签/注释",
+  "ist.deploy.label.describe":
+    "用于调度决策的键值对。后端重写请配置注释: 键: nginx.ingress.kubernetes.io/rewrite-target，值: /。",
+  "ist.deploy.variables": "环境变量",
+  "ist.deploy.variables.describe": "在创建时添加的环境变量。",
+  "ist.deploy.variables.key": "变量名称",
+  "ist.deploy.variables.value": "变量值",
 
   // network
   network_delete: "网络删除中，请耐心等待",
@@ -542,10 +673,10 @@ const zhCN = {
   "network.instance.check.failed": "请移除不可用实例",
   "network.port.check.failed": "端口号必须是数字且在0-65535之间",
   "network.key.check.failed":
-    '由字母，数字，"-"，"_"或"."中的一种或多种组成，并且必须以字母或数字开头和结尾（例如“MyName”，或“my.name”，或“123-abc”）',
+    '由字母，数字，"-"或"."中的一种或多种组成，并且必须以字母或数字开头和结尾（例如“MyName”，或“my.name”，或“123-abc”）',
   "network.key.check.repeat": "关键字不能重复",
   "network.value.check.failed":
-    '由字母，数字，"-"，"_"或"."中的一种或多种组成，并且必须以字母或数字开头和结尾（例如"MyValue"，或"my_value"，或"12345")',
+    '由字母，数字，"-"或"."中的一种或多种组成，并且必须以字母或数字开头和结尾（例如"MyValue"，或"my_value"，或"12345")',
   "network.port.check.repeat": "端口号重复",
   "network.nport.check.repeat": "节点端口号重复",
   "network.tport.check.repeat": "目标端口号重复",
@@ -556,7 +687,7 @@ const zhCN = {
   "network.form.instance.disable": "暂无可用实例",
   "network.btn.add": "添加版本",
   "network.form.targetPort.help": "网络选择的目标实例所暴露的端口号",
-  "network.env": "环境",
+  "network.env": "环境名称",
   "network.env.placeholder": "请选择环境",
   "network.target": "目标对象",
   "network.target.instance": "选择实例",
@@ -589,6 +720,7 @@ const zhCN = {
   "deploy.app": "应用",
   "deploy.ver": "版本",
   "deploy.env": "环境",
+  "deploy.pod": "Pod状态",
   "deploy.cNumber": "容器数量",
   "deploy.header.title": "应用部署",
   "deploy.step.one.title": "选择应用及版本",
@@ -608,8 +740,9 @@ const zhCN = {
   "deploy.step.two.config": "配置信息",
   "deploy.step.three.title": "选择部署模式",
   "deploy.step.three.description":
-    "平台支持两种部署模式：新建实例和替换实例。新建实例是部署生成新的实例；替换实例是等待新部署生成的副本集通过健康检查后再删除原副本集，但实例不变，只替换其相关参数。",
+    "平台支持两种部署模式：新建实例和替换实例。新建实例是部署生成新的实例；替换实例是等待新部署生成的副本集通过健康检查后再删除原副本集，但实例不变，只替换其相关参数。当您新建实例时，可以在下方自定义该实例的名称，或者直接使用默认名称；替换实例时则无法更改名称。",
   "deploy.step.three.mode.title": "选择部署模式",
+  "deploy.step.three.ist.title": "编辑实例名称",
   "deploy.step.three.mode": "部署模式",
   "deploy.step.three.mode.new": "新建实例",
   "deploy.step.three.mode.replace": "替换实例",
@@ -624,6 +757,8 @@ const zhCN = {
   "deploy.sidebar.market": "应用市场",
   "deploy.sidebar.search": "搜索应用",
   "deploy.ver.tip": "实例中对应的应用版本",
+  "deploy.ist.event": "实例事件",
+  "deploy.ist.event.empty": "暂无实例事件",
 
   // envPipeline
   "envPl.head": "环境流水线",
@@ -632,6 +767,7 @@ const zhCN = {
   "envPl.group.edit": "编辑分组",
   "envPl.group.del": "删除分组",
   "envPl.delete": "删除环境",
+  "envPl.cluster": "连接集群：",
   "envPl.delete.confirm": "确认删除环境“{name}”",
   "envPl.delete.warn":
     "删除该环境后，与该环境相关的所有对象均会被永久删除，不可恢复！确定要删除吗？",
@@ -678,7 +814,7 @@ const zhCN = {
   "envPl.cluster.tip":
     "创建环境必须先选择集群，此处集群均是在组织下已经对本项目进行授权的集群。",
   "envPl.envCode.tip":
-    "环境的自定义编码，集群中产生的环境客户端的名称，限制60个字符。",
+    "环境的自定义编码，是集群中产生的namespace的名称，限制为30个字符，且在所选集群下唯一。",
   "envPl.envName.tip": "平台环境的显示名称。限制为10个字符。",
   "envPl.group.tip":
     "若要使用环境分组，请先创建分组；此处只能从已创建的分组中进行选择，从而将此环境放入该分组中。",
@@ -732,10 +868,22 @@ const zhCN = {
 
   // app
   "app.head": "应用",
+  "app.authority": "应用权限分配",
+  "app.authority.help":
+    "此操作用于为此应用配置特定的开发操作人员。一般默认选择为项目下所有成员，即该项目下的所有成员均能对此应用进行开发操作；若选择项目下特定成员，则只有被勾选的项目成员才有权限对此应用进行开发。",
   "app.appDetail": "应用详情",
+  "app.authority.label": "设置该应用的开发操作人员",
+  "app.mbr.all": "项目下所有成员",
+  "app.mbr.part": "项目下特定成员",
   "app.id": "标识",
   "app.name": "名称",
+  "app.checkName": "应用名称不能包含空格",
   "app.type": "应用类型",
+  "app.chooseType": "选择应用类型",
+  "app.type.normal": "普通应用",
+  "app.type.test": "测试应用",
+  "app.chooseType.tip":
+    "测试应用是用于实现自动化测试的载体，不能将此类应用发布至应用市场，同时，也不能将此类应用部署到任何环境；仅支持在开发流水线对测试应用进行开发操作。而普通应用则支持正常的开发、部署与发布操作。  ",
   "app.url": "仓库地址",
   "app.active": "状态",
   "app.delete.tip": "这将会删除gitlab代码库，请确认是否删除？",
@@ -831,6 +979,7 @@ const zhCN = {
   "branch.checkName": '名称只能包含数字和".",并且以数字开头和结尾',
   "branch.checkNameEnd": '不能以"/"、"."、".lock"结尾',
   "branch.check": "只能包含字母、数字、'——'、'_'",
+  "branch.check.existence": "分支名称已存在",
   "branch.master": "Master",
   "branch.bugfix": "Bugfix",
   "branch.feature": "Feature",
@@ -959,7 +1108,7 @@ const zhCN = {
   "domain.delete.des": "确定要删除该域名吗？",
   "domain.column.name": "域名名称",
   "domain.column.status": "状态",
-  "domain.column.env": "环境名称",
+  "domain.column.env": "环境",
   "domain.column.network": "网络",
   "domain.column.path": "路径",
   "domain.column.rewritePath": "rewrite path",
@@ -1095,13 +1244,15 @@ const zhCN = {
   "apptag.time": "提交时间",
   "apptag.tag": "标记",
   "apptag.name": "标记名称",
+  "apptag.name.tip":
+    "标记名称建议使用x.x.x格式，其中x只能为非负整数；同时也支持标记名称的语义化，只需在原有格式后面加上-，便可在后面添加自定义内容。例如：x.x.x-alpha.1。",
   "apptag.ref": "标记来源",
   "apptag.checkName": "标记名称已存在",
   "apptag.branch": "分支",
   "apptag.action.delete": "删除标记",
   "apptag.delete.tooltip": "确定要删除该标记吗？",
   "apptag.checkNameReg":
-    "由数字和 . 组成，必须以数字开头且不能以 . 结尾，例如：0.0.1",
+    "支持x.x.x格式，其中x只能为非负整数；若使用语义化标记，建议格式：x.x.x-alpha.1",
   "apptag.noRefBranch": "该应用还没有分支，请先创建分支",
   "apptag.tag.empty": "暂无任何标记，您可在此页面基于某一分支创建标记。",
   "apptag.app.empty":
@@ -1153,7 +1304,7 @@ const zhCN = {
   "ctf.name": "证书名称",
   "ctf.column.name": "证书名称",
   "ctf.column.ingress": "域名地址",
-  "ctf.column.env": "环境名称",
+  "ctf.column.env": "环境",
   "ctf.column.status": "证书状态",
   "ctf.detail": "证书详情",
   "ctf.delete": "删除证书",
@@ -1173,6 +1324,8 @@ const zhCN = {
   "ctf.config": "参数配置",
   "ctf.apply": "申请证书",
   "ctf.upload": "上传证书",
+  "ctf.choose": "选择证书",
+  "ctf.choose.tips": "此处选择的证书为该组织下已对本项目授权的证书。",
   "ctf.config.add": "添加域名",
   "ctf.config.domain": "域名",
   "ctf.env.placeholder": "请选择环境",
@@ -1186,7 +1339,7 @@ const zhCN = {
   "validDate.tip": "证书的可用期限",
 
   // 报表
-  "report.head": "报告",
+  "report.head": "Devops报表",
   "report.devops.total": "总次数",
   "dashboard.devops.more": "...",
   "report.submission.head": "代码提交图",
@@ -1230,7 +1383,7 @@ const zhCN = {
   "report.no-app": "当前项目下无应用",
   "report.no-env": "当前项目下无可用环境",
   "report.no-app-des": "请使用项目所有者角色登录去创建一个应用",
-  "report.no-env-des": "请使用部署管理员角色登录去创建一个可用环境",
+  "report.no-env-des": "请使用项目所有者角色登录去创建一个可用环境",
   "report.commit.history": "提交历史",
   "report.commit.by": "提交于 ",
   "report.commit.date": "日期：",
@@ -1241,6 +1394,8 @@ const zhCN = {
   "report.date.more": "报表暂支持最多查看30天，已自动截取开始日期后30天。",
   "report.commits.unknown": "非平台用户提交汇总",
   "report.unknown.user": "非平台用户",
+  "empty.member.no-env":
+    "您当前暂无任何环境的权限，若需查看某个环境的相关内容，请联系项目所有者添加权限。",
 
   // 部署总览
   "dpOverview.head": "部署总览",
@@ -1264,7 +1419,8 @@ const zhCN = {
   "depPl.addPermission":
     "若需查看某个环境相关内容，请联系项目所有者进行权限添加。",
   "empty.owner.noApp": "当前项目下无应用，请创建应用。",
-  "empty.member.noApp": "当前项目下无应用，请联系项目所有者进行创建。",
+  "empty.member.no-app":
+    "您当前暂无此项目下任何应用的权限，若需查看某个应用下相关内容，请联系项目所有者添加权限。",
   "depPl.more": "了解更多",
 
 
@@ -1297,7 +1453,6 @@ const zhCN = {
   "user.cluster.project.part": "组织下特定项目",
   "user.cluster.authority": "集群权限分配",
   "user.cluster.authority.project": "已分配权限项目",
-  ...pageDetail,
 
   // Apply
   "confirm.reject": "确认驳回该集群申请吗?",
@@ -1337,12 +1492,10 @@ const zhCN = {
   "admin.cluster.del.confirm": "确认删除",
   "admin.cluster.del.title": '删除集群"{clsName}"',
 
-  ...pageDetail,
-
   // 集群
   "cluster.head": "集群",
   "cluster.create": "创建集群",
-  "cluster.edit": "编辑集群",
+  "cluster.edit": "修改集群",
   "cluster.name": "集群名称",
   "cluster.code": "集群编码",
   "cluster.des": "集群描述",
@@ -1371,12 +1524,48 @@ const zhCN = {
   "cluster.noData.text3":
     "2. 点击创建后，会生成创建agent的脚本，复制至对应的k8s平台运行，即可成功激活此集群，进而激活此集群关联项目下的环境。",
 
+  // 配置映射
+  "configMap.head": "配置映射",
+  "configMap.create": "创建配置映射",
+  "configMap.edit": "修改配置映射",
+  "configMap.add": "添加配置映射",
+  "configMap.updateAt": "更新时间",
+  "configMap.key": "键",
+  "configMap.des": "描述",
+  "configMap.keyRule": "不能含空格及-、_、.以外的特殊字符",
+  "configMap.keyRuleSpan":
+    "键值不能含空格及-、_、.以外的特殊字符，请检查输入。",
+  "configMap.keyValueSpan": "键值对需配对输入，请检查输入。",
+  "configMap.keyRepeat": "存在重复键，请检查输入。",
+  "configMap.del": "删除配置映射",
+  "configMap.del.tooltip": "确认删除配置映射吗？",
+
+  // 配置映射
+  "secret.head": "密文",
+  "secret.create": "创建密文",
+  "secret.edit": "修改密文",
+  "secret.add": "添加密文",
+  "secret.key": "键",
+  "secret.des": "描述",
+  "secret.del": "删除密文",
+  "secret.del.tooltip": "确认删除密文吗？",
+
+  //组织层证书管理
+  "certificate.head": "证书管理",
+  "certificate.file.add": "添加证书文件",
+  "certificate.file.add.tip": "您需在此粘贴输入对应的文件内容。",
+  "certificate.key.content": "KEY文件内容",
+  "certificate.cert.content": "CERT文件内容",
+  "certificate.permission": "证书权限分配",
+  "certificate.permission.tip":
+    "此操作用于为此证书在该组织下配置公开范围。一般默认选择为组织下所有项目，即该证书可在所有项目下创建证书时使用；若选择组织下特定项目，则只有在被勾选项目下创建证书时才有权限选择此证书。",
+  "certificate.public": "证书公开范围",
+  "ctf.sidebar.edit": "编辑证书",
 
   //log
   "ali-log.head": "阿里云日志",
   "ali-log.title": '',
   "ali-log.description": '',
-
   ...pageDetail,
 };
 

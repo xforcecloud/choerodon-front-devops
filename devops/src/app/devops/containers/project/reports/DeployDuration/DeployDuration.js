@@ -110,13 +110,15 @@ class DeployDuration extends Component {
     const { ReportsStore } = this.props;
     const projectId = AppState.currentMenuType.id;
     ContainerStore.loadActiveEnv(projectId)
-      .then((env) => {
+      .then((data) => {
+        const env = data && data.length ? _.filter(data, ['permission', true]) : [];
         if (env.length) {
           this.env = env;
           this.envId = this.envId || env[0].id;
           this.loadAppByEnv(this.envId);
         } else {
           ReportsStore.setEchartsLoading(false);
+          ReportsStore.judgeRole();
         }
         ReportsStore.changeIsRefresh(false);
       });
@@ -378,7 +380,8 @@ class DeployDuration extends Component {
     const { intl: { formatMessage }, history, ReportsStore } = this.props;
     const { id, name, type, organizationId } = AppState.currentMenuType;
     const echartsLoading = ReportsStore.getEchartsLoading;
-    const envs = ContainerStore.getEnvCard;
+    const envData = ContainerStore.getEnvCard;
+    const envs = _.filter(envData, ['permission', true]);
     const isRefresh = ReportsStore.getIsRefresh;
 
     const envDom = this.env.length ? _.map(this.env, d => (<Option key={d.id} value={d.id}>{d.name}</Option>)) : null;
@@ -437,7 +440,7 @@ class DeployDuration extends Component {
       <div className="c7n-report-table">
         {this.renderTable()}
       </div>
-    </React.Fragment> : <NoChart title={formatMessage({ id: 'report.no-env' })} des={formatMessage({ id: 'report.no-env-des' })} />);
+    </React.Fragment> : <NoChart type="env" />);
 
     return (<Page
       className="c7n-region"

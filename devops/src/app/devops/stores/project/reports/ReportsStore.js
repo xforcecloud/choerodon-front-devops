@@ -1,9 +1,11 @@
 import { observable, action, computed } from 'mobx';
-import { axios, store } from 'choerodon-front-boot';
+import { axios, store, stores } from 'choerodon-front-boot';
 import moment from 'moment';
+import _ from 'lodash';
 import { handleProptError } from '../../../utils';
 
 const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+const { AppState } = stores;
 
 @store('ReportsStore')
 class ReportsStore {
@@ -41,7 +43,7 @@ class ReportsStore {
 
   @observable BuildDuration = {};
 
-  @observable echartsLoading = true;
+  @observable echartsLoading = false;
 
   @observable commits = {};
 
@@ -54,6 +56,16 @@ class ReportsStore {
   @observable isRefresh = true;
 
   @observable allApps = [];
+
+  @observable proRole = '';
+
+  @action setProRole(data) {
+    this.proRole = data;
+  }
+
+  @computed get getProRole() {
+    return this.proRole;
+  }
 
   @action setAllApps(data) {
     this.allApps = data;
@@ -254,14 +266,36 @@ class ReportsStore {
   });
 
   handleAppsDate = (data) => {
-    if (data) {
-      this.setAllApps(data);
-      if (!data.length) {
-        this.setEchartsLoading(false);
-        this.changeLoading(false);
-      }
+    const apps = data ? _.filter(data, ['permission', true]) : [];
+    if (apps.length) {
+      this.setAllApps(apps);
+    } else {
+      this.setEchartsLoading(false);
+      this.changeLoading(false);
+      this.judgeRole();
     }
     this.changeIsRefresh(false);
+  };
+
+  /**
+   * 判断角色
+   */
+  judgeRole = () => {
+    const { projectId, organizationId, type } = AppState.currentMenuType;
+    const datas = [{
+      code: 'devops-service.devops-environment.create',
+      organizationId,
+      projectId,
+      resourceType: type,
+    }];
+    axios.post('/iam/v1/permissions/checkPermission', JSON.stringify(datas))
+      .then((data) => {
+        const res = handleProptError(data);
+        if (res && res.length) {
+          const { approve } = res[0];
+          this.setProRole(approve ? 'owner' : 'member');
+        }
+      });
   };
 
   /**

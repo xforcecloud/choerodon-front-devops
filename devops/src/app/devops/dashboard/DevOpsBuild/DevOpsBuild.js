@@ -22,19 +22,19 @@ class DevOpsBuild extends Component {
     this.state = {
       appId: null,
       loading: true,
-      noSelect: false,
+      noSelect: true,
     };
   }
 
   componentDidMount() {
     const { id } = AppState.currentMenuType;
     ReportsStore.loadAllApps(id).then((data) => {
-      if (data && data.length) {
-        this.setState({ appId: data[0].id });
-        this.loadCharts();
-      } else {
-        this.setState({ noSelect: true, loading: false });
+      const appData = data && data.length ? _.filter(data, ['permission', true]) : [];
+      if (appData.length) {
+        this.setState({ appId: appData[0].id, noSelect: false });
+        this.loadCharts(appData[0].id);
       }
+      this.setState({ loading: false });
     });
   }
 
@@ -46,19 +46,16 @@ class DevOpsBuild extends Component {
   /**
    * 加载图表
    */
-  loadCharts = () => {
+  loadCharts = (appId) => {
     const projectId = AppState.currentMenuType.id;
-    const { appId } = this.state;
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    ReportsStore.loadBuildNumber(projectId, appId, startTime, endTime)
-      .then(() => {
-        this.setState({ loading: false });
-      });
+    ReportsStore.loadBuildNumber(projectId, appId, startTime, endTime);
   };
 
   handleChange = (id) => {
-    this.setState({ appId: id }, () => this.loadCharts());
+    this.setState({ appId: id });
+    this.loadCharts(id);
   };
 
   getContent = () => {

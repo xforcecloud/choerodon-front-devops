@@ -26,14 +26,15 @@ import {
 } from "choerodon-front-boot";
 import _ from "lodash";
 import classNames from "classnames";
-import CopyToBoard from "react-copy-to-clipboard";
 import Board from "./pipeline/Board";
 import LoadingBar from "../../../components/loadingBar/index";
 import EnvGroup from "./EnvGroup";
+import RefreshBtn from "../../../components/refreshBtn";
+import DevopsStore from "../../../stores/DevopsStore";
 import "../../main.scss";
 import "./EnvPipeLineHome.scss";
-import EnvPipelineStore from "../../../stores/project/envPipeline";
-import { getSelectTip } from "../../../utils";
+import { scrollTo } from "../../../utils";
+import Tips from "../../../components/Tips/Tips";
 import { host, port } from '../../../config/grafana';
 
 /**
@@ -119,9 +120,10 @@ class Environment extends Component {
       intl: { formatMessage },
     } = this.props;
     const { id: projectId } = AppState.currentMenuType;
-    const { cluster } = this.state;
+    const { cluster: clusterId } = this.state;
     const envData = EnvPipelineStore.getEnvData;
     const flag = envData ? value !== envData.name : value;
+    const cluster = envData ? envData.clusterId : clusterId;
     if (cluster && flag) {
       EnvPipelineStore.checkEnvName(projectId, cluster, value).then(error => {
         if (error && error.failed) {
@@ -154,10 +156,8 @@ class Environment extends Component {
       delEnv: null,
       disEnv: null,
       delGroup: null,
-      moveRight: 300,
       createSelectedRowKeys: [],
       createSelected: [],
-      selectedRowKeys: false,
       selected: [],
       createSelectedTemp: [],
       cluster: null,
@@ -166,12 +166,12 @@ class Environment extends Component {
   }
 
   componentDidMount() {
-    this.loadEnvs();
-    this.loadEnvGroups();
+    this.reload();
   }
 
   componentWillUnmount() {
     const { EnvPipelineStore } = this.props;
+    DevopsStore.clearAutoRefresh();
     EnvPipelineStore.setEnvcardPosition([]);
     EnvPipelineStore.setDisEnvcardPosition([]);
   }
@@ -179,8 +179,8 @@ class Environment extends Component {
   /**
    * 刷新函数
    */
-  reload = () => {
-    this.loadEnvs();
+  reload = (fresh = true) => {
+    this.loadEnvs(fresh);
     this.loadEnvGroups();
   };
 
@@ -224,12 +224,14 @@ class Environment extends Component {
 
   /**
    * 加载环境数据
+   * @param fresh 是否刷新
+   * @memberof Environment
    */
-  loadEnvs = () => {
+  loadEnvs = fresh => {
     const { EnvPipelineStore } = this.props;
     const projectId = AppState.currentMenuType.id;
-    EnvPipelineStore.loadEnv(projectId, true);
-    EnvPipelineStore.loadEnv(projectId, false);
+    EnvPipelineStore.loadEnv(projectId, true, fresh);
+    EnvPipelineStore.loadEnv(projectId, false, fresh);
   };
 
   /**
@@ -276,11 +278,9 @@ class Environment extends Component {
     this.setState({
       createSelectedRowKeys: [],
       createSelected: [],
-      selectedRowKeys: false,
     });
     EnvPipelineStore.setShow(false);
     EnvPipelineStore.setEnvData(null);
-    EnvPipelineStore.setSelectedRk([]);
     resetFields();
   };
 
@@ -468,7 +468,7 @@ class Environment extends Component {
    */
   handleSubmit = e => {
     e.preventDefault();
-    const { EnvPipelineStore } = this.props;
+    const { EnvPipelineStore, form } = this.props;
     const projectId = AppState.currentMenuType.id;
     const sideType = EnvPipelineStore.getSideType;
     const tagKeys = EnvPipelineStore.getTagKeys;
@@ -476,7 +476,7 @@ class Environment extends Component {
       submitting: true,
     });
     if (sideType === "create") {
-      this.props.form.validateFieldsAndScroll((err, data) => {
+      form.validateFieldsAndScroll((err, data) => {
         if (!err) {
           data.userIds = this.state.createSelectedRowKeys;
           const cName = this.state.clusterName;
@@ -500,6 +500,7 @@ class Environment extends Component {
                 createSelected: [],
                 clusterName: '',
               });
+              form.resetFields();
             }
           });
         } else {
@@ -509,27 +510,34 @@ class Environment extends Component {
         }
       });
     } else if (sideType === "edit") {
-      this.props.form.validateFieldsAndScroll((err, data, modify) => {
+      form.validateFieldsAndScroll((err, data, modify) => {
         if (modify) {
           if (!err) {
-            EnvPipelineStore.setShow(false);
+            // EnvPipelineStore.setShow(false);
             const id = EnvPipelineStore.getEnvData.id;
-            EnvPipelineStore.setSideType(null);
-            EnvPipelineStore.updateEnv(projectId, { ...data, id }).then(res => {
-              if (res && res.failed) {
+            EnvPipelineStore.updateEnv(projectId, { ...data, id })
+              .then(res => {
+                if (res && res.failed) {
+                  this.setState({
+                    submitting: false,
+                  });
+                  Choerodon.prompt(res.message);
+                } else if (res) {
+                  this.loadEnvs();
+                  EnvPipelineStore.setShow(false);
+                  EnvPipelineStore.setSideType(null);
+                  form.resetFields();
+                  this.setState({
+                    submitting: false,
+                  });
+                }
+              })
+              .catch(error => {
                 this.setState({
                   submitting: false,
                 });
-                Choerodon.prompt(res.message);
-              } else if (res) {
-                this.loadEnvs();
-                EnvPipelineStore.setShow(false);
-                this.props.form.resetFields();
-                this.setState({
-                  submitting: false,
-                });
-              }
-            });
+                Choerodon.handleResponseError(error);
+              });
           }
         } else {
           this.setState({
@@ -537,7 +545,7 @@ class Environment extends Component {
           });
           EnvPipelineStore.setShow(false);
         }
-        this.props.form.resetFields();
+        form.resetFields();
       });
     } else {
       const id = EnvPipelineStore.getEnvData.id;
@@ -550,10 +558,8 @@ class Environment extends Component {
             EnvPipelineStore.setShow(false);
           }
           this.setState({
-            selectedRowKeys: false,
             submitting: false,
           });
-          EnvPipelineStore.setSelectedRk([]);
           EnvPipelineStore.setTagKeys([]);
         })
         .catch(error => {
@@ -583,8 +589,8 @@ class Environment extends Component {
     };
     return type
       ? formatMessage({
-        id: `envPl.${msg[type]}`,
-      })
+          id: `envPl.${msg[type]}`,
+        })
       : "";
   };
 
@@ -620,18 +626,15 @@ class Environment extends Component {
    * 点击右滑动
    */
   pushScrollRight = () => {
-    const { moveRight } = this.state;
-    scrollLeft -= 300;
-    if (scrollLeft < 0) {
+    scrollLeft = scrollTo(
+      document.getElementsByClassName("c7n-inner-container-ban")[0],
+      -300
+    );
+    if (scrollLeft < 300) {
       scrollLeft = 0;
     }
     this.setState({
       moveBan: false,
-      moveRight: moveRight - 300,
-    });
-    document.getElementsByClassName("c7n-inner-container-ban")[0].scroll({
-      left: scrollLeft,
-      behavior: "smooth",
     });
   };
 
@@ -642,24 +645,24 @@ class Environment extends Component {
     const domPosition = document.getElementsByClassName(
       "c7n-inner-container-ban"
     )[0].scrollLeft;
+    const { EnvPipelineStore } = this.props;
+    const { getDisEnvcardPosition: disEnvCard } = EnvPipelineStore;
+
+    const DisEnvLength  = disEnvCard.length ? disEnvCard[0].devopsEnviromentRepDTOs.length : 0;
+    const flag = DisEnvLength * 285 - window.innerWidth + 297 <= domPosition + 300;
+
     this.setState({
-      moveRight: domPosition,
+      moveBan: flag,
     });
-    if (this.state.moveRight === domPosition) {
-      this.setState({
-        moveBan: true,
-      });
-      scrollLeft = domPosition;
+    const res = scrollTo(
+      document.getElementsByClassName("c7n-inner-container-ban")[0],
+      300
+    );
+    if (res === 0) {
+      scrollLeft = 300;
     } else {
-      this.setState({
-        moveBan: false,
-      });
+      scrollLeft = res;
     }
-    document.getElementsByClassName("c7n-inner-container-ban")[0].scroll({
-      left: scrollLeft + 300,
-      behavior: "smooth",
-    });
-    scrollLeft += 300;
   };
 
   /**
@@ -669,37 +672,18 @@ class Environment extends Component {
    */
   onSelectChange = (keys, selected) => {
     const { EnvPipelineStore } = this.props;
-    const { getTagKeys: tagKeys, getPrmMbr } = EnvPipelineStore;
+    const { getTagKeys: tagKeys } = EnvPipelineStore;
     let s = [];
     const a = tagKeys.length
       ? tagKeys.concat(selected)
       : this.state.selected.concat(selected);
-    // const tagKs = tagKeys.length ? _.map(tagKeys, p => p.iamUserId).concat(keys) : keys;
     this.setState({ selected: a });
     _.map(keys, o => {
       if (_.filter(a, ["iamUserId", o]).length) {
         s.push(_.filter(a, ["iamUserId", o])[0]);
       }
     });
-    const ids = _.map(getPrmMbr, p => p.iamUserId);
-    const delIds = _.difference(ids, keys);
-    let selectIds = tagKeys;
-    _.map(delIds, d => {
-      _.map(selectIds, t => {
-        if (d === t.iamUserId) {
-          selectIds = _.reject(selectIds, s => s.iamUserId === d);
-        }
-      });
-    });
-    const temp = _.map(selectIds, s => s.iamUserId);
-    _.map(selected, k => {
-      if (!_.includes(temp, k.iamUserId)) {
-        selectIds.push(k);
-      }
-    });
-    EnvPipelineStore.setSelectedRk(keys);
     EnvPipelineStore.setTagKeys(s);
-    this.setState({ selectedRowKeys: keys });
   };
 
   onCreateSelectChange = (keys, selected) => {
@@ -779,17 +763,19 @@ class Environment extends Component {
   };
 
   render() {
+    DevopsStore.initAutoRefresh("env", this.reload);
+
     const {
       EnvPipelineStore,
       intl: { formatMessage },
       form: { getFieldDecorator, getFieldValue },
     } = this.props;
+
     const {
       moveBan,
       submitting,
       createSelectedRowKeys,
       createSelected,
-      selectedRowKeys,
       delEnvShow,
       disEnvShow,
       delGroupShow,
@@ -798,19 +784,19 @@ class Environment extends Component {
       envName,
       delGroupName,
     } = this.state;
+
     const {
       id: projectId,
       organizationId,
       type,
       name,
     } = AppState.currentMenuType;
+
     const {
       getEnvcardPosition: envCard,
       getDisEnvcardPosition: disEnvCard,
-      getPrmMbr,
       getMbr,
       getTagKeys: tagKeys,
-      getSelectedRk,
       getEnvData: envData,
       getClsData: clsData,
       getIst,
@@ -837,6 +823,26 @@ class Environment extends Component {
         })}
       </span>
     );
+
+    const clusterOptions = _.map(getCluster, c => {
+      const { id, connect, name } = c;
+      let text = null;
+      let status = null;
+      if (!_.isNull(connect)) {
+        text = connect ? "connect" : "disconnect";
+        status = connect ? "success" : "disconnect";
+      }
+      return (
+        <Option key={id} value={id}>
+          {!_.isNull(connect) ? (
+            <Tooltip title={<FormattedMessage id={text} />}>
+              <span className={`c7ncd-status c7ncd-status-${status}`} />
+            </Tooltip>
+          ) : null}
+          {name}
+        </Option>
+      );
+    });
 
     if (disEnvCard.length) {
       const disData = [];
@@ -890,12 +896,18 @@ class Environment extends Component {
             </div>
             <div className="c7n-env-des-wrap">
               <div className="c7n-env-des" title={env.description}>
+                {env.clusterName && <div>
+                  <span className="c7n-env-des-head">
+                    {formatMessage({ id: "envPl.cluster" })}
+                  </span>
+                  {env.clusterName}
+                </div>}
                 <span className="c7n-env-des-head">
                   {formatMessage({
                     id: "envPl.description",
                   })}
                 </span>
-                {env.description}
+                {env.description || formatMessage({ id: 'null' })}
               </div>
             </div>
           </div>
@@ -924,14 +936,17 @@ class Environment extends Component {
         />
       ) : null;
 
+    const DisEnvLength = disEnvCard.length
+      ? disEnvCard[0].devopsEnviromentRepDTOs.length
+      : 0;
     const rightStyle = classNames({
       "c7n-push-right-ban icon icon-navigate_next":
-      (window.innerWidth >= 1680 &&
-        window.innerWidth < 1920 &&
-        disEnvCard.length >= 5) ||
-      (window.innerWidth >= 1920 && disEnvCard.length >= 6) ||
-      (window.innerWidth < 1680 && disEnvCard.length >= 4),
-      "c7n-push-none": disEnvCard.length <= 4,
+        (window.innerWidth >= 1680 &&
+          window.innerWidth < 1920 &&
+          DisEnvLength >= 5) ||
+        (window.innerWidth >= 1920 && DisEnvLength >= 6) ||
+        (window.innerWidth < 1680 && DisEnvLength >= 4),
+      "c7n-push-none": DisEnvLength <= 4,
     });
 
     const rightDom = moveBan ? null : (
@@ -1015,17 +1030,11 @@ class Environment extends Component {
                       }
                       label={<FormattedMessage id="envPl.form.cluster" />}
                     >
-                      {getCluster.length
-                        ? _.map(getCluster, c => (
-                          <Option key={c.id} value={c.id}>
-                            {c.name}
-                          </Option>
-                        ))
-                        : null}
+                      {getCluster.length ? clusterOptions : null}
                     </Select>
                   )}
                 </FormItem>
-                {getSelectTip("envPl.cluster.tip")}
+                <Tips type="form" data="envPl.cluster.tip" />
               </div>
               <FormItem {...formItemLayout}>
                 {getFieldDecorator("code", {
@@ -1045,7 +1054,8 @@ class Environment extends Component {
                     disabled={!getFieldValue("clusterId")}
                     maxLength={30}
                     label={<FormattedMessage id="envPl.form.code" />}
-                    suffix={getSelectTip("envPl.envCode.tip")}
+                    suffix={<Tips type="form" data="envPl.envCode.tip" />
+                    }
                   />
                 )}
               </FormItem>
@@ -1058,16 +1068,14 @@ class Environment extends Component {
                         id: "required",
                       }),
                     },
-                    {
-                      validator: this.checkName,
-                    },
+                    // { validator: this.checkName, },
                   ],
                 })(
                   <Input
                     disabled={!getFieldValue("clusterId")}
                     maxLength={10}
                     label={<FormattedMessage id="envPl.form.name" />}
-                    suffix={getSelectTip("envPl.envName.tip")}
+                    suffix={<Tips type="form" data="envPl.envName.tip" />}
                   />
                 )}
               </FormItem>
@@ -1082,7 +1090,7 @@ class Environment extends Component {
                     }}
                     maxLength={60}
                     label={<FormattedMessage id="envPl.form.description" />}
-                    suffix={getSelectTip("envPl.chooseClu.tip")}
+                    suffix={<Tips type="form" data="envPl.chooseClu.tip" />}
                   />
                 )}
               </FormItem>
@@ -1101,15 +1109,15 @@ class Environment extends Component {
                     >
                       {groupData.length
                         ? _.map(groupData, g => (
-                          <Option key={g.id} value={g.id}>
-                            {g.name}
-                          </Option>
-                        ))
+                            <Option key={g.id} value={g.id}>
+                              {g.name}
+                            </Option>
+                          ))
                         : null}
                     </Select>
                   )}
                 </FormItem>
-                {getSelectTip("envPl.group.tip")}
+                <Tips type="form" data="envPl.group.tip" />
               </div>
             </Form>
             <div className="c7n-sidebar-form">
@@ -1151,6 +1159,18 @@ class Environment extends Component {
           <div className="c7n-sidebar-form">
             <Form>
               <FormItem {...formItemLayout}>
+                {getFieldDecorator("code", {
+                  initialValue: envData ? envData.code : "",
+                })(
+                  <Input
+                    disabled
+                    maxLength={30}
+                    label={<FormattedMessage id="envPl.form.code" />}
+                    suffix={<Tips type="form" data="envPl.envCode.tip" />}
+                  />
+                )}
+              </FormItem>
+              <FormItem {...formItemLayout}>
                 {getFieldDecorator("name", {
                   rules: [
                     {
@@ -1168,6 +1188,7 @@ class Environment extends Component {
                   <Input
                     maxLength={10}
                     label={<FormattedMessage id="envPl.form.name" />}
+                    suffix={<Tips type="form" data="envPl.envName.tip" />}
                   />
                 )}
               </FormItem>
@@ -1203,15 +1224,15 @@ class Environment extends Component {
                     >
                       {groupData.length
                         ? _.map(groupData, g => (
-                          <Option key={g.id} value={g.id}>
-                            {g.name}
-                          </Option>
-                        ))
+                            <Option key={g.id} value={g.id}>
+                              {g.name}
+                            </Option>
+                          ))
                         : null}
                     </Select>
                   )}
                 </FormItem>
-                {getSelectTip("envPl.group.tip")}
+                <Tips type="form" data="envPl.group.tip" />
               </div>
               <FormItem {...formItemLayout}>
                 {getFieldDecorator("clusterName", {
@@ -1235,7 +1256,7 @@ class Environment extends Component {
               <Table
                 className="c7n-env-noTotal"
                 rowSelection={rowSelection}
-                dataSource={getPrmMbr}
+                dataSource={getMbr}
                 columns={columns}
                 filterBarPlaceholder={formatMessage({
                   id: "filter",
@@ -1311,10 +1332,7 @@ class Environment extends Component {
               <FormattedMessage id="envPl.group.create" />
             </Button>
           </Permission>
-          <Button funcType="flat" onClick={this.reload}>
-            <i className="icon-refresh icon" />
-            <FormattedMessage id="refresh" />
-          </Button>
+          <RefreshBtn name="env" onFresh={this.reload} />
           <Button
             funcType="flat"
             onClick={this.jiankong}
@@ -1337,7 +1355,6 @@ class Environment extends Component {
             confirmLoading={submitting}
             cancelText={<FormattedMessage id="cancel" />}
             okText={this.okText(sideType)}
-            className="c7n-create-sidebar-tooltip"
           >
             {sideType === 'edit' ? <Content className="sidebar-content">
               <h2 className="c7n-space-first"><FormattedMessage id={'env.edit.title'} values={{ name: envData ? envData.code : '' }} /></h2>
@@ -1356,22 +1373,22 @@ class Environment extends Component {
             footer={
               enableClick
                 ? [
-                  <Button key="back" onClick={this.closeDisEnvModal}>
-                    {formatMessage({ id: "return" })}
-                  </Button>,
-                  <Button
-                    key="submit"
-                    type="primary"
-                    loading={submitting}
-                    onClick={
-                      getIst.length && disEnvConnect
-                        ? this.closeDisEnvModal
-                        : this.disableEnv
-                    }
-                  >
-                    {formatMessage({ id: "submit" })}
-                  </Button>,
-                ]
+                    <Button key="back" onClick={this.closeDisEnvModal}>
+                      {formatMessage({ id: "return" })}
+                    </Button>,
+                    <Button
+                      key="submit"
+                      type="primary"
+                      loading={submitting}
+                      onClick={
+                        getIst.length && disEnvConnect
+                          ? this.closeDisEnvModal
+                          : this.disableEnv
+                      }
+                    >
+                      {formatMessage({ id: "submit" })}
+                    </Button>,
+                  ]
                 : null
             }
             closable={false}
@@ -1415,7 +1432,9 @@ class Environment extends Component {
               </Button>,
             ]}
           >
-            {formatMessage({ id: "envPl.confirm.group.del" })}
+            <div className="c7n-padding-top_8">
+              {formatMessage({ id: "envPl.confirm.group.del" })}
+            </div>
           </Modal>
           <Modal
             visible={delEnvShow}
@@ -1443,7 +1462,9 @@ class Environment extends Component {
               </Button>,
             ]}
           >
-            {formatMessage({ id: "envPl.delete.warn" })}
+            <div className="c7n-padding-top_8">
+              {formatMessage({ id: "envPl.delete.warn" })}
+            </div>
           </Modal>
           {showGroup ? (
             <EnvGroup

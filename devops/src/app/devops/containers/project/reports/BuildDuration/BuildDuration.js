@@ -53,8 +53,9 @@ class BuildDuration extends Component {
     const { ReportsStore } = this.props;
     const { id } = AppState.currentMenuType;
     ReportsStore.loadAllApps(id).then((data) => {
-      if (data && data.length) {
-        ReportsStore.setAppId(data[0].id);
+      const appData = data && data.length ? _.filter(data, ['permission', true]) : [];
+      if (appData.length) {
+        ReportsStore.setAppId(appData[0].id);
         this.loadCharts();
       }
     });
@@ -284,7 +285,7 @@ class BuildDuration extends Component {
         <ReactEcharts className="c7n-buildDuration-echarts" option={this.getOption()} />
       </Spin>
       <BuildTable loading={loading} dataSource={allData} pagination={pageInfo} loadDatas={this.loadDatas} />
-    </React.Fragment> : <NoChart title={formatMessage({ id: 'report.no-app' })} des={formatMessage({ id: 'report.no-app-des' })} />);
+    </React.Fragment> : <NoChart type="app" />);
 
     return (<Page
       className="c7n-region c7n-ciPipeline"
