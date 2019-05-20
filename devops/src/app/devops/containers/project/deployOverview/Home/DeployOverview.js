@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Content, Header, Page, Permission, stores, axios } from 'choerodon-front-boot';
-import { Button, Popover, Tooltip, Table } from 'choerodon-ui';
+import { Button, Popover, Tooltip, Table, Icon } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import MouserOverWrapper from '../../../../components/MouseOverWrapper';
