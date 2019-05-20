@@ -658,13 +658,7 @@ class EnvOverviewHome extends Component {
           >
             <FormattedMessage id="refresh" />
           </Button>
-          <Button
-            funcType="flat"
-            onClick={this.jiankong}
-          >
-            <Icon type="sync" spin />
-            <FormattedMessage id="jiankong" />
-          </Button>
+
         </Header>
         <Content>
           <div className="c7n-envow-status-wrap">
