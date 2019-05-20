@@ -362,7 +362,7 @@ class EnvOverviewHome extends Component {
     const orgId = AppState.currentMenuType.organizationId;
     console.log(proId);
 
-    axios.get(`/iam/v1/project/projects/${proId}`)
+    axios.get(`/iam/v1/projects/${proId}`)
       .then((data) => {
         if (data && data.failed) {
           Choerodon.prompt(data.message);
