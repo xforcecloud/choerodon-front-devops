@@ -1315,13 +1315,7 @@ class Environment extends Component {
             <i className="icon-refresh icon" />
             <FormattedMessage id="refresh" />
           </Button>
-          <Button
-            funcType="flat"
-            onClick={this.jiankong}
-          >
-            <Icon type="sync" spin />
-            <FormattedMessage id="jiankong" />
-          </Button>
+
         </Header>
         <Content
           code="env"
