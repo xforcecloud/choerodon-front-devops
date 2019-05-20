@@ -5,7 +5,7 @@ import { observable, action, configure } from 'mobx';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button, Tabs, Form, Select, Icon, Tooltip, Menu, Dropdown } from 'choerodon-ui';
-import { Content, Header, Page, Permission, stores } from 'choerodon-front-boot';
+import { Content, Header, Page, Permission, stores, axios } from 'choerodon-front-boot';
 import _ from 'lodash';
 import '../EnvOverview.scss';
 import '../../../main.scss';
@@ -21,6 +21,9 @@ import DomainStore from '../../../../stores/project/domain';
 import NetworkConfigStore from '../../../../stores/project/networkConfig';
 import CertificateStore from '../../../../stores/project/certificate';
 import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
+import { host, port } from '../../../../config/grafana';
+
+
 
 const { AppState } = stores;
 const { TabPane } = Tabs;
@@ -354,6 +357,44 @@ class EnvOverviewHome extends Component {
     EnvOverviewStore.setTabKey('log');
   };
 
+  jiankong = () => {
+    const proId= AppState.currentMenuType.id;
+    const orgId = AppState.currentMenuType.organizationId;
+    console.log(proId);
+
+    axios.get(`/iam/v1/projects/${proId}`)
+      .then((data) => {
+        if (data && data.failed) {
+          Choerodon.prompt(data.message);
+        } else {
+
+          const proCode = data.code;
+          const username = orgId + '-' + proCode + '-' + 'viewer';
+          const password = orgId + '-' + proCode + '-' + 'viewer';
+          const baseURL = '';
+          var instance = axios.create({
+            baseURL: "http://"+host+":"+port,
+            timeout: 1000,
+            headers: {'Content-Type': 'application/json;charset=UTF-8'},
+            withCredentials: true
+
+          });
+
+          instance.post(baseURL+'/login', {
+            user: username,
+            password: password,
+            email:''
+          })
+            .then(function (response) {
+              window.open("http://"+host+":"+port+"/dashboards");
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        }
+      });
+  };
+
   render() {
     const { intl: { formatMessage }, EnvOverviewStore } = this.props;
     const { createDisplay } = this.state;
@@ -616,6 +657,13 @@ class EnvOverviewHome extends Component {
             icon="refresh"
           >
             <FormattedMessage id="refresh" />
+          </Button>
+          <Button
+            funcType="flat"
+            onClick={this.jiankong}
+          >
+            <Icon type="sync" spin />
+            <FormattedMessage id="jiankong" />
           </Button>
         </Header>
         <Content>
