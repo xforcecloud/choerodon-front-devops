@@ -3,5 +3,5 @@ const port = 80;
 
 export {
   host,
-  port
+  port,
 }

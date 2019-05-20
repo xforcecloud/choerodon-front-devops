@@ -2,10 +2,6 @@ import { observable, action, computed } from 'mobx';
 import { axios, store, stores } from 'choerodon-front-boot';
 import _ from 'lodash';
 import { handleProptError } from '../../../utils/index';
-import DeploymentPipelineStore from "../deploymentPipeline";
-import CertificateStore from "../certificate";
-import ContainerStore from "../container";
-import InstancesStore from "../instances";
 
 const { AppState } = stores;
 

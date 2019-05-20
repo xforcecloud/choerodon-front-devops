@@ -187,7 +187,6 @@ class Environment extends Component {
   jiankong = () => {
     const proId= AppState.currentMenuType.id;
     const orgId = AppState.currentMenuType.organizationId;
-    console.log(proId);
 
     axios.get(`/iam/v1/projects/${proId}`)
       .then((data) => {
@@ -203,20 +202,19 @@ class Environment extends Component {
             baseURL: "http://"+host+":"+port,
             timeout: 1000,
             headers: {'Content-Type': 'application/json;charset=UTF-8'},
-            withCredentials: true
-
+            withCredentials: true,
           });
 
           instance.post(baseURL+'/login', {
             user: username,
             password: password,
-            email:''
+            email:'',
           })
             .then(function (response) {
               window.open("http://"+host+":"+port+"/dashboards");
             })
             .catch(function (error) {
-              console.log(error);
+              // console.log(error);
             });
         }
       });

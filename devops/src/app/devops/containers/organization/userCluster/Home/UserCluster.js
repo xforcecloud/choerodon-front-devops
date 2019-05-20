@@ -32,10 +32,6 @@ const formItemLayout = {
   },
 };
 
-function onChange(checkedValues) {
-  console.log('checked = ', checkedValues);
-}
-
 @observer
 class UserCluster extends Component {
 
@@ -228,7 +224,7 @@ class UserCluster extends Component {
     const {
       UserClusterStore,
       intl: { formatMessage },
-      form: { getFieldDecorator }
+      form: { getFieldDecorator },
     } = this.props;
     const { organizationId, type } = AppState.currentMenuType;
     const clusters = UserClusterStore.getData;
@@ -528,7 +524,7 @@ class UserCluster extends Component {
     const { organizationId, sideType, checked, createSelectedRowKeys } = this.state;
     const orgName = AppState.currentMenuType.name;
     const tagKeys = UserClusterStore.getTagKeys;
-    const {getActiveClusterData: activeClusterData,} = UserClusterStore;
+    const {getActiveClusterData: activeClusterData} = UserClusterStore;
     this.setState({
       submitting: true,
     });

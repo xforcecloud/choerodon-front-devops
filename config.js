@@ -5,14 +5,14 @@ switch (process.env.NODE_ENV) {
     env = {
       "process.env.DEVOPS_HOST": JSON.stringify(
         process.env.DEVOPS_HOST || "devops-service.staging.saas.hand-china.com"
-      )
+      ),
     };
     break;
   case "production":
     env = {
       "process.env.DEVOPS_HOST": JSON.stringify(
-        process.env.DEVOPS_HOST || "devops-service.staging.saas.hand-china.com"
-      )
+        process.env.DEVOPS_HOST || "devops-service.staging.saas.hand-china.com",
+      ),
     };
     break;
   default:
@@ -42,14 +42,14 @@ const config = {
     // less/sass modify vars
     "primary-color": "#3F51B5",
     // 'primary-color': '#00896C',
-    "icon-font-size-base": "16px"
+    "icon-font-size-base": "16px",
   },
   dashboard: {
     devops: {
       components: "src/app/devops/dashboard/*",
-      locale: "src/app/devops/locale/dashboard/*"
-    }
-  }
+      locale: "src/app/devops/locale/dashboard/*",
+    },
+  },
 };
 
 module.exports = config;

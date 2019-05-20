@@ -144,7 +144,7 @@ class DingDingHome extends Component {
       "id": id,
       "name": "string",
       "scopeid": 0,
-      "token": "string"
+      "token": "string",
     }
     DingDingStore.deleteApps(projectId, dingDing)
       .then(() => {
@@ -265,7 +265,7 @@ class DingDingHome extends Component {
             required: true,
             whitespace: true,
             message: formatMessage({ id: 'required' }),
-          }]
+          }],
         })(
           <Input
             maxLength={20}
@@ -283,7 +283,7 @@ class DingDingHome extends Component {
             whitespace: true,
             max: 47,
             message: formatMessage({ id: 'required' }),
-          }]
+          }],
         })(
           <Input
             maxLength={30}
