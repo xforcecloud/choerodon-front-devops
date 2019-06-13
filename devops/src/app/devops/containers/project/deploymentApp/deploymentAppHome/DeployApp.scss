@@ -143,18 +143,22 @@
 }
 
 
-.ant-select-selection__rendered {
-  width:470px;
-}
+//.ant-select-selection__rendered {
+//  width:470px;
+//}
+//
+//.ant-select-underline {
+//  width:470px;
+//}
+//
+//.ant-select-selection-selected-value {
+//  max-width: 400px;
+//}
+//
+//.ant-select-dropdown {
+//  width:470px !important;
+//}
 
-.ant-select-underline {
-  width:470px;
-}
-
-.ant-select-selection-selected-value {
-  max-width: 400px;
-}
-
-.ant-select-dropdown {
-  width:470px !important;
+.ant-select {
+  max-width: 512px!important;
 }
