@@ -480,6 +480,7 @@ const zhCN = {
   "ist.detail": "查看实例详情",
   "ist.values": "修改配置信息",
   "ist.del": "删除实例",
+  "ist.chk": "检测实例",
   "ist.stop": "停止实例",
   "ist.upgrade": "升级实例",
   "ist.noIst": "暂无实例",
