@@ -134,20 +134,20 @@ class CiPipelineHome extends Component {
       {
         title: <FormattedMessage id="ciPipeline.createdAt" />,
         dataIndex: 'creationDate',
-        render: (creationDate, record) => (
-          <div>
-            <Popover
-              rowKey="creationDate"
-              title={<FormattedMessage id="ciPipeline.createdAt" />}
-              content={creationDate}
-              placement="left"
-            >
-              <TimeAgo
-                datetime={creationDate}
-                locale={formatMessage({ id: 'language' })}
-              />
-            </Popover>
-          </div>),
+        // render: (creationDate, record) => (
+        //   <div>
+        //     <Popover
+        //       rowKey="creationDate"
+        //       title={<FormattedMessage id="ciPipeline.createdAt" />}
+        //       content={creationDate}
+        //       placement="left"
+        //     >
+        //       <TimeAgo
+        //         datetime={creationDate}
+        //         locale={formatMessage({ id: 'language' })}
+        //       />
+        //     </Popover>
+        //   </div>),
       },
       {
         width: 56,
