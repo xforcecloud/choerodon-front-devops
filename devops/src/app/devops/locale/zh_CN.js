@@ -103,6 +103,7 @@ const pageDetail = {
   "container.term.title": '在容器组"{name}"中运行命令',
   "container.log.description":
     "您可在此查看该容器的日志进行错误定位和状态监控。",
+  "container.restart": "重启实例",
   "container.term.description":
     "您可在此选择容器组下的Pod运行命令进行相关信息实时查看。在此命令行窗口中，选中即复制，粘贴操作：Mac端为cmd+v；Windows端为ctrl+shift+v。",
 

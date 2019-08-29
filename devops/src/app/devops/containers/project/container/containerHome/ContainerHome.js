@@ -475,6 +475,24 @@ class ContainerHome extends Component {
                 </Button>
               </Tooltip>
             </Permission>
+            <Permission
+              service={[
+                "devops-service.devops-env-pod-container.handleShellByPod",
+              ]}
+              organizationId={organizationId}
+              projectId={projectId}
+              type={type}
+            >
+              <Tooltip title={<FormattedMessage id="container.restart" />}>
+                <Button
+                  size="small"
+                  shape="circle"
+                  onClick={this.restart.bind(this, record)}
+                >
+                  <Icon type="refresh" />
+                </Button>
+              </Tooltip>
+            </Permission>
           </div>
         ),
       },
@@ -722,6 +740,16 @@ class ContainerHome extends Component {
       this.openTerminal();
     });
   };
+
+  restart = record => {
+    const { ContainerStore } = this.props;
+    const projectId = AppState.currentMenuType.id;
+    const podId = record.id;
+    const envId = record.envId;
+
+    console.log(" " + projectId + " " + podId + " " + envId );
+    ContainerStore.restartPod(projectId, envId, podId).then(data => this.handleRefresh() )
+  }
 
   /**
    * 环境选择
