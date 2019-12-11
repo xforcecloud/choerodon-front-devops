@@ -50,6 +50,15 @@
 "log-monitoring.dingding": "钉钉配置"
 "log-monitoring.ali-log": "阿里云日志"
 
+#duckula
+"duckula": "Duckula"
+"duckula.task": "任务管理"
+"duckula.ops": "位点设置"
+"duckula.consumer": "监听管理"
+"duckula.import": "导入管理"
+"duckula.index": "索引管理"
+"duckula.stats": "统计信息"
+
 # 0.8版本废弃项
 "application-market": "应用市场"
 "application-market.application-market": "应用市场"
@@ -69,3 +78,4 @@
 "devops.appstore": "应用市场"
 "platform_reports": "报表"
 "platform_reports.reports": "DevOps报表"
+

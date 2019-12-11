@@ -539,6 +539,27 @@ class Environment extends Component {
         }
         this.props.form.resetFields();
       });
+    } else if (sideType === "duckula") {
+      this.props.form.validateFieldsAndScroll((err, data, modify) => {
+        EnvPipelineStore.setShow(false);
+        const id = EnvPipelineStore.getEnvData.id;
+        EnvPipelineStore.setSideType(null);
+        EnvPipelineStore.saveDuckula(projectId, id, { "baseUrl": data.url }).then( res => {
+          if (res && res.failed) {
+            this.setState({
+              submitting: false,
+            });
+            Choerodon.prompt(res.message);
+          } else if (res) {
+            this.loadEnvs();
+            EnvPipelineStore.setShow(false);
+            this.props.form.resetFields();
+            this.setState({
+              submitting: false,
+            });
+          }
+        })
+     });
     } else {
       const id = EnvPipelineStore.getEnvData.id;
       const userIds = _.map(tagKeys, t => t.iamUserId);
@@ -580,6 +601,7 @@ class Environment extends Component {
       createGroup: "group.create",
       editGroup: "group.edit",
       permission: "authority",
+      duckula: "duckula"
     };
     return type
       ? formatMessage({
@@ -608,6 +630,9 @@ class Environment extends Component {
       case "permission":
         text = "save";
         break;
+      case "duckula":
+        text = "save";
+        break;  
       default:
         text = "envPl.close";
     }
@@ -812,6 +837,7 @@ class Environment extends Component {
       getTagKeys: tagKeys,
       getSelectedRk,
       getEnvData: envData,
+      getEnvDuckula: envDuckula,
       getClsData: clsData,
       getIst,
       getShow,
@@ -1254,6 +1280,38 @@ class Environment extends Component {
           </div>
         );
         break;
+      case "duckula":
+          formContent = (
+            <div>
+              <div className="c7n-sidebar-form">
+              <Form>
+                <FormItem {...formItemLayout}>
+                  {getFieldDecorator("url", {
+                    rules: [
+                      {
+                        required: false,
+                        message: formatMessage({
+                          id: "required",
+                        }),
+                      }
+                    ],
+                    initialValue: envDuckula ? envDuckula.baseUrl : "",
+                  })(
+                    <Select
+                      maxLength={10}
+                      label={<FormattedMessage id="envPl.form.url" />}
+                    >
+                      <Option value="">无</Option>
+                      <Option value="http://duckula.phoenix-t.xforceplus.com/duckula-ops">测试集群</Option>
+                    </Select>
+                  )}
+                </FormItem>
+              </Form>
+              </div>
+              <div className="c7n-env-tag-wrap"> {tagDom} </div>
+            </div>
+          );
+          break;
       default:
         formContent = null;
     }
