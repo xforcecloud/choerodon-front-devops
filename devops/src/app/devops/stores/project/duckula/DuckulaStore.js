@@ -84,7 +84,7 @@ class DuckulaStore {
        }else if(type == "consumer"){
           this.setUrl(`${res.baseUrl}/es/consumerManager/${envName}`);
        }else if(type == "index"){
-          this.setUrl(`${res.baseUrl}/es/indexManager/${envName}`);
+          this.setUrl(`${res.baseUrl}/es/indexManager`);
        }else if(type == "stats"){
           this.setUrl(`${res.baseUrl}/duckula/viewnum/${envName}`);
        }else if(type == "import"){

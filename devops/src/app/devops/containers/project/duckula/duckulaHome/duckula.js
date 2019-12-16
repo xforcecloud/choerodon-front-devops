@@ -40,7 +40,7 @@ class Duckula extends Component {
           this.cate = "import"
           break;
         case path.endsWith("/index"):
-          this.cate = "import"
+          this.cate = "index"
           break;
         case path.endsWith("/stats"):
           this.cate = "stats"
