@@ -155,6 +155,10 @@ class ContainerStore {
   });
 
 
+  restartPod = (projectId, envId, podId) => axios.get(`/devops/v1/projects/${projectId}/app_pod/drop?envId=${envId}&podId=${podId}`)
+  .then(data => this.handleProptError(data));
+
+
   /**
    * 加载容器
    * @param isRefresh 是否刷新

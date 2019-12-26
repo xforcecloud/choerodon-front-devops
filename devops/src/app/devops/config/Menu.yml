@@ -284,6 +284,46 @@
        sort: 3
        permission:
          - 'x-devops-service.aliyun-sls.createSignInUrl'
+"duckula":
+    icon: Development-monitoring
+    sort: 101
+    project:
+    - "task":
+       icon: warning
+       Routes: /devops/duckula/task
+       sort: 2
+       permission:
+         - 'devops-service.devops-duckula.task'
+    - "ops":
+       icon: event_seat
+       Routes: /devops/duckula/ops
+       sort: 1
+       permission:
+         - 'devops-service.devops-duckula.ops'
+    - "consumer":
+       icon: event_seat
+       Routes: /devops/duckula/consumer
+       sort: 1
+       permission:
+         - 'devops-service.devops-duckula.consumer'
+    - "index":
+       icon: message_notification
+       Routes: /devops/duckula/index
+       sort: 1
+       permission:
+         - 'devops-service.devops-duckula.index'
+    - "import":
+       icon: message_notification
+       Routes: /devops/duckula/import
+       sort: 3
+       permission:
+         - 'devops-service.devops-duckula.import'     
+    - "stats":
+       icon: message_notification
+       Routes: /devops/duckula/stats
+       sort: 3
+       permission:
+         - 'devops-service.devops-duckula.stats'   
 
 "cluster-management":
   icon: cluster

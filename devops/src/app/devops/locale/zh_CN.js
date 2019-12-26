@@ -47,6 +47,9 @@ const pageDetail = {
     "环境权限分配主要用于为环境配置特定的操作人员，配置后，只有被勾选的项目成员才有权限在该环境下进行部署操作。表中人员是该项目下所有的项目成员。",
   "env.permission.link": `${docServer}/user-guide/deployment-pipeline/environment-pipeline/`,
 
+  "env.duckula.title": '修改"{name}"环境的Duckula配置',
+  "env.duckula.description": "Duckula主要用来同步binlog",
+
   // domain
   "domain.title": '项目"{name}"的域名',
   "domain.description":
@@ -103,6 +106,7 @@ const pageDetail = {
   "container.term.title": '在容器组"{name}"中运行命令',
   "container.log.description":
     "您可在此查看该容器的日志进行错误定位和状态监控。",
+  "container.restart": "重启实例",
   "container.term.description":
     "您可在此选择容器组下的Pod运行命令进行相关信息实时查看。在此命令行窗口中，选中即复制，粘贴操作：Mac端为cmd+v；Windows端为ctrl+shift+v。",
 
@@ -480,6 +484,7 @@ const zhCN = {
   "ist.detail": "查看实例详情",
   "ist.values": "修改配置信息",
   "ist.del": "删除实例",
+  "ist.chk": "检测实例",
   "ist.stop": "停止实例",
   "ist.upgrade": "升级实例",
   "ist.noIst": "暂无实例",
@@ -641,6 +646,7 @@ const zhCN = {
   "envPl.form.cluster": "选择集群",
   "envPl.form.cluster": "选择集群",
   "envPl.form.name": "环境名称",
+  "envPl.form.url": "Duckula环境",
   "envPl.form.code": "环境编码",
   "envPl.form.description": "环境描述",
   "envPl.form.group": "分组",
@@ -666,6 +672,7 @@ const zhCN = {
   "envPl.token": "指令",
   "envPl.status.update": "版本过低，请更新",
   "envPl.active": "激活环境",
+  "envPl.duckula": "修改Duckula",
   "envPl.stop": "停用环境",
   "envPl.add": "请添加一个环境",
   "envPl.no.add": "未添加",
@@ -682,6 +689,7 @@ const zhCN = {
   "envPl.envName.tip": "平台环境的显示名称。限制为10个字符。",
   "envPl.group.tip":
     "若要使用环境分组，请先创建分组；此处只能从已创建的分组中进行选择，从而将此环境放入该分组中。",
+  "envPl.duckula": "Duckula",
 
   // warnings
   "warnings.synch": "应用同步中",
@@ -1376,6 +1384,14 @@ const zhCN = {
   "ali-log.head": "阿里云日志",
   "ali-log.title": '',
   "ali-log.description": '',
+
+  //duckula
+  "duckula.task":"任务管理",
+  "duckula.opss":"位点设置",
+  "duckula.consumer":"监听管理",
+  "duckula.import":"导入管理",
+  "duckula.index":"索引管理",
+  "duckula.stats":"统计信息",
 
   ...pageDetail,
 };

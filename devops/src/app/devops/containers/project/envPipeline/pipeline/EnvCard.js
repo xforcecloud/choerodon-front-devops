@@ -35,6 +35,24 @@ function collect(connect, monitor) {
 @inject('AppState')
 @observer
 class EnvCard extends Component {
+
+  editDuckula = (id) => {
+    const { projectId } = this.props;
+    EnvPipelineStore.setSideType('duckula');
+    EnvPipelineStore.loadEnvById(projectId, id).then((data) => {
+      EnvPipelineStore.loadDuckula(projectId, id).then((data) => {
+        if (data && data.failed) {
+          Choerodon.prompt(data.message);
+        } else {
+          //EnvPipelineStore.loadClsById(AppState.currentMenuType.organizationId,data.clusterId)
+        }
+      });
+    })
+
+    EnvPipelineStore.setShow(true);
+  };
+
+
   editEnv = (id) => {
     const { projectId } = this.props;
     EnvPipelineStore.setSideType('edit');
@@ -104,6 +122,21 @@ class EnvCard extends Component {
               ? (<React.Fragment>
                 <span><Tag>{aa(cardData.code)}</Tag>{cardData.name}</span>
                 <div className="c7n-env-card-action">
+                {/* <Permission
+                     service={['devops-service.devops-environment.enableOrDisableDuckula']}
+                     organizationId={organizationId}
+                     projectId={projectId}
+                     type={type}
+                  > */}
+                  <Tooltip title={<FormattedMessage id="envPl.duckula" />}>
+                      <Button
+                        funcType="flat"
+                        shape="circle"
+                        icon="mode_edit"
+                        onClick={this.editDuckula.bind(this, cardData.id)}
+                      />
+                    </Tooltip>
+                  {/* </Permission> */}
                   <Permission
                     service={['devops-service.devops-environment.updateEnvUserPermission']}
                     organizationId={organizationId}

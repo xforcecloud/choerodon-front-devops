@@ -9,6 +9,7 @@ import { handleProptError } from '../../../utils';
 import ValueConfig from './ValueConfig';
 import UpgradeIst from './UpgradeIst';
 import DelIst from './components/DelIst';
+import Checklst from './components/Checklst';
 import ExpandRow from './components/ExpandRow';
 import StatusIcon from '../../../components/StatusIcon';
 import UploadIcon from './components/UploadIcon';
@@ -168,6 +169,24 @@ class Instances extends Component {
         }
       });
   };
+
+  check = (record ) => {
+    const { id, code } = record;
+    const {
+      InstancesStore: {
+        checks
+      },
+    } = this.props;
+
+    checks(id).then((data) => 
+    this.setState({ openCheck: true , id, name: code, reasons: data.reasonList})
+    )
+  }
+
+  handleCheckClose(){
+    this.setState({openCheck: false})
+  }
+
 
   /**
    * 重新部署
@@ -440,21 +459,26 @@ class Instances extends Component {
         text: formatMessage({ id: 'ist.del' }),
         action: this.handleOpen.bind(this, record),
       },
+      check: {
+        service: ['devops-service.application-instance.delete'],
+        text: formatMessage({ id: 'ist.chk' }),
+        action: this.check.bind(this, record),
+      },
     };
     let actionItem = [];
     switch (status) {
       case 'operating' || !connect:
-        actionItem = ['detail'];
+        actionItem = ['detail', 'check'];
         break;
       case 'stopped':
-        actionItem = ['detail', 'stop', 'delete'];
+        actionItem = ['detail', 'stop', 'delete', 'check'];
         break;
       case 'failed':
       case 'running':
-        actionItem = ['detail', 'change', 'restart', 'update', 'stop', 'delete'];
+        actionItem = ['detail', 'change', 'restart', 'update', 'stop', 'delete', 'check'];
         break;
       default:
-        actionItem = ['detail'];
+        actionItem = ['detail', 'check'];
     }
     const actionData = _.map(actionItem, item => ({
       projectId,
@@ -529,6 +553,8 @@ class Instances extends Component {
       visibleUp,
       idArr,
       openRemove,
+      openCheck,
+      reasons,
       id,
       loading,
     } = this.state;
@@ -684,6 +710,13 @@ class Instances extends Component {
               handleCancel={this.handleClose.bind(this, id)}
               handleConfirm={this.handleDelete.bind(this, id)}
               confirmLoading={loading}
+              name={name}
+            />
+             <Checklst
+              open={openCheck}
+              handleOk={this.handleCheckClose.bind(this)}
+              reasons= {reasons}
+              id = {id}
               name={name}
             />
           </Content></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="ist.head" />} type="env" />}

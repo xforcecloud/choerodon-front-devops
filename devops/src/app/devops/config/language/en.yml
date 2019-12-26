@@ -51,6 +51,14 @@
 "log-monitoring.dingding": "DingDingConfig"
 "log-monitoring.ali-log": "Aliyun Log"
 
+"duckula": "Duckula"
+"duckula.task": "Task Manager"
+"duckula.ops": "Checkpoint"
+"duckula.consumer": "Consumer Manager"
+"duckula.import": "Import Manager"
+"duckula.index": "Index Manager"
+"duckula.stats": "Statistics"
+
 # 0.8废弃
 "application-market": "Application Market"
 "application-market.application-market": "Application Market"

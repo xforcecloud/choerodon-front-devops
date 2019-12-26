@@ -30,6 +30,8 @@ class EnvPipelineStore {
 
   @observable envdata = null;
 
+  @observable duckula = null;
+
   @observable group = [];
 
   @observable groupOne = [];
@@ -222,10 +224,23 @@ class EnvPipelineStore {
     this.envdata = data;
   }
 
+
   @computed
   get getEnvData() {
     return this.envdata;
   }
+
+  @action
+  setDuckula(data){
+    this.duckula = data;
+  }
+
+  @computed
+  get getEnvDuckula() {
+    return this.duckula;
+  }
+
+
 
   @action
   setSideType(data) {
@@ -332,6 +347,23 @@ class EnvPipelineStore {
       }
       return data;
     });
+  
+  loadDuckula = (projectId, id) => 
+    axios.get(`/devops/v1/projects/${projectId}/envs-ex/${id}/duckula`).then(data => {
+      if (data && data.failed) {
+        Choerodon.prompt(data.message);
+      } else {
+        this.setDuckula(data);
+      }
+      return data;
+    });
+
+  saveDuckula = (projectId, id, duckula) =>
+    axios
+    .post(
+      `/devops/v1/projects/${projectId}/envs-ex/${id}/duckula`,
+      JSON.stringify(duckula)
+    )
 
   loadClsById(orgId, id) {
     return axios.get(`/devops/v1/organizations/${orgId}/clusters/${id}`)

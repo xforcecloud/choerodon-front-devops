@@ -94,7 +94,7 @@ class DevOpsCommit extends Component {
 
   choiceRender = (liNode, value) => React.cloneElement(liNode, {
     className: 'c7ncd-db-select-li',
-    title: liNode.props.title[0],
+    title: liNode.props.title ? liNode.props.title[0] : "DefaultTitle",
   });
 
   maxTagNode = (data, value) => (<MaxTagPopover
