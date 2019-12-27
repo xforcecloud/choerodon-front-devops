@@ -168,6 +168,7 @@ class Environment extends Component {
   componentDidMount() {
     this.loadEnvs();
     this.loadEnvGroups();
+    this.loadDuckularUrls();
   }
 
   componentWillUnmount() {
@@ -231,6 +232,12 @@ class Environment extends Component {
     EnvPipelineStore.loadEnv(projectId, true);
     EnvPipelineStore.loadEnv(projectId, false);
   };
+
+  loadDuckularUrls = () => {
+    const { EnvPipelineStore } = this.props;
+    const projectId = AppState.currentMenuType.id;
+    EnvPipelineStore.loadDuckulaUrls(projectId);
+  }
 
   /**
    * 加载环境组
@@ -541,7 +548,7 @@ class Environment extends Component {
       });
     } else if (sideType === "duckula") {
       this.props.form.validateFieldsAndScroll((err, data, modify) => {
-        EnvPipelineStore.setShow(false);
+      EnvPipelineStore.setShow(false);
         const id = EnvPipelineStore.getEnvData.id;
         EnvPipelineStore.setSideType(null);
         EnvPipelineStore.saveDuckula(projectId, id, { "baseUrl": data.url }).then( res => {
@@ -558,8 +565,9 @@ class Environment extends Component {
               submitting: false,
             });
           }
+
         })
-     });
+      });
     } else {
       const id = EnvPipelineStore.getEnvData.id;
       const userIds = _.map(tagKeys, t => t.iamUserId);
@@ -836,6 +844,7 @@ class Environment extends Component {
       getMbr,
       getTagKeys: tagKeys,
       getSelectedRk,
+      getDuckulaUrls: duckulaUrls,
       getEnvData: envData,
       getEnvDuckula: envDuckula,
       getClsData: clsData,
@@ -1289,7 +1298,7 @@ class Environment extends Component {
                   {getFieldDecorator("url", {
                     rules: [
                       {
-                        required: false,
+                        required: true,
                         message: formatMessage({
                           id: "required",
                         }),
@@ -1298,11 +1307,18 @@ class Environment extends Component {
                     initialValue: envDuckula ? envDuckula.baseUrl : "",
                   })(
                     <Select
-                      maxLength={10}
+                      maxLength={100}
                       label={<FormattedMessage id="envPl.form.url" />}
                     >
-                      <Option value="">无</Option>
-                      <Option value="http://duckula.phoenix-t.xforceplus.com/duckula-ops">测试集群</Option>
+                       <Option key = "-1" value="">无</Option>
+                       {_.map(duckulaUrls,  e => (
+                        <Option key={e.id} value={e.url} title={e.name}>
+                          <Tooltip placement="right" title={e.name}>
+                              <span className="c7n-ib-width_100">
+                                {e.name}
+                              </span>
+                          </Tooltip>
+                        </Option>))}
                     </Select>
                   )}
                 </FormItem>
