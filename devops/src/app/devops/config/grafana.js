@@ -1,4 +1,4 @@
-const host = 'grafana-xcloud.xforceplus.com';
+const host = 'choerodon-grafana.developer.xforcecloud.com';
 const port = 80;
 
 export {

@@ -214,7 +214,7 @@ class Environment extends Component {
             email:''
           })
             .then(function (response) {
-              window.open("http://grafana-xcloud.xforceplus.com:80/dashboards");
+              window.open("http://"+host+":"+port+"/dashboards");
             })
             .catch(function (error) {
               console.log(error);
@@ -1389,13 +1389,7 @@ class Environment extends Component {
             <i className="icon-refresh icon" />
             <FormattedMessage id="refresh" />
           </Button>
-          <Button
-            funcType="flat"
-            onClick={this.jiankong}
-          >
-            <Icon type="sync" spin />
-            <FormattedMessage id="jiankong" />
-          </Button>
+
         </Header>
         <Content
           code="env"
