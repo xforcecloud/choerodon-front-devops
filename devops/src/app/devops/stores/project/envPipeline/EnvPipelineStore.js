@@ -30,6 +30,8 @@ class EnvPipelineStore {
 
   @observable envdata = null;
 
+  @observable duckulaUrls = null;
+
   @observable duckula = null;
 
   @observable group = [];
@@ -224,10 +226,19 @@ class EnvPipelineStore {
     this.envdata = data;
   }
 
-
   @computed
   get getEnvData() {
     return this.envdata;
+  }
+
+  @action
+  setDuckulaUrls(data) {
+    this.duckulaUrls = data;
+  }
+
+  @computed
+  get getDuckulaUrls() {
+    return this.duckulaUrls;
   }
 
   @action
@@ -270,6 +281,17 @@ class EnvPipelineStore {
   @computed
   get getBtnLoading() {
     return this.btnLoading;
+  }
+
+  loadDuckulaUrls = (projectId) => {
+    return axios
+    .get(`devops/v1/projects/${projectId}/envs-ex/duckula`)
+    .then(data => {
+      if (data && data.failed) {
+        Choerodon.prompt(data.message);
+      } else if (data) {
+        this.setDuckulaUrls(data);
+    }});
   }
 
   loadEnv = (projectId, active) => {

@@ -12,6 +12,7 @@ import {
   Icon,
   Select,
   Popover,
+  Popconfirm,
 } from "choerodon-ui";
 import {
   Content,
@@ -298,6 +299,8 @@ class ContainerHome extends Component {
     }
   };
 
+
+
   /**
    * 获取行
    */
@@ -439,6 +442,7 @@ class ContainerHome extends Component {
         key: "action",
         render: (test, record) => (
           <div>
+            
             <Permission
               service={[
                 "devops-service.devops-env-pod-container.queryLogByPod",
@@ -483,15 +487,30 @@ class ContainerHome extends Component {
               projectId={projectId}
               type={type}
             >
-              <Tooltip title={<FormattedMessage id="container.restart" />}>
-                <Button
+              <Popconfirm title="是否重启这个容器" onConfirm={this.restart.bind(this, record)}  okText="是" cancelText="否">
+              <Button
                   size="small"
                   shape="circle"
-                  onClick={this.restart.bind(this, record)}
                 >
                   <Icon type="refresh" />
                 </Button>
-              </Tooltip>
+            </Popconfirm>
+              {/* <Tooltip title={<FormattedMessage id="container.restart" />}> */}
+              {/* <Popconfirm
+                placement="restart container"
+
+                onConfirm={this.restart}
+                okText="Yes"
+                cancelText="No"
+              > */}
+                {/* <Button
+                  size="small"
+                  shape="circle"
+                >
+                  <Icon type="refresh" />
+                </Button>
+                </Popconfirm> */}
+              {/* </Tooltip> */}
             </Permission>
           </div>
         ),
@@ -747,9 +766,12 @@ class ContainerHome extends Component {
     const podId = record.id;
     const envId = record.envId;
 
+    console.log(record)
     console.log(" " + projectId + " " + podId + " " + envId );
     ContainerStore.restartPod(projectId, envId, podId).then(data => this.handleRefresh() )
   }
+
+
 
   /**
    * 环境选择
