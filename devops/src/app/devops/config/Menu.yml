@@ -323,7 +323,29 @@
        Routes: /devops/duckula/import
        sort: 6
        permission:
-         - 'devops-service.devops-duckula.import'  
+         - 'devops-service.devops-duckula.import'
+"redash":
+    icon: Development-monitoring
+    sort: 102
+    project:
+    - "dbconfig":
+       icon: wrench
+       Routes: /devops/redash/dbconfig
+       sort: 1
+       permission:
+         - 'devops-service.devops-redash.dbconfig'
+    - "query":
+       icon: wrench
+       Routes: /devops/redash/query
+       sort: 2
+       permission:
+         - 'devops-service.devops-duckula.ops'
+    - "report":
+       icon: wrench
+       Routes: /devops/redash/report
+       sort: 3
+       permission:
+         - 'devops-service.devops-redash.report'
 "cluster-management":
   icon: cluster
   sort: 4
